@@ -44,7 +44,7 @@ data[:,50:60,50:60] += sig
 
 ## Display the data and assign each frame a time value from 1.0 to 3.0
 imv.setImage(data, xvals=np.linspace(1., 3., data.shape[0]))
-
+#imv.setImage(data)
 ## Start Qt event loop unless running in interactive mode.
 if __name__ == '__main__':
     import sys
