@@ -1,0 +1,9 @@
+Traceback (most recent call last):
+  File "/Applications/Spyder-Py2.app/Contents/Resources/lib/python2.7/spyderlib/spyder.py", line 2367, in main
+  File "/Applications/Spyder-Py2.app/Contents/Resources/lib/python2.7/spyderlib/spyder.py", line 2265, in run_spyder
+  File "/Applications/Spyder-Py2.app/Contents/Resources/lib/python2.7/spyderlib/spyder.py", line 1177, in post_visible_setup
+  File "subprocess.pyc", line 522, in call
+  File "subprocess.pyc", line 710, in __init__
+  File "subprocess.pyc", line 1308, in _execute_child
+  File "subprocess.pyc", line 476, in _eintr_retry_call
+OSError: [Errno 22] Invalid argument
