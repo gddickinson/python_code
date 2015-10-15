@@ -15,6 +15,9 @@ import pyqtgraph as pg
 import tifffile
 import json
 import re
+import SimpleCV as simplecv
+from SimpleCV import Camera, Display, Image
+
 
 class Viewer(QtGui.QMainWindow):
     
@@ -32,18 +35,47 @@ class Viewer(QtGui.QMainWindow):
 
         openTiff = QtGui.QAction(QtGui.QIcon('open.png'), 'Open tiff', self)
         openTiff.setShortcut('Ctrl+O')
-        openTiff.setStatusTip('Open new File')
-        openTiff.triggered.connect(self.openDialog)
+        openTiff.setStatusTip('Open new tiff')
+        openTiff.triggered.connect(self.openDialog1)
+
+        openImage = QtGui.QAction(QtGui.QIcon('open.png'), 'Open image', self)
+        openImage.setShortcut('Ctrl+I')
+        openImage.setStatusTip('Open new Image')
+        openImage.triggered.connect(self.openDialog3)
         
+        openXY = QtGui.QAction(QtGui.QIcon('open.png'), 'Open XY', self)
+        openXY.setShortcut('Ctrl+F')
+        openXY.setStatusTip('Open new XY File')
+        openXY.triggered.connect(self.openDialog2)
+                
         saveFile = QtGui.QAction(QtGui.QIcon('save.png'), 'Save', self)
         saveFile.setShortcut('Ctrl+S')
         saveFile.setStatusTip('Save File')
         saveFile.triggered.connect(self.saveDialog)
 
+        startCamera = QtGui.QAction(QtGui.QIcon('save.png'), 'Take Shot', self)
+        startCamera.setShortcut('Ctrl+C')
+        startCamera.setStatusTip('Start Camera')
+        startCamera.triggered.connect(self.cameraDialog)
+
+        runCamera = QtGui.QAction(QtGui.QIcon('save.png'), 'Record Video', self)
+        runCamera.setShortcut('Ctrl+R')
+        runCamera.setStatusTip('Start Recording')
+        runCamera.triggered.connect(self.cameraRecordDialog)
+
+
         menubar = self.menuBar()
-        fileMenu = menubar.addMenu('&File')
-        fileMenu.addAction(openTiff)
-        fileMenu.addAction(saveFile)
+        fileMenu1 = menubar.addMenu('&Image Files')
+        fileMenu1.addAction(openTiff)
+        fileMenu1.addAction(openImage)
+        fileMenu1.addAction(saveFile)
+        
+        fileMenu2 = menubar.addMenu('&Data Files')        
+        fileMenu2.addAction(openXY)
+
+        fileMenu3 = menubar.addMenu('&Camera')
+        fileMenu3.addAction(startCamera)
+        fileMenu3.addAction(runCamera)
         
         #self.setGeometry(300, 300, 350, 300)
         self.setWindowTitle('ImageView')
@@ -65,9 +97,31 @@ class Viewer(QtGui.QMainWindow):
                 meta[line[0].lstrip().rstrip()]=line[1].lstrip().rstrip()
         return meta
 
+    def convertXY(self, X, Y):
+        maxXScale = 200/(max(X)-min(X))
+        maxYScale = 200/(max(Y)-min(Y))        
+        canvas = np.zeros((200,200))        
+        x = X*maxXScale
+        y = Y*maxYScale
+
+        for i in X:
+            canvas[(x[i])-1,(y[i])-1] = 1        
+        #print(canvas)
+        return canvas   
+
+    
+    def open_xyfile(self,filename):
+        self.statusBar().showMessage('Loading {}'.format(os.path.basename(filename)))
+        t=time.time()        
+        X = np.loadtxt(filename,skiprows=1,usecols=(0,))
+        Y = np.loadtxt(filename,skiprows=1,usecols=(1,))
+        xyData = self.convertXY(X,Y)       
+        #print(xyData)        
+        self.statusBar().showMessage('{} successfully loaded ({} s)'.format(os.path.basename(filename), time.time()-t))        
+        return xyData
+
 
     def open_file(self,filename):
-
         self.statusBar().showMessage('Loading {}'.format(os.path.basename(filename)))
         t=time.time()
         Tiff=tifffile.TiffFile(filename)
@@ -93,9 +147,17 @@ class Viewer(QtGui.QMainWindow):
         self.statusBar().showMessage('{} successfully loaded ({} s)'.format(os.path.basename(filename), time.time()-t))
         return tif  
 
-        
-    def openDialog(self):
 
+    def open_image(self, filename):
+        self.statusBar().showMessage('Loading {}'.format(os.path.basename(filename)))
+        t=time.time()
+        img = simplecv.Image(filename)
+        newimg = img.getNumpy()
+        self.statusBar().showMessage('{} successfully loaded ({} s)'.format(os.path.basename(filename), time.time()-t))
+        return newimg
+        
+        
+    def openDialog1(self):
         filename = QtGui.QFileDialog.getOpenFileName(self, 'Open tiff file', 
                 '/home', '*.tif *.tiff *.stk')
         
@@ -104,13 +166,36 @@ class Viewer(QtGui.QMainWindow):
             return False
         else:
             data = self.open_file(filename)
-            print(len(data.shape))
+            #print(len(data.shape))
             self.ImageView.setImage(data)
             
-                                
-
-    def saveDialog(self):
+    def openDialog2(self):      
+        filename = QtGui.QFileDialog.getOpenFileName(self, 'Open XY file', 
+                '/home')
         
+        filename=str(filename)
+        if filename=='':
+            return False
+        else:
+            data = self.open_xyfile(filename)
+            print(len(data.shape))
+            self.ImageView.setImage(data)
+
+    def openDialog3(self):
+        filename = QtGui.QFileDialog.getOpenFileName(self, 'Open Image file', 
+                '/home')
+        
+        filename=str(filename)
+        if filename=='':
+            return False
+        else:
+            data = self.open_image(filename)
+            #print(len(data.shape))
+            self.ImageView.setImage(data)
+
+
+
+    def saveDialog(self):        
         fname = QtGui.QFileDialog.getSaveFileName(self, 'Save file', 
                 '/home')
         
@@ -120,6 +205,25 @@ class Viewer(QtGui.QMainWindow):
             data = f.read()
             print(data) 
 
+
+    def cameraDialog(self):        
+        img = self.getImage()
+        self.ImageView.setImage(img)
+        time.sleep(.1)
+
+    def cameraRecordDialog(self):        
+        myCamera = Camera()
+        while True:
+            img = myCamera.getImage()
+            img.show()
+            time.sleep(.1)
+
+    def getImage(self):
+        myCamera = Camera()
+        img = myCamera.getImage()
+        newimg = img.getNumpy()
+        del(myCamera)
+        return newimg        
         
 def main():
     if QtCore.QCoreApplication.instance() != None:
