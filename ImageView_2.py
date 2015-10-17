@@ -17,6 +17,7 @@ import json
 import re
 import SimpleCV as simplecv
 from SimpleCV import Camera, Display, Image
+import cv2
 
 
 class Viewer(QtGui.QMainWindow):
@@ -63,6 +64,10 @@ class Viewer(QtGui.QMainWindow):
         runCamera.setStatusTip('Start Recording')
         runCamera.triggered.connect(self.cameraRecordDialog)
 
+        quitApp = QtGui.QAction(QtGui.QIcon('save.png'), 'Quit Now', self)
+        quitApp.setShortcut('Ctrl+Q')
+        quitApp.setStatusTip('Quit')
+        quitApp.triggered.connect(self.quitDialog)
 
         menubar = self.menuBar()
         fileMenu1 = menubar.addMenu('&Image Files')
@@ -76,6 +81,10 @@ class Viewer(QtGui.QMainWindow):
         fileMenu3 = menubar.addMenu('&Camera')
         fileMenu3.addAction(startCamera)
         fileMenu3.addAction(runCamera)
+        
+        fileMenu4 = menubar.addMenu("&Quit")
+        fileMenu4.addAction(quitApp)
+        
         
         #self.setGeometry(300, 300, 350, 300)
         self.setWindowTitle('ImageView')
@@ -194,37 +203,93 @@ class Viewer(QtGui.QMainWindow):
             self.ImageView.setImage(data)
 
 
-
     def saveDialog(self):        
-        fname = QtGui.QFileDialog.getSaveFileName(self, 'Save file', 
+        filename = QtGui.QFileDialog.getSaveFileName(self, 'Save file', 
                 '/home')
         
-        f = open(fname, 'r')
-        
-        with f:        
-            data = f.read()
-            print(data) 
-
+        filename=str(filename)
+        img = self.ImageView.getProcessedImage()
+        print(img)
+        if filename=='':
+            return False
+        else:
+            self.statusBar().showMessage('Saving {}'.format(os.path.basename(filename)))
+            #self.ImageView.export(filename)            
+            cv2.imwrite(filename,img)
 
     def cameraDialog(self):        
         img = self.getImage()
+        #file = "/home/codeplasma/test_image.png"
+        # A nice feature of the imwrite method is that it will automatically choose the
+        # correct format based on the file extension you provide. Convenient!
+        #cv2.imwrite(file, camera_capture) 
         self.ImageView.setImage(img)
-        time.sleep(.1)
+        time.sleep(.05)
 
     def cameraRecordDialog(self):        
-        myCamera = Camera()
-        while True:
-            img = myCamera.getImage()
-            img.show()
-            time.sleep(.1)
+        cap = cv2.VideoCapture(0)
+
+        while(True):
+            # Capture frame-by-frame
+            ret, frame = cap.read()
+        
+            # Our operations on the frame come here
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        
+            # Display the resulting frame
+            cv2.imshow('frame',gray)
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break        
+        # When everything done, release the capture
+        cap.release()
+        cv2.destroyAllWindows()
 
     def getImage(self):
-        myCamera = Camera()
-        img = myCamera.getImage()
-        newimg = img.getNumpy()
-        del(myCamera)
-        return newimg        
-        
+        #myCamera = Camera()
+        #img = myCamera.getImage()
+        # set camera port
+        camera_port = 0         
+        #Number of frames to throw away while the camera adjusts to light levels (30)
+        ramp_frames = 10         
+        # Now we can initialize the camera capture object with the cv2.VideoCapture class.
+        # All it needs is the index to a camera port.
+        camera = cv2.VideoCapture(camera_port)         
+        # Captures a single image from the camera and returns it in PIL format
+        def get_image(camera):
+            # read is the easiest way to get a full image out of a VideoCapture object.
+            retval, im = camera.read()
+            return im         
+        # Ramp the camera - these frames will be discarded and are only used to allow v4l2
+        # to adjust light levels, if necessary
+        for i in xrange(ramp_frames):
+            temp = get_image(camera)
+        #print("Taking image...")
+        # Take the actual image we want to keep
+        camera_capture = get_image(camera)        
+        # You'll want to release the camera, otherwise you won't be able to create a new
+        # capture object until your script exits
+        del(camera)        
+        img = camera_capture
+        #newimg = img.getNumpy()        
+        #del(myCamera)# grab the dimensions of the image and calculate the center
+        # of the image
+        (h, w) = img.shape[:2]
+        center = (w / 2, h / 2) 
+        # rotate the image by 180 degrees
+        M = cv2.getRotationMatrix2D(center, 90, 1.0)
+        rotated = cv2.warpAffine(img, M, (w, h))
+        #newimg = img
+        return rotated        
+
+    def quitDialog(self):
+        self.ImageView.close()
+        if QtCore.QCoreApplication.instance() != None:
+            app = QtCore.QCoreApplication.instance()	
+        else:
+            app = QtGui.QApplication(sys.argv)
+        sys.exit(app.exec_())
+        return
+
 def main():
     if QtCore.QCoreApplication.instance() != None:
         app = QtCore.QCoreApplication.instance()	

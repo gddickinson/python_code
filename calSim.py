@@ -7,11 +7,24 @@ Created on Wed Oct 14 18:44:07 2015
 
 import numpy as np
 
-###make cytoplasm environment state,x,y,z
-state = np.zeros(100)
-x = y = z = np.arange(100)
-cyto = np.vstack((state,x,y,z))
+##define source positions###
+sources = [[50,50,0]]
+##initiate source feed - list of x,y,z positions with Ca
+cyto = sources
 
-##Locate source###
-source = 
+## functions ###
 
+def updateCyto(cyto):
+    newcyto = []
+    for i in cyto:
+        move = False:
+        while move == False:                
+            x = cyto[i][0] + randint(-1,2)
+            y = cyto[i][1] + randint(-1,2)
+            z = cyto[i][2] + randint(-1,2)
+            if cyto
+    
+            
+    return newcyto
+
+    
