@@ -66,20 +66,20 @@ class Form(QDialog):
                         
         self.toLabel=QLabel("1.00")       
         
-        dial = QDial()
-        dial.setNotchesVisible(True)
-        zerospinbox = ZeroSpinBox()
+        self.dial = QDial()
+        self.dial.setNotchesVisible(True)
+        self.zerospinbox = ZeroSpinBox()
         
-        button1 = QPushButton("One")
-        button2 = QPushButton("Two")
-        button3 = QPushButton("Three")
+        self.button1 = QPushButton("Click to Turn Face Detect ON")
+        self.button2 = QPushButton("Face Detect OFF")
+        self.button3 = QPushButton("Three")
                      
         layout = QHBoxLayout()
-        layout.addWidget(dial)
-        layout.addWidget(zerospinbox)
-        layout.addWidget(button1)
-        layout.addWidget(button2)
-        layout.addWidget(button3)        
+        layout.addWidget(self.dial)
+        layout.addWidget(self.zerospinbox)
+        layout.addWidget(self.button1)
+        layout.addWidget(self.button2)
+        layout.addWidget(self.button3)        
 
         layout.addWidget(self.fromComboBox)
         layout.addWidget(self.fromSpinBox)
@@ -89,12 +89,12 @@ class Form(QDialog):
 
         self.setLayout(layout)
                        
-        self.connect(dial,SIGNAL("valueChanged(int)"), zerospinbox.setValue)
-        self.connect(zerospinbox,SIGNAL("valueChanged(int)"),dial.setValue)
-        self.connect(zerospinbox,SIGNAL("atzero"),self.announce)
-        self.connect(button1,SIGNAL("clicked()"),self.one)
-        self.connect(button2,SIGNAL("clicked()"),partial(self.anyButton,"Two"))
-        self.connect(button3,SIGNAL("clicked()"),self.three)       
+        self.connect(self.dial,SIGNAL("valueChanged(int)"), self.zerospinbox.setValue)
+        self.connect(self.zerospinbox,SIGNAL("valueChanged(int)"),self.dial.setValue)
+        self.connect(self.zerospinbox,SIGNAL("atzero"),self.announce)
+        self.connect(self.button1,SIGNAL("clicked()"),self.one)
+        self.connect(self.button2,SIGNAL("clicked()"),self.two)
+        self.connect(self.button3,SIGNAL("clicked()"),self.three)       
         
         self.connect(self.fromComboBox,SIGNAL("currentIndexChanged(int)"),self.updateUi)
         self.connect(self.toComboBox,SIGNAL("currentIndexChanged(int)"),self.updateUi)
@@ -104,13 +104,19 @@ class Form(QDialog):
         self.setWindowTitle("Camera Record Options")
   
     def one(self):
-        self.label.setText("You clicked button 'One'")
+        self.button1.setText("Face Detect ON")
+        self.button2.setText("Click to turn Face Detect OFF")
+
+    def two(self):
+        self.button2.setText("Face Detect OFF")
+        self.button1.setText("Click to turn Face Detect ON")   
+    
 
     def three(self):
-        self.label.setText("You clicked button 'Three'")
+        self.button3.setText("You clicked button 'Three'")
 
-    def anyButton(self, who):
-        self.label.setText("You clicked button '%s" % who)
+    #def anyButton(self, who):
+    #    self.label.setText("You clicked button '%s" % who)
 
     def announce(self,zeros):
         print ("ZeroSpinBox has been at zero %d times" %zeros)
@@ -335,40 +341,38 @@ class Viewer(QtGui.QMainWindow):
         dialogbox = Form()
         dialogbox.show()
 
-        while(True):
+        while(cap.isOpened()):
             # Capture frame-by-frame
             ret, frame = cap.read()
         
             # Our operations on the frame come here
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         
-            img = self.faceDetect(gray)        
+            self.faceDetect(gray)        
                     
             # Display the resulting frame
-            cv2.imshow('frame',img)
+            cv2.imshow('frame',gray)
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break        
         # When everything done, release the capture
         cap.release()
         cv2.destroyAllWindows()
         dialogbox.close()
-
-    def faceDetect(self, gray):
-        face_cascade =cv2.CascadeClassifier('/home/george2/catkin_ws/src/rbx1/rbx1_vision/data/haar_detectors/haarcascade_frontalface_alt.xml')
-        eye_cascade = cv2.CascadeClassifier('/home/george2/catkin_ws/src/rbx1/rbx1_vision/data/haar_detectors/haarcascade_eye.xml')
-        img = gray
-        faces = face_cascade.detectMultiScale(gray,scaleFactor=1.3,minNeighbors=5)
+        return
         
+    def faceDetect(self, gray):
+        face_cascade =cv2.CascadeClassifier('/home/george/opencv/data/haarcascades/haarcascade_frontalface_alt.xml')
+        eye_cascade = cv2.CascadeClassifier('/home/george/opencv/data/haarcascades/haarcascade_eye.xml')
+        faces = face_cascade.detectMultiScale(gray, 1.3, 5)
         for (x,y,w,h) in faces:
-            img = cv2.rectangle(img, (x,y), (x+w, y+h), (255,0,0),2)
+            cv2.rectangle(gray,(x,y),(x+w,y+h),(255,0,0),2)
             roi_gray = gray[y:y+h, x:x+w]
-            roi_color = roi_gray
-            
+            #roi_color = frame[y:y+h, x:x+w]
             eyes = eye_cascade.detectMultiScale(roi_gray)
             for (ex,ey,ew,eh) in eyes:
-                cv2.rectangle(roi_color,(ex,ey), (ex+ew, ey+eh), (0,255,0),2)
+                cv2.rectangle(roi_gray,(ex,ey),(ex+ew,ey+eh),(0,255,0),2)
         
-        return img
+        return roi_gray
 
     def getImage(self):
         #myCamera = Camera()
