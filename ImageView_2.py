@@ -2,7 +2,7 @@
 """
 Created on Sat Oct 10 12:14:34 2015
 
-@author: robot
+@author: george
 """
 from __future__ import (absolute_import, division,print_function, unicode_literals)
 from future.builtins import (bytes, dict, int, list, object, range, str, ascii, chr, hex, input, next, oct, open, pow, round, super, filter, map, zip)
@@ -55,7 +55,7 @@ class Form(QDialog):
         self.fromComboBox.addItem("Filter4")
         
         self.fromSpinBox=QDoubleSpinBox()
-        self.fromSpinBox.setRange(0.01,10000000.00)
+        self.fromSpinBox.setRange(0,1000)
         self.fromSpinBox.setValue(1.00)
         
         self.toComboBox=QComboBox()
@@ -71,13 +71,15 @@ class Form(QDialog):
         zerospinbox = ZeroSpinBox()
         
         button1 = QPushButton("One")
-        button2 = QPushButton("Two")       
+        button2 = QPushButton("Two")
+        button3 = QPushButton("Three")
                      
         layout = QHBoxLayout()
         layout.addWidget(dial)
         layout.addWidget(zerospinbox)
         layout.addWidget(button1)
-        layout.addWidget(button2)        
+        layout.addWidget(button2)
+        layout.addWidget(button3)        
 
         layout.addWidget(self.fromComboBox)
         layout.addWidget(self.fromSpinBox)
@@ -91,7 +93,8 @@ class Form(QDialog):
         self.connect(zerospinbox,SIGNAL("valueChanged(int)"),dial.setValue)
         self.connect(zerospinbox,SIGNAL("atzero"),self.announce)
         self.connect(button1,SIGNAL("clicked()"),self.one)
-        self.connect(button2,SIGNAL("clicked()"),partial(self.anyButton,"Two"))  
+        self.connect(button2,SIGNAL("clicked()"),partial(self.anyButton,"Two"))
+        self.connect(button3,SIGNAL("clicked()"),self.three)       
         
         self.connect(self.fromComboBox,SIGNAL("currentIndexChanged(int)"),self.updateUi)
         self.connect(self.toComboBox,SIGNAL("currentIndexChanged(int)"),self.updateUi)
@@ -103,6 +106,9 @@ class Form(QDialog):
     def one(self):
         self.label.setText("You clicked button 'One'")
 
+    def three(self):
+        self.label.setText("You clicked button 'Three'")
+
     def anyButton(self, who):
         self.label.setText("You clicked button '%s" % who)
 
@@ -112,8 +118,7 @@ class Form(QDialog):
     def updateUi(self):
         to = unicode(self.toComboBox.currentText())
         from_ = unicode(self.fromComboBox.currentText())
-        amount = (self.rates[from_] / self.rates[to]) *\
-            self.fromSpinBox.value()
+        amount = self.fromSpinBox.value()
         self.to.Label.setText("%0.2f"%amount)
         
         
@@ -337,14 +342,33 @@ class Viewer(QtGui.QMainWindow):
             # Our operations on the frame come here
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         
+            img = self.faceDetect(gray)        
+                    
             # Display the resulting frame
-            cv2.imshow('frame',gray)
+            cv2.imshow('frame',img)
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break        
         # When everything done, release the capture
         cap.release()
         cv2.destroyAllWindows()
         dialogbox.close()
+
+    def faceDetect(self, gray):
+        face_cascade =cv2.CascadeClassifier('/home/george2/catkin_ws/src/rbx1/rbx1_vision/data/haar_detectors/haarcascade_frontalface_alt.xml')
+        eye_cascade = cv2.CascadeClassifier('/home/george2/catkin_ws/src/rbx1/rbx1_vision/data/haar_detectors/haarcascade_eye.xml')
+        img = gray
+        faces = face_cascade.detectMultiScale(gray,scaleFactor=1.3,minNeighbors=5)
+        
+        for (x,y,w,h) in faces:
+            img = cv2.rectangle(img, (x,y), (x+w, y+h), (255,0,0),2)
+            roi_gray = gray[y:y+h, x:x+w]
+            roi_color = roi_gray
+            
+            eyes = eye_cascade.detectMultiScale(roi_gray)
+            for (ex,ey,ew,eh) in eyes:
+                cv2.rectangle(roi_color,(ex,ey), (ex+ew, ey+eh), (0,255,0),2)
+        
+        return img
 
     def getImage(self):
         #myCamera = Camera()
