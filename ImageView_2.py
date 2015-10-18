@@ -18,8 +18,105 @@ import re
 import SimpleCV as simplecv
 from SimpleCV import Camera, Display, Image
 import cv2
+from PyQt4.QtCore import *
+from PyQt4.QtGui import *
+if sys.version_info[:2]<(2,5):
+    def partial(func,arg):
+        def callme():
+            return func(arg)
+        return callme
+else:
+    from functools import partial
 
 
+class ZeroSpinBox(QSpinBox):
+    
+    zeros = 0
+    
+    def __init__(self, parent = None):
+        super(ZeroSpinBox, self).__init__(parent)
+        self.connect(self,SIGNAL("valueChanged(int)"),self.checkzero)
+        
+    def checkzero(self):
+        if self.value() == 0:
+            self.zeros +=1
+            self.emit(SIGNAL("atzero"),self.zeros)
+
+
+class Form(QDialog):
+    def __init__(self, parent = None):
+        super(Form, self).__init__(parent)
+
+
+        self.fromComboBox=QComboBox()
+        self.fromComboBox.addItem("Filter1")
+        self.fromComboBox.addItem("Filter2")
+        self.fromComboBox.addItem("Filter3")
+        self.fromComboBox.addItem("Filter4")
+        
+        self.fromSpinBox=QDoubleSpinBox()
+        self.fromSpinBox.setRange(0.01,10000000.00)
+        self.fromSpinBox.setValue(1.00)
+        
+        self.toComboBox=QComboBox()
+        self.toComboBox.addItem("Filter1")
+        self.toComboBox.addItem("Filter2")
+        self.toComboBox.addItem("Filter3")
+        self.toComboBox.addItem("Filter4")
+                        
+        self.toLabel=QLabel("1.00")       
+        
+        dial = QDial()
+        dial.setNotchesVisible(True)
+        zerospinbox = ZeroSpinBox()
+        
+        button1 = QPushButton("One")
+        button2 = QPushButton("Two")       
+                     
+        layout = QHBoxLayout()
+        layout.addWidget(dial)
+        layout.addWidget(zerospinbox)
+        layout.addWidget(button1)
+        layout.addWidget(button2)        
+
+        layout.addWidget(self.fromComboBox)
+        layout.addWidget(self.fromSpinBox)
+        layout.addWidget(self.toComboBox)
+        layout.addWidget(self.toLabel)
+
+
+        self.setLayout(layout)
+                       
+        self.connect(dial,SIGNAL("valueChanged(int)"), zerospinbox.setValue)
+        self.connect(zerospinbox,SIGNAL("valueChanged(int)"),dial.setValue)
+        self.connect(zerospinbox,SIGNAL("atzero"),self.announce)
+        self.connect(button1,SIGNAL("clicked()"),self.one)
+        self.connect(button2,SIGNAL("clicked()"),partial(self.anyButton,"Two"))  
+        
+        self.connect(self.fromComboBox,SIGNAL("currentIndexChanged(int)"),self.updateUi)
+        self.connect(self.toComboBox,SIGNAL("currentIndexChanged(int)"),self.updateUi)
+        self.connect(self.fromSpinBox,SIGNAL("valueChanged(double)"),self.updateUi)        
+        
+        
+        self.setWindowTitle("Camera Record Options")
+  
+    def one(self):
+        self.label.setText("You clicked button 'One'")
+
+    def anyButton(self, who):
+        self.label.setText("You clicked button '%s" % who)
+
+    def announce(self,zeros):
+        print ("ZeroSpinBox has been at zero %d times" %zeros)
+
+    def updateUi(self):
+        to = unicode(self.toComboBox.currentText())
+        from_ = unicode(self.fromComboBox.currentText())
+        amount = (self.rates[from_] / self.rates[to]) *\
+            self.fromSpinBox.value()
+        self.to.Label.setText("%0.2f"%amount)
+        
+        
 class Viewer(QtGui.QMainWindow):
     
     def __init__(self):
@@ -229,6 +326,10 @@ class Viewer(QtGui.QMainWindow):
     def cameraRecordDialog(self):        
         cap = cv2.VideoCapture(0)
 
+        #app2 = QtGui.QApplication(sys.argv)
+        dialogbox = Form()
+        dialogbox.show()
+
         while(True):
             # Capture frame-by-frame
             ret, frame = cap.read()
@@ -243,6 +344,7 @@ class Viewer(QtGui.QMainWindow):
         # When everything done, release the capture
         cap.release()
         cv2.destroyAllWindows()
+        dialogbox.close()
 
     def getImage(self):
         #myCamera = Camera()
@@ -289,6 +391,24 @@ class Viewer(QtGui.QMainWindow):
             app = QtGui.QApplication(sys.argv)
         sys.exit(app.exec_())
         return
+
+    def closeEvent(self, event):
+ 
+         #==============================================================================
+         #       If we close a QtGui.QWidget, a QtGui.QCloseEvent is generated.
+         #       To modify the widget behaviour we need to reimplement the closeEvent() event handler.
+         #==============================================================================
+       
+        reply = QtGui.QMessageBox.question(self, 'Message',
+            "Are you sure you wish to quit?", QtGui.QMessageBox.Yes | 
+            QtGui.QMessageBox.No, QtGui.QMessageBox.No)
+
+        if reply == QtGui.QMessageBox.Yes:
+            event.accept()
+        else:
+            event.ignore()  
+
+
 
 def main():
     if QtCore.QCoreApplication.instance() != None:
