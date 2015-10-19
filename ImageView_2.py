@@ -71,8 +71,12 @@ class Form(QDialog):
         self.zerospinbox = ZeroSpinBox()
         
         self.button1 = QPushButton("Click to Turn Face Detect ON")
-        self.button2 = QPushButton("Face Detect OFF")
-        self.button3 = QPushButton("Three")
+        self.facedetectFlag = False
+        self.button2 = QPushButton("Quit Live Camera")
+        self.liveCameraFlag = False        
+        self.button3 = QPushButton("Black & White")
+        self.blackandwhiteFlag = False
+        
                      
         layout = QHBoxLayout()
         layout.addWidget(self.dial)
@@ -104,16 +108,29 @@ class Form(QDialog):
         self.setWindowTitle("Camera Record Options")
   
     def one(self):
-        self.button1.setText("Face Detect ON")
-        self.button2.setText("Click to turn Face Detect OFF")
+        if self.facedetectFlag == False:
+            self.facedetectFlag = True
+            self.button1.setText("Face Detect ON")
+        else:
+            self.facedetectFlag = False
+            self.button1.setText("Face Detect OFF")
+
 
     def two(self):
-        self.button2.setText("Face Detect OFF")
-        self.button1.setText("Click to turn Face Detect ON")   
+        if self.liveCameraFlag == False:
+            self.liveCameraFlag = True            
+        else:
+            self.liveCameraFlag = False
+            
     
 
     def three(self):
-        self.button3.setText("You clicked button 'Three'")
+        if self.blackandwhiteFlag == False:
+            self.blackandwhiteFlag = True
+            self.button3.setText("Colour")
+        else:
+            self.blackandwhiteFlag = False
+            self.button3.setText("Black & White")
 
     #def anyButton(self, who):
     #    self.label.setText("You clicked button '%s" % who)
@@ -340,20 +357,29 @@ class Viewer(QtGui.QMainWindow):
         #app2 = QtGui.QApplication(sys.argv)
         dialogbox = Form()
         dialogbox.show()
-
+        dialogbox.liveCameraFlag = True        
+        
         while(cap.isOpened()):
             # Capture frame-by-frame
             ret, frame = cap.read()
         
             # Our operations on the frame come here
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        
-            self.faceDetect(gray)        
-                    
-            # Display the resulting frame
-            cv2.imshow('frame',gray)
+            
+            #if self.cannyFlag == True:
+            #    edges = cv2.Canny(gray,100,20)
+
+            if dialogbox.facedetectFlag == True:
+                self.faceDetect(gray)        
+            if dialogbox.blackandwhiteFlag == True:        
+                # Display the resulting frame
+                cv2.imshow('Live Camera',edges)
+            else: 
+                cv2.imshow('Live Camera',frame)
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break        
+            if dialogbox.liveCameraFlag == False:
+                break
         # When everything done, release the capture
         cap.release()
         cv2.destroyAllWindows()
@@ -362,7 +388,9 @@ class Viewer(QtGui.QMainWindow):
         
     def faceDetect(self, gray):
         face_cascade =cv2.CascadeClassifier('/home/george/opencv/data/haarcascades/haarcascade_frontalface_alt.xml')
+        if face_cascade.empty(): raise Exception("your face_cascade is empty. are you sure, the path is correct ?")        
         eye_cascade = cv2.CascadeClassifier('/home/george/opencv/data/haarcascades/haarcascade_eye.xml')
+        if eye_cascade.empty(): raise Exception("your eye_cascade is empty. are you sure, the path is correct ?")
         faces = face_cascade.detectMultiScale(gray, 1.3, 5)
         for (x,y,w,h) in faces:
             cv2.rectangle(gray,(x,y),(x+w,y+h),(255,0,0),2)
@@ -371,8 +399,8 @@ class Viewer(QtGui.QMainWindow):
             eyes = eye_cascade.detectMultiScale(roi_gray)
             for (ex,ey,ew,eh) in eyes:
                 cv2.rectangle(roi_gray,(ex,ey),(ex+ew,ey+eh),(0,255,0),2)
-        
-        return roi_gray
+        time.sleep(.05)
+        return
 
     def getImage(self):
         #myCamera = Camera()
@@ -420,13 +448,11 @@ class Viewer(QtGui.QMainWindow):
         sys.exit(app.exec_())
         return
 
-    def closeEvent(self, event):
- 
+    def closeEvent(self, event): 
          #==============================================================================
          #       If we close a QtGui.QWidget, a QtGui.QCloseEvent is generated.
          #       To modify the widget behaviour we need to reimplement the closeEvent() event handler.
-         #==============================================================================
-       
+         #==============================================================================       
         reply = QtGui.QMessageBox.question(self, 'Message',
             "Are you sure you wish to quit?", QtGui.QMessageBox.Yes | 
             QtGui.QMessageBox.No, QtGui.QMessageBox.No)
