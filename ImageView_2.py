@@ -48,23 +48,23 @@ class Form(QDialog):
         super(Form, self).__init__(parent)
 
 
-        self.fromComboBox=QComboBox()
-        self.fromComboBox.addItem("Filter1")
-        self.fromComboBox.addItem("Filter2")
-        self.fromComboBox.addItem("Filter3")
-        self.fromComboBox.addItem("Filter4")
+        self.filterBox=QComboBox()
+        self.filterBox.addItem("No Filter")
+        self.filterBox.addItem("Canny Filter")
+        self.filterBox.addItem("Filter3")
+        self.filterBox.addItem("Filter4")
         
-        self.fromSpinBox=QDoubleSpinBox()
-        self.fromSpinBox.setRange(0,1000)
-        self.fromSpinBox.setValue(1.00)
-        
-        self.toComboBox=QComboBox()
-        self.toComboBox.addItem("Filter1")
-        self.toComboBox.addItem("Filter2")
-        self.toComboBox.addItem("Filter3")
-        self.toComboBox.addItem("Filter4")
-                        
-        self.toLabel=QLabel("1.00")       
+        self.SpinBox1=QDoubleSpinBox()
+        self.SpinBox1.setRange(0,1000)
+        self.SpinBox1.setValue(1.00)
+
+        self.SpinBox2=QDoubleSpinBox()
+        self.SpinBox2.setRange(0,1000)
+        self.SpinBox2.setValue(1.00) 
+
+                       
+        self.filterLabel=QLabel("No Filter")       
+        self.filterFlag = 'No Filter'
         
         self.dial = QDial()
         self.dial.setNotchesVisible(True)
@@ -85,10 +85,10 @@ class Form(QDialog):
         layout.addWidget(self.button2)
         layout.addWidget(self.button3)        
 
-        layout.addWidget(self.fromComboBox)
-        layout.addWidget(self.fromSpinBox)
-        layout.addWidget(self.toComboBox)
-        layout.addWidget(self.toLabel)
+        layout.addWidget(self.filterBox)
+        layout.addWidget(self.filterLabel)        
+        layout.addWidget(self.SpinBox1)
+        layout.addWidget(self.SpinBox2)
 
 
         self.setLayout(layout)
@@ -100,9 +100,8 @@ class Form(QDialog):
         self.connect(self.button2,SIGNAL("clicked()"),self.two)
         self.connect(self.button3,SIGNAL("clicked()"),self.three)       
         
-        self.connect(self.fromComboBox,SIGNAL("currentIndexChanged(int)"),self.updateUi)
-        self.connect(self.toComboBox,SIGNAL("currentIndexChanged(int)"),self.updateUi)
-        self.connect(self.fromSpinBox,SIGNAL("valueChanged(double)"),self.updateUi)        
+        self.connect(self.filterBox,SIGNAL("currentIndexChanged(int)"),self.updateUi)
+        #self.connect(self.SpinBox1,SIGNAL("valueChanged(double)"),self.updateUi)        
         
         
         self.setWindowTitle("Camera Record Options")
@@ -139,11 +138,9 @@ class Form(QDialog):
         print ("ZeroSpinBox has been at zero %d times" %zeros)
 
     def updateUi(self):
-        to = unicode(self.toComboBox.currentText())
-        from_ = unicode(self.fromComboBox.currentText())
-        amount = self.fromSpinBox.value()
-        self.to.Label.setText("%0.2f"%amount)
-        
+        self.filterType = unicode(self.filterBox.currentText())
+        self.filterLabel.setText(self.filterType)
+        self.filterFlag = str(self.filterType)
         
 class Viewer(QtGui.QMainWindow):
     
@@ -365,15 +362,16 @@ class Viewer(QtGui.QMainWindow):
         
             # Our operations on the frame come here
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            
-            #if self.cannyFlag == True:
-            #    edges = cv2.Canny(gray,100,20)
+           
+            if dialogbox.filterFlag == "Canny Filter":
+                gray = cv2.Canny(gray,100,20)
 
             if dialogbox.facedetectFlag == True:
                 self.faceDetect(gray)        
+
             if dialogbox.blackandwhiteFlag == True:        
                 # Display the resulting frame
-                cv2.imshow('Live Camera',edges)
+                cv2.imshow('Live Camera',gray)
             else: 
                 cv2.imshow('Live Camera',frame)
             if cv2.waitKey(1) & 0xFF == ord('q'):
