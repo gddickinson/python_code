@@ -30,11 +30,11 @@ class Viewer(QtGui.QMainWindow):
         self.setCentralWidget(self.ImageView)
         self.statusBar()
 
-        openFile = QtGui.QAction(QtGui.QIcon('open.png'), 'Open', self)
-        openFile.setShortcut('Ctrl+O')
-        openFile.setStatusTip('Open new File')
-        openFile.triggered.connect(self.openDialog)
-
+        openTiff = QtGui.QAction(QtGui.QIcon('open.png'), 'Open tiff', self)
+        openTiff.setShortcut('Ctrl+O')
+        openTiff.setStatusTip('Open new File')
+        openTiff.triggered.connect(self.openDialog)
+        
         saveFile = QtGui.QAction(QtGui.QIcon('save.png'), 'Save', self)
         saveFile.setShortcut('Ctrl+S')
         saveFile.setStatusTip('Save File')
@@ -42,7 +42,7 @@ class Viewer(QtGui.QMainWindow):
 
         menubar = self.menuBar()
         fileMenu = menubar.addMenu('&File')
-        fileMenu.addAction(openFile)
+        fileMenu.addAction(openTiff)
         fileMenu.addAction(saveFile)
         
         #self.setGeometry(300, 300, 350, 300)
