@@ -51,8 +51,10 @@ class Form(QDialog):
         self.filterBox=QComboBox()
         self.filterBox.addItem("No Filter")
         self.filterBox.addItem("Canny Filter")
-        self.filterBox.addItem("Filter3")
-        self.filterBox.addItem("Filter4")
+        self.filterBox.addItem("2D Convolution - Average")
+        self.filterBox.addItem("2D Convolution - Smooth")
+        self.filterBox.addItem("2D Convolution - Gaussian")
+
         
         self.SpinBox1=QDoubleSpinBox()
         self.SpinBox1.setRange(0,1000)
@@ -363,6 +365,16 @@ class Viewer(QtGui.QMainWindow):
             # Our operations on the frame come here
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
            
+            if dialogbox.filterFlag == "2D Convolution - Average":
+                kernel = np.ones((5,5),np.float32)/25
+                gray = cv2.filter2D(gray,-1,kernel)            
+            
+            if dialogbox.filterFlag == "2D Convolution - Smooth":
+                gray = cv2.blur(gray,(5,5))             
+            
+            if dialogbox.filterFlag == "2D Convolution - Gaussian":
+                gray = cv2.GaussianBlur(gray,(5,5),0)
+            
             if dialogbox.filterFlag == "Canny Filter":
                 gray = cv2.Canny(gray,100,20)
 
