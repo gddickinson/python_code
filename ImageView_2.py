@@ -54,7 +54,9 @@ class Form(QDialog):
         self.filterBox.addItem("2D Convolution - Average")
         self.filterBox.addItem("2D Convolution - Smooth")
         self.filterBox.addItem("2D Convolution - Gaussian")
-
+        self.filterBox.addItem("Invert")
+        self.filterBox.addItem("Adaptive Threshold")
+        self.filterBox.addItem("Laplacian Edge")        
         
         self.SpinBox1=QDoubleSpinBox()
         self.SpinBox1.setRange(0,1000)
@@ -377,6 +379,19 @@ class Viewer(QtGui.QMainWindow):
             
             if dialogbox.filterFlag == "Canny Filter":
                 gray = cv2.Canny(gray,100,20)
+
+            if dialogbox.filterFlag == "Invert":
+                gray = (255-gray)
+
+            if dialogbox.filterFlag =="Adaptive Threshold":
+                gray_blur = cv2.GaussianBlur(gray, (15, 15), 0)
+                gray = cv2.adaptiveThreshold(gray_blur, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY_INV, 11, 1)
+
+            if dialogbox.filterFlag=="Laplacian Edge":
+                # remove noise
+                img = cv2.GaussianBlur(gray,(3,3),0)
+                # convolute with proper kernels
+                gray = cv2.Laplacian(img,cv2.CV_64F)
 
             if dialogbox.facedetectFlag == True:
                 self.faceDetect(gray)        
