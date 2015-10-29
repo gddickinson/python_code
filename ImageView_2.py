@@ -17,6 +17,7 @@ import json
 import re
 import SimpleCV as simplecv
 from SimpleCV import Camera, Display, Image
+#from PIL import Image
 import cv2
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
@@ -54,9 +55,12 @@ class Form(QDialog):
         self.filterBox.addItem("2D Convolution - Average")
         self.filterBox.addItem("2D Convolution - Smooth")
         self.filterBox.addItem("2D Convolution - Gaussian")
+        self.filterBox.addItem("2D Convolution - Median")
+        self.filterBox.addItem("2D Convolution - Bilateral")
         self.filterBox.addItem("Invert")
         self.filterBox.addItem("Adaptive Threshold")
-        self.filterBox.addItem("Laplacian Edge")        
+        self.filterBox.addItem("Laplacian Edge")
+        self.filterBox.addItem("Background Subtract")
         
         self.SpinBox1=QDoubleSpinBox()
         self.SpinBox1.setRange(0,1000)
@@ -124,8 +128,7 @@ class Form(QDialog):
             self.liveCameraFlag = True            
         else:
             self.liveCameraFlag = False
-            
-    
+               
 
     def three(self):
         if self.blackandwhiteFlag == False:
@@ -376,7 +379,13 @@ class Viewer(QtGui.QMainWindow):
             
             if dialogbox.filterFlag == "2D Convolution - Gaussian":
                 gray = cv2.GaussianBlur(gray,(5,5),0)
-            
+ 
+            if dialogbox.filterFlag == "2D Convolution - Median": 
+                gray = cv2.medianBlur(gray,5)
+
+            if dialogbox.filterFlag == "2D Convolution - Bilateral":                
+                gray = cv2.bilateralFilter(gray,9,75,75)
+           
             if dialogbox.filterFlag == "Canny Filter":
                 gray = cv2.Canny(gray,100,20)
 
@@ -392,6 +401,20 @@ class Viewer(QtGui.QMainWindow):
                 img = cv2.GaussianBlur(gray,(3,3),0)
                 # convolute with proper kernels
                 gray = cv2.Laplacian(img,cv2.CV_64F)
+
+
+            if dialogbox.filterFlag=="Background Subtract":
+                fgbg = cv2.BackgroundSubtractorMOG()
+                history = 10
+                while dialogbox.filterFlag=="Background Subtract":
+                    retVal, frame = cap.read()
+                    fgmask = fgbg.apply(frame, learningRate=1.0/history)
+                    cv2.imshow('Live Camera', fgmask)
+                    if cv2.waitKey(1) & 0xFF == ord('q'):
+                        cap.release()
+                        cv2.destroyAllWindows()
+                        dialogbox.close()
+                        break
 
             if dialogbox.facedetectFlag == True:
                 self.faceDetect(gray)        
@@ -426,6 +449,8 @@ class Viewer(QtGui.QMainWindow):
                 cv2.rectangle(roi_gray,(ex,ey),(ex+ew,ey+eh),(0,255,0),2)
         time.sleep(.05)
         return
+
+
 
     def getImage(self):
         #myCamera = Camera()
