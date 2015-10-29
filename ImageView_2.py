@@ -30,6 +30,9 @@ else:
     from functools import partial
 
 
+globimg = 'OFF'
+global globimg
+
 class ZeroSpinBox(QSpinBox):
     
     zeros = 0
@@ -410,9 +413,14 @@ class Viewer(QtGui.QMainWindow):
                     retVal, frame = cap.read()
                     fgmask = fgbg.apply(frame, learningRate=1.0/history)
                     cv2.imshow('Live Camera', fgmask)
+                    globimg = gray
+                    global globimg
+                    
                     if cv2.waitKey(1) & 0xFF == ord('q'):
                         cap.release()
                         cv2.destroyAllWindows()
+                        globimg = 'OFF'
+                        global globimg
                         dialogbox.close()
                         break
 
@@ -422,8 +430,14 @@ class Viewer(QtGui.QMainWindow):
             if dialogbox.blackandwhiteFlag == True:        
                 # Display the resulting frame
                 cv2.imshow('Live Camera',gray)
+                globimg = gray
+                global globimg
+                
             else: 
                 cv2.imshow('Live Camera',frame)
+                globimg = frame
+                global globimg
+                
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break        
             if dialogbox.liveCameraFlag == False:
@@ -431,13 +445,15 @@ class Viewer(QtGui.QMainWindow):
         # When everything done, release the capture
         cap.release()
         cv2.destroyAllWindows()
+        globimg = 'OFF'
+        global globimg
         dialogbox.close()
         return
         
     def faceDetect(self, gray):
-        face_cascade =cv2.CascadeClassifier('/home/george/opencv/data/haarcascades/haarcascade_frontalface_alt.xml')
+        face_cascade =cv2.CascadeClassifier('/home/george2/opencv/data/haarcascades/haarcascade_frontalface_alt.xml')
         if face_cascade.empty(): raise Exception("your face_cascade is empty. are you sure, the path is correct ?")        
-        eye_cascade = cv2.CascadeClassifier('/home/george/opencv/data/haarcascades/haarcascade_eye.xml')
+        eye_cascade = cv2.CascadeClassifier('/home/george2/opencv/data/haarcascades/haarcascade_eye.xml')
         if eye_cascade.empty(): raise Exception("your eye_cascade is empty. are you sure, the path is correct ?")
         faces = face_cascade.detectMultiScale(gray, 1.3, 5)
         for (x,y,w,h) in faces:
@@ -453,41 +469,55 @@ class Viewer(QtGui.QMainWindow):
 
 
     def getImage(self):
-        #myCamera = Camera()
-        #img = myCamera.getImage()
-        # set camera port
-        camera_port = 0         
-        #Number of frames to throw away while the camera adjusts to light levels (30)
-        ramp_frames = 10         
-        # Now we can initialize the camera capture object with the cv2.VideoCapture class.
-        # All it needs is the index to a camera port.
-        camera = cv2.VideoCapture(camera_port)         
-        # Captures a single image from the camera and returns it in PIL format
-        def get_image(camera):
-            # read is the easiest way to get a full image out of a VideoCapture object.
-            retval, im = camera.read()
-            return im         
-        # Ramp the camera - these frames will be discarded and are only used to allow v4l2
-        # to adjust light levels, if necessary
-        for i in xrange(ramp_frames):
-            temp = get_image(camera)
-        #print("Taking image...")
-        # Take the actual image we want to keep
-        camera_capture = get_image(camera)        
-        # You'll want to release the camera, otherwise you won't be able to create a new
-        # capture object until your script exits
-        del(camera)        
-        img = camera_capture
-        #newimg = img.getNumpy()        
-        #del(myCamera)# grab the dimensions of the image and calculate the center
-        # of the image
-        (h, w) = img.shape[:2]
-        center = (w / 2, h / 2) 
-        # rotate the image by 180 degrees
-        M = cv2.getRotationMatrix2D(center, 90, 1.0)
-        rotated = cv2.warpAffine(img, M, (w, h))
-        #newimg = img
-        return rotated        
+        if globimg == 'OFF':
+            #myCamera = Camera()
+            #img = myCamera.getImage()
+            # set camera port
+            camera_port = 0         
+            #Number of frames to throw away while the camera adjusts to light levels (30)
+            ramp_frames = 10         
+            # Now we can initialize the camera capture object with the cv2.VideoCapture class.
+            # All it needs is the index to a camera port.
+            camera = cv2.VideoCapture(camera_port)         
+            # Captures a single image from the camera and returns it in PIL format
+            def get_image(camera):
+                # read is the easiest way to get a full image out of a VideoCapture object.
+                retval, im = camera.read()
+                return im         
+            # Ramp the camera - these frames will be discarded and are only used to allow v4l2
+            # to adjust light levels, if necessary
+            for i in xrange(ramp_frames):
+                temp = get_image(camera)
+            #print("Taking image...")
+            # Take the actual image we want to keep
+            camera_capture = get_image(camera)        
+            # You'll want to release the camera, otherwise you won't be able to create a new
+            # capture object until your script exits
+            del(camera)        
+            img = camera_capture
+            #newimg = img.getNumpy()        
+            #del(myCamera)# grab the dimensions of the image and calculate the center
+            # of the image
+            (h, w) = img.shape[:2]
+            center = (w / 2, h / 2) 
+            # rotate the image by 180 degrees
+            M = cv2.getRotationMatrix2D(center, 90, 1.0)
+            rotated = cv2.warpAffine(img, M, (w, h))
+            #newimg = img
+            return rotated        
+        else:
+            img = globimg
+            #newimg = img.getNumpy()        
+            #del(myCamera)# grab the dimensions of the image and calculate the center
+            # of the image
+            (h, w) = img.shape[:2]
+            center = (w / 2, h / 2) 
+            # rotate the image by 180 degrees
+            M = cv2.getRotationMatrix2D(center, 90, 1.0)
+            rotated = cv2.warpAffine(img, M, (w, h))
+            #newimg = img
+            return rotated
+
 
     def quitDialog(self):
         self.ImageView.close()
