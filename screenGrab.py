@@ -6,9 +6,6 @@ Created on Sun Oct 25 18:27:39 2015
 """
 
 import pyscreenshot as ImageGrab
-import cv2
-from PIL import Image
-import numpy as np
 from matplotlib import pyplot as plt
 
 # fullscreen

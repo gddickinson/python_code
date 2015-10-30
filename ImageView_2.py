@@ -17,6 +17,7 @@ import json
 import re
 import SimpleCV as simplecv
 from SimpleCV import Camera, Display, Image
+import pyscreenshot as ImageGrab
 #from PIL import Image
 import cv2
 from PyQt4.QtCore import *
@@ -180,6 +181,31 @@ class Viewer(QtGui.QMainWindow):
         openXY.setShortcut('Ctrl+F')
         openXY.setStatusTip('Open new XY File')
         openXY.triggered.connect(self.openDialog2)
+
+        screenGrab = QtGui.QAction(QtGui.QIcon('open.png'), 'screenGrab', self)
+        screenGrab.setShortcut('Ctrl+G')
+        screenGrab.setStatusTip('Grab Full Screen')
+        screenGrab.triggered.connect(self.fullScreenGrab)
+
+        rotateCounter = QtGui.QAction(QtGui.QIcon('open.png'), 'Rotate Counterclock', self)
+        rotateCounter.setShortcut('Ctrl+9')
+        rotateCounter.setStatusTip('Rotate Counterclock')
+        rotateCounter.triggered.connect(self.rotateImageCounter)
+
+        rotateClock = QtGui.QAction(QtGui.QIcon('open.png'), 'Rotate Clock', self)
+        rotateClock.setShortcut('Ctrl+0')
+        rotateClock.setStatusTip('Rotate Clock')
+        rotateClock.triggered.connect(self.rotateImageClock)
+
+        flipLR = QtGui.QAction(QtGui.QIcon('open.png'), 'Flip Vertical', self)
+        flipLR.setShortcut('Ctrl+7')
+        flipLR.setStatusTip('Flip vertical')
+        flipLR.triggered.connect(self.flipImageLR)
+
+        flipUD = QtGui.QAction(QtGui.QIcon('open.png'), 'Flip Horizontal', self)
+        flipUD.setShortcut('Ctrl+8')
+        flipUD.setStatusTip('Flip horizontal')
+        flipUD.triggered.connect(self.flipImageUD)
                 
         saveFile = QtGui.QAction(QtGui.QIcon('save.png'), 'Save', self)
         saveFile.setShortcut('Ctrl+S')
@@ -213,9 +239,20 @@ class Viewer(QtGui.QMainWindow):
         fileMenu3 = menubar.addMenu('&Camera')
         fileMenu3.addAction(startCamera)
         fileMenu3.addAction(runCamera)
+
+        fileMenu4 = menubar.addMenu('&Screen Grab')
+        fileMenu4.addAction(screenGrab)
+        #fileMenu4.addAction(runCamera)
+
+        fileMenu5 = menubar.addMenu('&Transform Image')
+        fileMenu5.addAction(rotateCounter)
+        fileMenu5.addAction(rotateClock)
+        fileMenu5.addAction(flipLR)
+        fileMenu5.addAction(flipUD)        
         
-        fileMenu4 = menubar.addMenu("&Quit")
-        fileMenu4.addAction(quitApp)
+        
+        fileMenu5 = menubar.addMenu("&Quit")
+        fileMenu5.addAction(quitApp)
         
         
         #self.setGeometry(300, 300, 350, 300)
@@ -239,6 +276,7 @@ class Viewer(QtGui.QMainWindow):
         return meta
 
     def convertXY(self, X, Y):
+        ###THERE IS A FUNCTION TO DO THIS IN PYQTGRAPH!!###
         maxXScale = 200/(max(X)-min(X))
         maxYScale = 200/(max(Y)-min(Y))        
         canvas = np.zeros((200,200))        
@@ -348,6 +386,38 @@ class Viewer(QtGui.QMainWindow):
             self.statusBar().showMessage('Saving {}'.format(os.path.basename(filename)))
             #self.ImageView.export(filename)            
             cv2.imwrite(filename,img)
+
+    def rotateImageCounter(self):
+        img = self.ImageView.getProcessedImage()
+        img = np.rot90(img,k=3)
+        self.ImageView.setImage(img)       
+        return
+
+    def rotateImageClock(self):
+        img = self.ImageView.getProcessedImage()
+        img = np.rot90(img,k=1)
+        self.ImageView.setImage(img)
+        return
+
+    def flipImageLR(self):
+        img = self.ImageView.getProcessedImage()
+        img = np.fliplr(img)
+        self.ImageView.setImage(img)
+        return
+
+    def flipImageUD(self):
+        img = self.ImageView.getProcessedImage()
+        img = np.flipud(img)
+        self.ImageView.setImage(img)
+        return
+
+    def fullScreenGrab(self):        
+        img=ImageGrab.grab() 
+        img = np.array(img) 
+        img = np.rot90(img,k=3)
+        img = np.fliplr(img)             
+        self.ImageView.setImage(img)
+        return
 
     def cameraDialog(self):        
         img = self.getImage()
