@@ -9,6 +9,8 @@ from future.builtins import (bytes, dict, int, list, object, range, str, ascii, 
 import time
 tic=time.time()
 import os, sys
+import scipy
+from scipy import ndimage
 import numpy as np
 from pyqtgraph.Qt import QtCore, QtGui
 import pyqtgraph as pg
@@ -31,8 +33,9 @@ else:
     from functools import partial
 
 
-globimg = 'OFF'
 global globimg
+globimg = 'OFF'
+
 
 class ZeroSpinBox(QSpinBox):
     
@@ -162,7 +165,7 @@ class Viewer(QtGui.QMainWindow):
         
     def initUI(self):      
 
-        self.ImageView = pg.ImageView()
+        self.ImageView = pg.ImageView(view=pg.PlotItem())
         self.resize(800,800)
         self.setCentralWidget(self.ImageView)
         self.statusBar()
@@ -206,6 +209,16 @@ class Viewer(QtGui.QMainWindow):
         flipUD.setShortcut('Ctrl+8')
         flipUD.setStatusTip('Flip horizontal')
         flipUD.triggered.connect(self.flipImageUD)
+
+        zoom = QtGui.QAction(QtGui.QIcon('open.png'), 'Zoom (interpolation)', self)
+        zoom.setShortcut('Ctrl++')
+        zoom.setStatusTip('Zoom')
+        zoom.triggered.connect(self.zoomImage)
+
+        shrink = QtGui.QAction(QtGui.QIcon('open.png'), 'Shrink (interpolation)', self)
+        shrink.setShortcut('Ctrl+-')
+        shrink.setStatusTip('Shrink')
+        shrink.triggered.connect(self.shrinkImage)
                 
         saveFile = QtGui.QAction(QtGui.QIcon('save.png'), 'Save', self)
         saveFile.setShortcut('Ctrl+S')
@@ -249,7 +262,8 @@ class Viewer(QtGui.QMainWindow):
         fileMenu5.addAction(rotateClock)
         fileMenu5.addAction(flipLR)
         fileMenu5.addAction(flipUD)        
-        
+        fileMenu5.addAction(zoom)
+        fileMenu5.addAction(shrink)
         
         fileMenu5 = menubar.addMenu("&Quit")
         fileMenu5.addAction(quitApp)
@@ -410,6 +424,26 @@ class Viewer(QtGui.QMainWindow):
         img = np.flipud(img)
         self.ImageView.setImage(img)
         return
+
+    def zoomImage(self):
+        img = self.ImageView.getProcessedImage()
+        r = 1.5
+        dim = (int(img.shape[1] * r), int(img.shape[0] * r)) 
+        # perform the actual resizing of the image and show it
+        img = cv2.resize(img, dim, interpolation = cv2.INTER_AREA)
+        self.ImageView.setImage(img)        
+        return
+
+    def shrinkImage(self):
+        img = self.ImageView.getProcessedImage()
+        r = 1.5
+        dim = (int(img.shape[1] / r), int(img.shape[0] / r)) 
+        # perform the actual resizing of the image and show it
+        img = cv2.resize(img, dim, interpolation = cv2.INTER_AREA)
+        self.ImageView.setImage(img)        
+        return
+
+
 
     def fullScreenGrab(self):        
         img=ImageGrab.grab() 
