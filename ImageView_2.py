@@ -55,7 +55,6 @@ class Form(QDialog):
     def __init__(self, parent = None):
         super(Form, self).__init__(parent)
 
-
         self.filterBox=QComboBox()
         self.filterBox.addItem("No Filter")
         self.filterBox.addItem("Canny Filter")
@@ -162,9 +161,10 @@ class Viewer(QtGui.QMainWindow):
         super(Viewer, self).__init__()
         
         self.initUI()
+
         
     def initUI(self):      
-
+        
         self.ImageView = pg.ImageView(view=pg.PlotItem())
         self.resize(800,800)
         self.setCentralWidget(self.ImageView)
@@ -224,6 +224,7 @@ class Viewer(QtGui.QMainWindow):
         saveFile.setShortcut('Ctrl+S')
         saveFile.setStatusTip('Save File')
         saveFile.triggered.connect(self.saveDialog)
+        #saveFile.setEnabled = False
 
         startCamera = QtGui.QAction(QtGui.QIcon('save.png'), 'Take Shot', self)
         startCamera.setShortcut('Ctrl+C')
@@ -234,6 +235,12 @@ class Viewer(QtGui.QMainWindow):
         runCamera.setShortcut('Ctrl+R')
         runCamera.setStatusTip('Start Recording')
         runCamera.triggered.connect(self.cameraRecordDialog)
+
+        activateExaminer = QtGui.QAction(QtGui.QIcon('save.png'), 'ROI Examiner', self)
+        activateExaminer.setShortcut('Ctrl+E')
+        activateExaminer.setStatusTip('Start Examiner')
+        activateExaminer.triggered.connect(self.startROIExaminer) 
+
 
         quitApp = QtGui.QAction(QtGui.QIcon('save.png'), 'Quit Now', self)
         quitApp.setShortcut('Ctrl+Q')
@@ -264,13 +271,40 @@ class Viewer(QtGui.QMainWindow):
         fileMenu5.addAction(flipUD)        
         fileMenu5.addAction(zoom)
         fileMenu5.addAction(shrink)
+
+        fileMenu6 = menubar.addMenu('&ROI Examiner')
+        fileMenu6.addAction(activateExaminer)
+        #fileMenu6.addAction(closeExaminer)
         
-        fileMenu5 = menubar.addMenu("&Quit")
-        fileMenu5.addAction(quitApp)
+        fileMenu7 = menubar.addMenu("&Quit")
+        fileMenu7.addAction(quitApp)
         
         
         #self.setGeometry(300, 300, 350, 300)
         self.setWindowTitle('ImageView')
+
+        self.roiFlag = 'not changed'
+
+
+
+ 
+        def updateROI(roi):
+            self.roiImg = self.ImageView.getProcessedImage()
+            #arr = self.roiImg.getNumpy()
+            arr = np.array(self.roiImg)
+            
+            x = self.roi1.getArrayRegion(arr, self.ImageView.getImageItem())
+            self.roiImg = x
+            
+            
+        self.roiImg = []
+        self.roi1 = pg.RectROI([40, 40], [40, 40], pen=(0,9))    
+        self.roi1.addRotateHandle([1,0], [0.5, 0.5])
+        self.roi1.sigRegionChanged.connect(updateROI)
+        self.ImageView.addItem(self.roi1)
+        
+        
+        
         self.show()
 
 
@@ -344,8 +378,8 @@ class Viewer(QtGui.QMainWindow):
     def open_image(self, filename):
         self.statusBar().showMessage('Loading {}'.format(os.path.basename(filename)))
         t=time.time()
-        img = simplecv.Image(filename)
-        newimg = img.getNumpy()
+        newimg = cv2.imread(filename,0)        
+        #newimg = np.array(img) 
         self.statusBar().showMessage('{} successfully loaded ({} s)'.format(os.path.basename(filename), time.time()-t))
         return newimg
         
@@ -382,7 +416,9 @@ class Viewer(QtGui.QMainWindow):
         if filename=='':
             return False
         else:
+            
             data = self.open_image(filename)
+                        
             #print(len(data.shape))
             self.ImageView.setImage(data)
 
@@ -443,8 +479,6 @@ class Viewer(QtGui.QMainWindow):
         self.ImageView.setImage(img)        
         return
 
-
-
     def fullScreenGrab(self):        
         img=ImageGrab.grab() 
         img = np.array(img) 
@@ -473,6 +507,8 @@ class Viewer(QtGui.QMainWindow):
         while(cap.isOpened()):
             # Capture frame-by-frame
             ret, frame = cap.read()
+
+            #frame = np.fliplr(frame)
         
             # Our operations on the frame come here
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -556,20 +592,23 @@ class Viewer(QtGui.QMainWindow):
         
     def faceDetect(self, gray):
         face_cascade =cv2.CascadeClassifier('/home/george2/opencv/data/haarcascades/haarcascade_frontalface_alt.xml')
-        if face_cascade.empty(): raise Exception("your face_cascade is empty. are you sure, the path is correct ?")        
+        if face_cascade.empty():
+            print("your face_cascade is empty. are you sure, the path is correct ?")
+            return
         eye_cascade = cv2.CascadeClassifier('/home/george2/opencv/data/haarcascades/haarcascade_eye.xml')
-        if eye_cascade.empty(): raise Exception("your eye_cascade is empty. are you sure, the path is correct ?")
+        if eye_cascade.empty():
+            print("your eye_cascade is empty. are you sure, the path is correct ?")
+            return
         faces = face_cascade.detectMultiScale(gray, 1.3, 5)
         for (x,y,w,h) in faces:
             cv2.rectangle(gray,(x,y),(x+w,y+h),(255,0,0),2)
             roi_gray = gray[y:y+h, x:x+w]
             #roi_color = frame[y:y+h, x:x+w]
-            eyes = eye_cascade.detectMultiScale(roi_gray)
-            for (ex,ey,ew,eh) in eyes:
+            individualEye = eye_cascade.detectMultiScale(roi_gray)
+            for (ex,ey,ew,eh) in individualEye:
                 cv2.rectangle(roi_gray,(ex,ey),(ex+ew,ey+eh),(0,255,0),2)
-        time.sleep(.05)
+        time.sleep(.01)
         return
-
 
 
     def getImage(self):
@@ -599,29 +638,53 @@ class Viewer(QtGui.QMainWindow):
             # capture object until your script exits
             del(camera)        
             img = camera_capture
-            #newimg = img.getNumpy()        
-            #del(myCamera)# grab the dimensions of the image and calculate the center
-            # of the image
-            (h, w) = img.shape[:2]
-            center = (w / 2, h / 2) 
-            # rotate the image by 180 degrees
-            M = cv2.getRotationMatrix2D(center, 90, 1.0)
-            rotated = cv2.warpAffine(img, M, (w, h))
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            img = np.rot90(img,k=1)
+            img = np.flipud(img)
             #newimg = img
-            return rotated        
+            return img        
         else:
             img = globimg
-            #newimg = img.getNumpy()        
-            #del(myCamera)# grab the dimensions of the image and calculate the center
-            # of the image
-            (h, w) = img.shape[:2]
-            center = (w / 2, h / 2) 
-            # rotate the image by 180 degrees
-            M = cv2.getRotationMatrix2D(center, 90, 1.0)
-            rotated = cv2.warpAffine(img, M, (w, h))
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            img = np.rot90(img,k=1)
+            img = np.flipud(img)
             #newimg = img
-            return rotated
+            return img
 
+    def startROIExaminer(self):
+        try:
+            #imgROI = self.ImageView.getProcessedImage()
+            imgROI = self.roiImg
+        except:
+            print('No image loaded')
+            return
+       
+        ## create GUI
+        app = QtGui.QPixmap()
+        w = pg.GraphicsWindow(size=(500,400), border=True)
+        w.setWindowTitle('ROI Examiner')
+        
+        text = """Testing..."""
+        w1 = w.addLayout(row=0, col=0)
+        #label1 = w1.addLabel(text, row=0, col=0)
+        v1a = w1.addViewBox(row=0, col=0, lockAspect=True)
+        img = pg.ImageItem(imgROI)
+        v1a.addItem(img)
+        #self.v1a.disableAutoRange('xy')
+        #self.v1a.autoRange()
+        while True:
+            v1a.removeItem(img)
+            imgROI = self.roiImg
+            imgROI = np.fliplr(imgROI)
+            img = pg.ImageItem(imgROI)
+            #img.rotate(180.0)
+            v1a.addItem(img)
+                        
+            if cv2.waitKey(1) & 0xFF == ord('q'): #change this
+                app.closeAllWindows()
+                break
+       
+        return
 
     def quitDialog(self):
         self.ImageView.close()

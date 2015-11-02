@@ -25,7 +25,7 @@ class Example(QtGui.QWidget):
     def initUI(self):      
 
         hbox = QtGui.QHBoxLayout(self)
-        pixmap = QtGui.QPixmap("/home/george/Pictures/shakespeare.jpg")
+        pixmap = QtGui.QPixmap("/home/george2/Pictures/shakespeare.jpg")
 
         lbl = QtGui.QLabel(self)
         lbl.setPixmap(pixmap)
