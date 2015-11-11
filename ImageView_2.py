@@ -236,6 +236,31 @@ class Viewer(QtGui.QMainWindow):
         runCamera.setStatusTip('Start Recording')
         runCamera.triggered.connect(self.cameraRecordDialog)
 
+        filter1 = QtGui.QAction(QtGui.QIcon('filter.png'), 'Filter1', self)
+        #filter1.setShortcut('Ctrl+R')
+        filter1.setStatusTip('Filter1')
+        filter1.triggered.connect(self.Filter1)
+
+        filter2 = QtGui.QAction(QtGui.QIcon('filter.png'), 'Filter2', self)
+        #filter2.setShortcut('Ctrl+R')
+        filter2.setStatusTip('Filter2')
+        filter2.triggered.connect(self.Filter2)
+
+        filter3 = QtGui.QAction(QtGui.QIcon('filter.png'), 'Filter3', self)
+        #filter3.setShortcut('Ctrl+R')
+        filter3.setStatusTip('Filter3')
+        filter3.triggered.connect(self.Filter3)
+
+        filter4 = QtGui.QAction(QtGui.QIcon('filter.png'), 'Filter4', self)
+        #filter4.setShortcut('Ctrl+R')
+        filter4.setStatusTip('Filter4')
+        filter4.triggered.connect(self.Filter4)
+
+        filter5 = QtGui.QAction(QtGui.QIcon('filter.png'), 'Filter5', self)
+        #filter5.setShortcut('Ctrl+R')
+        filter5.setStatusTip('Filter5')
+        filter5.triggered.connect(self.Filter5)
+
         activateExaminer = QtGui.QAction(QtGui.QIcon('save.png'), 'ROI Examiner', self)
         activateExaminer.setShortcut('Ctrl+E')
         activateExaminer.setStatusTip('Start Examiner')
@@ -260,7 +285,7 @@ class Viewer(QtGui.QMainWindow):
         fileMenu3.addAction(startCamera)
         fileMenu3.addAction(runCamera)
 
-        fileMenu4 = menubar.addMenu('&Screen Grab')
+        fileMenu4 = menubar.addMenu('&ScreenGrab')
         fileMenu4.addAction(screenGrab)
         #fileMenu4.addAction(runCamera)
 
@@ -272,12 +297,20 @@ class Viewer(QtGui.QMainWindow):
         fileMenu5.addAction(zoom)
         fileMenu5.addAction(shrink)
 
-        fileMenu6 = menubar.addMenu('&ROI Examiner')
-        fileMenu6.addAction(activateExaminer)
+        fileMenu6 = menubar.addMenu('&Filter')
+        fileMenu6.addAction(filter1)
+        fileMenu6.addAction(filter2)
+        fileMenu6.addAction(filter3)        
+        fileMenu6.addAction(filter4)
+        fileMenu6.addAction(filter5)
+
+
+        fileMenu7 = menubar.addMenu('&ROI Examiner')
+        fileMenu7.addAction(activateExaminer)
         #fileMenu6.addAction(closeExaminer)
         
-        fileMenu7 = menubar.addMenu("&Quit")
-        fileMenu7.addAction(quitApp)
+        fileMenu8 = menubar.addMenu("&Quit")
+        fileMenu8.addAction(quitApp)
         
         
         #self.setGeometry(300, 300, 350, 300)
@@ -286,9 +319,8 @@ class Viewer(QtGui.QMainWindow):
         self.roiFlag = 'not changed'
 
 
-
  
-        def updateROI(roi):
+        def updateROI(roi):                                    
             self.roiImg = self.ImageView.getProcessedImage()
             #arr = self.roiImg.getNumpy()
             arr = np.array(self.roiImg)
@@ -296,15 +328,18 @@ class Viewer(QtGui.QMainWindow):
             x = self.roi1.getArrayRegion(arr, self.ImageView.getImageItem())
             self.roiImg = x
             
-            
-        self.roiImg = []
-        self.roi1 = pg.RectROI([40, 40], [40, 40], pen=(0,9))    
-        self.roi1.addRotateHandle([1,0], [0.5, 0.5])
-        self.roi1.sigRegionChanged.connect(updateROI)
-        self.ImageView.addItem(self.roi1)
-        
-        
-        
+
+        def rectROI(self):           
+            self.roiImg = []
+            self.roi1 = pg.RectROI([40, 40], [40, 40], pen=(0,9))    
+            self.roi1.addRotateHandle([1,0], [0.5, 0.5])
+            self.roi1.sigRegionChanged.connect(updateROI)
+            self.ImageView.addItem(self.roi1)
+            return
+         
+        rectROI(self) 
+         
+        #show ImageView GUI               
         self.show()
 
 
@@ -650,6 +685,29 @@ class Viewer(QtGui.QMainWindow):
             img = np.flipud(img)
             #newimg = img
             return img
+
+
+    def Filter1(self):
+        print('Not Implemented')
+        pass
+
+    def Filter2(self):
+        print('Not Implemented')
+        pass
+
+    def Filter3(self):
+        print('Not Implemented')
+        pass
+
+    def Filter4(self):
+        print('Not Implemented')
+        pass
+
+    def Filter5(self):
+        print('Not Implemented')
+        pass
+
+
 
     def startROIExaminer(self):
         try:
