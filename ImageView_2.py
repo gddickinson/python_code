@@ -236,10 +236,10 @@ class Viewer(QtGui.QMainWindow):
         runCamera.setStatusTip('Start Recording')
         runCamera.triggered.connect(self.cameraRecordDialog)
 
-        filter1 = QtGui.QAction(QtGui.QIcon('filter.png'), 'Filter1', self)
-        #filter1.setShortcut('Ctrl+R')
-        filter1.setStatusTip('Filter1')
-        filter1.triggered.connect(self.Filter1)
+        convolution = QtGui.QAction(QtGui.QIcon('convolution.png'), '2D Convolution', self)
+        #convolution.setShortcut('Ctrl+R')
+        convolution.setStatusTip('convolution')
+        convolution.triggered.connect(self.convolution)
 
         filter2 = QtGui.QAction(QtGui.QIcon('filter.png'), 'Filter2', self)
         #filter2.setShortcut('Ctrl+R')
@@ -298,7 +298,7 @@ class Viewer(QtGui.QMainWindow):
         fileMenu5.addAction(shrink)
 
         fileMenu6 = menubar.addMenu('&Filter')
-        fileMenu6.addAction(filter1)
+        fileMenu6.addAction(convolution)
         fileMenu6.addAction(filter2)
         fileMenu6.addAction(filter3)        
         fileMenu6.addAction(filter4)
@@ -687,7 +687,7 @@ class Viewer(QtGui.QMainWindow):
             return img
 
 
-    def Filter1(self):
+    def convolution(self):
         print('Not Implemented')
         pass
 
