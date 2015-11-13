@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on Sat Oct 10 12:14:34 2015
+
 @author: george
 """
 from __future__ import (absolute_import, division,print_function, unicode_literals)
@@ -23,6 +24,8 @@ import pyscreenshot as ImageGrab
 import cv2
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
+import nd2reader
+
 if sys.version_info[:2]<(2,5):
     def partial(func,arg):
         def callme():
@@ -115,8 +118,7 @@ class Form(QDialog):
         
         self.connect(self.filterBox,SIGNAL("currentIndexChanged(int)"),self.updateUi)
         #self.connect(self.SpinBox1,SIGNAL("valueChanged(double)"),self.updateUi)        
-        
-        
+                
         self.setWindowTitle("Camera Record Options")
   
     def one(self):
@@ -127,14 +129,12 @@ class Form(QDialog):
             self.facedetectFlag = False
             self.button1.setText("Face Detect OFF")
 
-
     def two(self):
         if self.liveCameraFlag == False:
             self.liveCameraFlag = True            
         else:
             self.liveCameraFlag = False
                
-
     def three(self):
         if self.blackandwhiteFlag == False:
             self.blackandwhiteFlag = True
@@ -157,10 +157,8 @@ class Form(QDialog):
 class Viewer(QtGui.QMainWindow):
     
     def __init__(self):
-        super(Viewer, self).__init__()
-        
+        super(Viewer, self).__init__()        
         self.initUI()
-
         
     def initUI(self):      
         
@@ -173,6 +171,11 @@ class Viewer(QtGui.QMainWindow):
         openTiff.setShortcut('Ctrl+O')
         openTiff.setStatusTip('Open new tiff')
         openTiff.triggered.connect(self.openDialog1)
+
+        open_nd2 = QtGui.QAction(QtGui.QIcon('open.png'), 'Open nd2', self)
+        open_nd2.setShortcut('Ctrl+K')
+        open_nd2.setStatusTip('Open new nd2')
+        open_nd2.triggered.connect(self.openDialog4)
 
         openImage = QtGui.QAction(QtGui.QIcon('open.png'), 'Open image', self)
         openImage.setShortcut('Ctrl+I')
@@ -235,10 +238,10 @@ class Viewer(QtGui.QMainWindow):
         runCamera.setStatusTip('Start Recording')
         runCamera.triggered.connect(self.cameraRecordDialog)
 
-        convolution = QtGui.QAction(QtGui.QIcon('convolution.png'), '2D Convolution', self)
-        #convolution.setShortcut('Ctrl+R')
-        convolution.setStatusTip('convolution')
-        convolution.triggered.connect(self.convolution)
+        filter1 = QtGui.QAction(QtGui.QIcon('filter.png'), 'Filter1', self)
+        #filter1.setShortcut('Ctrl+R')
+        filter1.setStatusTip('Filter1')
+        filter1.triggered.connect(self.Filter1)
 
         filter2 = QtGui.QAction(QtGui.QIcon('filter.png'), 'Filter2', self)
         #filter2.setShortcut('Ctrl+R')
@@ -265,7 +268,6 @@ class Viewer(QtGui.QMainWindow):
         activateExaminer.setStatusTip('Start Examiner')
         activateExaminer.triggered.connect(self.startROIExaminer) 
 
-
         quitApp = QtGui.QAction(QtGui.QIcon('save.png'), 'Quit Now', self)
         quitApp.setShortcut('Ctrl+Q')
         quitApp.setStatusTip('Quit')
@@ -274,6 +276,7 @@ class Viewer(QtGui.QMainWindow):
         menubar = self.menuBar()
         fileMenu1 = menubar.addMenu('&Image Files')
         fileMenu1.addAction(openTiff)
+        fileMenu1.addAction(open_nd2)
         fileMenu1.addAction(openImage)
         fileMenu1.addAction(saveFile)
         
@@ -297,7 +300,7 @@ class Viewer(QtGui.QMainWindow):
         fileMenu5.addAction(shrink)
 
         fileMenu6 = menubar.addMenu('&Filter')
-        fileMenu6.addAction(convolution)
+        fileMenu6.addAction(filter1)
         fileMenu6.addAction(filter2)
         fileMenu6.addAction(filter3)        
         fileMenu6.addAction(filter4)
@@ -317,7 +320,6 @@ class Viewer(QtGui.QMainWindow):
 
         self.roiFlag = 'not changed'
 
-
  
         def updateROI(roi):                                    
             self.roiImg = self.ImageView.getProcessedImage()
@@ -327,7 +329,6 @@ class Viewer(QtGui.QMainWindow):
             x = self.roi1.getArrayRegion(arr, self.ImageView.getImageItem())
             self.roiImg = x
             
-
         def rectROI(self):           
             self.roiImg = []
             self.roi1 = pg.RectROI([40, 40], [40, 40], pen=(0,9))    
@@ -369,7 +370,6 @@ class Viewer(QtGui.QMainWindow):
             canvas[(x[i])-1,(y[i])-1] = 1        
         #print(canvas)
         return canvas   
-
     
     def open_xyfile(self,filename):
         self.statusBar().showMessage('Loading {}'.format(os.path.basename(filename)))
@@ -381,8 +381,7 @@ class Viewer(QtGui.QMainWindow):
         self.statusBar().showMessage('{} successfully loaded ({} s)'.format(os.path.basename(filename), time.time()-t))        
         return xyData
 
-
-    def open_file(self,filename):
+    def open_tiff(self,filename):
         self.statusBar().showMessage('Loading {}'.format(os.path.basename(filename)))
         t=time.time()
         Tiff=tifffile.TiffFile(filename)
@@ -408,7 +407,6 @@ class Viewer(QtGui.QMainWindow):
         self.statusBar().showMessage('{} successfully loaded ({} s)'.format(os.path.basename(filename), time.time()-t))
         return tif  
 
-
     def open_image(self, filename):
         self.statusBar().showMessage('Loading {}'.format(os.path.basename(filename)))
         t=time.time()
@@ -417,23 +415,33 @@ class Viewer(QtGui.QMainWindow):
         self.statusBar().showMessage('{} successfully loaded ({} s)'.format(os.path.basename(filename), time.time()-t))
         return newimg
         
+    def open_nd2(self, filename):
+        self.statusBar().showMessage('Loading {}'.format(os.path.basename(filename)))
+        t=time.time()
+        nd2 = nd2reader.nd2 = nd2reader.Nd2(filename)
+        newimg = []
+        #iterate over each image
+        for image in nd2:
+            newimg.append(image)
+                   
+        newimg = np.array(newimg)
+        self.statusBar().showMessage('{} successfully loaded ({} s)'.format(os.path.basename(filename), time.time()-t))
+        return newimg
         
     def openDialog1(self):
         filename = QtGui.QFileDialog.getOpenFileName(self, 'Open tiff file', 
-                '/home', '*.tif *.tiff *.stk')
-        
+                '/home', '*.tif *.tiff *.stk')        
         filename=str(filename)
         if filename=='':
             return False
         else:
-            data = self.open_file(filename)
+            data = self.open_tiff(filename)
             #print(len(data.shape))
             self.ImageView.setImage(data)
             
     def openDialog2(self):      
         filename = QtGui.QFileDialog.getOpenFileName(self, 'Open XY file', 
-                '/home')
-        
+                '/home')        
         filename=str(filename)
         if filename=='':
             return False
@@ -444,18 +452,25 @@ class Viewer(QtGui.QMainWindow):
 
     def openDialog3(self):
         filename = QtGui.QFileDialog.getOpenFileName(self, 'Open Image file', 
-                '/home')
-        
+                '/home')        
         filename=str(filename)
         if filename=='':
             return False
-        else:
-            
-            data = self.open_image(filename)
-                        
+        else:            
+            data = self.open_image(filename)                        
             #print(len(data.shape))
             self.ImageView.setImage(data)
 
+    def openDialog4(self):
+        filename = QtGui.QFileDialog.getOpenFileName(self, 'Open nd2 file', 
+                '/home', '*.nd2')        
+        filename=str(filename)
+        if filename=='':
+            return False
+        else:            
+            data = self.open_nd2(filename)                        
+            #print(len(data.shape))
+            self.ImageView.setImage(data)
 
     def saveDialog(self):        
         filename = QtGui.QFileDialog.getSaveFileName(self, 'Save file', 
@@ -532,7 +547,6 @@ class Viewer(QtGui.QMainWindow):
 
     def cameraRecordDialog(self):        
         cap = cv2.VideoCapture(0)
-
         #app2 = QtGui.QApplication(sys.argv)
         dialogbox = Form()
         dialogbox.show()
@@ -541,9 +555,7 @@ class Viewer(QtGui.QMainWindow):
         while(cap.isOpened()):
             # Capture frame-by-frame
             ret, frame = cap.read()
-
-            #frame = np.fliplr(frame)
-        
+            #frame = np.fliplr(frame)        
             # Our operations on the frame come here
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
            
@@ -578,7 +590,6 @@ class Viewer(QtGui.QMainWindow):
                 img = cv2.GaussianBlur(gray,(3,3),0)
                 # convolute with proper kernels
                 gray = cv2.Laplacian(img,cv2.CV_64F)
-
 
             if dialogbox.filterFlag=="Background Subtract":
                 fgbg = cv2.BackgroundSubtractorMOG()
@@ -686,27 +697,98 @@ class Viewer(QtGui.QMainWindow):
             return img
 
 
-    def convolution(self):
-        print('Not Implemented')
-        pass
+    def Filter1(self):
+        img = self.ImageView.getProcessedImage()
+        dialogbox = Form()
+        dialogbox.show()
+        dialogbox.liveCameraFlag = True        
+        
+        while True:
+           
+            if dialogbox.filterFlag == "2D Convolution - Average":
+                kernel = np.ones((5,5),np.float32)/25
+                img = cv2.filter2D(img,-1,kernel)            
+            
+            if dialogbox.filterFlag == "2D Convolution - Smooth":
+                img = cv2.blur(img,(5,5))             
+            
+            if dialogbox.filterFlag == "2D Convolution - Gaussian":
+                img = cv2.GaussianBlur(img,(5,5),0)
+ 
+            if dialogbox.filterFlag == "2D Convolution - Median": 
+                img = cv2.medianBlur(img,5)
+
+            if dialogbox.filterFlag == "2D Convolution - Bilateral":                
+                img = cv2.bilateralFilter(img,9,75,75)
+           
+            if dialogbox.filterFlag == "Canny Filter":
+                img = cv2.Canny(img,100,20)
+
+            if dialogbox.filterFlag == "Invert":
+                img = (255-img)
+
+            if dialogbox.filterFlag =="Adaptive Threshold":
+                img_blur = cv2.GaussianBlur(img, (15, 15), 0)
+                img = cv2.adaptiveThreshold(img_blur, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY_INV, 11, 1)
+
+            if dialogbox.filterFlag=="Laplacian Edge":
+                # remove noise
+                img = cv2.GaussianBlur(img,(3,3),0)
+                # convolute with proper kernels
+                img = cv2.Laplacian(img,cv2.CV_64F)
+
+            if dialogbox.filterFlag=="Background Subtract":
+                pass
+
+            if dialogbox.facedetectFlag == True:
+                self.faceDetect(img)        
+
+            if dialogbox.blackandwhiteFlag == True:        
+                # convert to greyscale
+                img = np.dot(img[...,:3], [0.299, 0.587, 0.144])
+                self.ImageView.setImage(img)
+                globimg = img
+                global globimg
+                
+            else: 
+                self.ImageView.setImage(img)
+                globimg = img
+                global globimg
+                
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break        
+            if dialogbox.liveCameraFlag == False:
+                break
+
+        self.ImageView.setImage(img)
+        globimg = 'OFF'
+        global globimg
+        dialogbox.close()
+        return
 
     def Filter2(self):
-        print('Not Implemented')
-        pass
+        img = self.ImageView.getProcessedImage()
+
+        self.ImageView.setImage(img)
+        return
 
     def Filter3(self):
-        print('Not Implemented')
-        pass
+        img = self.ImageView.getProcessedImage()
+
+        self.ImageView.setImage(img)
+        return
 
     def Filter4(self):
-        print('Not Implemented')
-        pass
+        img = self.ImageView.getProcessedImage()
+
+        self.ImageView.setImage(img)
+        return
 
     def Filter5(self):
-        print('Not Implemented')
-        pass
+        img = self.ImageView.getProcessedImage()
 
-
+        self.ImageView.setImage(img)
+        return
 
     def startROIExaminer(self):
         try:
@@ -719,9 +801,9 @@ class Viewer(QtGui.QMainWindow):
         ## create GUI
         app = QtGui.QPixmap()
         w = pg.GraphicsWindow(size=(500,400), border=True)
-        w.setWindowTitle('ROI Examiner')
-        
+        w.setWindowTitle('ROI Examiner')        
         text = """Testing..."""
+
         w1 = w.addLayout(row=0, col=0)
         #label1 = w1.addLabel(text, row=0, col=0)
         v1a = w1.addViewBox(row=0, col=0, lockAspect=True)
@@ -739,8 +821,7 @@ class Viewer(QtGui.QMainWindow):
                         
             if cv2.waitKey(1) & 0xFF == ord('q'): #change this
                 app.closeAllWindows()
-                break
-       
+                break       
         return
 
     def quitDialog(self):
@@ -766,8 +847,6 @@ class Viewer(QtGui.QMainWindow):
         else:
             event.ignore()  
 
-
-
 def main():
     if QtCore.QCoreApplication.instance() != None:
         app = QtCore.QCoreApplication.instance()	
@@ -776,6 +855,6 @@ def main():
     ex = Viewer()
     sys.exit(app.exec_())
 
-
 if __name__ == '__main__':
     main()
+    
