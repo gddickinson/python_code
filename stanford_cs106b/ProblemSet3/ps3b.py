@@ -84,7 +84,11 @@ class SimpleVirus(object):
         NoChildException if this virus particle does not reproduce.               
         """
 
-        # TODO
+        print (self.getMaxBirthProb * (1-popDensity))
+        if (self.getMaxBirthProb * (1-popDensity)) > 0.5:
+            return SimpleVirus(self.getMaxBirtProb(),self.getClearProb())
+        else:
+            raise NoChildException()
 
 
 
