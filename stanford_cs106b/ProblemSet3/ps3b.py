@@ -58,7 +58,7 @@ class SimpleVirus(object):
         False.
         """
 
-        if random.random() < self.getClearProb():
+        if random.random() <= self.getClearProb():
             return True
 
         return False
@@ -84,9 +84,10 @@ class SimpleVirus(object):
         NoChildException if this virus particle does not reproduce.               
         """
 
-        print (self.getMaxBirthProb * (1-popDensity))
-        if (self.getMaxBirthProb * (1-popDensity)) > 0.5:
-            return SimpleVirus(self.getMaxBirtProb(),self.getClearProb())
+        #print (self.getMaxBirthProb * (1-popDensity))
+        chanceToReproduce = (self.getMaxBirthProb() * (1-popDensity))
+        if random.random() <= chanceToReproduce:
+            return SimpleVirus(self.getMaxBirthProb(),self.getClearProb())
         else:
             raise NoChildException()
 
@@ -132,7 +133,7 @@ class Patient(object):
         returns: The total virus population (an integer)
         """
 
-        return len(int(self.getViruses()))       
+        return len(self.getViruses())       
 
 
     def update(self):
@@ -153,22 +154,29 @@ class Patient(object):
         returns: The total virus population at the end of the update (an
         integer)
         """
-
-        for virus in self.viruses:
-            if virus.doesClear() == True:
-                self.viruses.remove(virus)
         
-        currentPopDensity = self.getTotalPop()
-
+        updateVirusesList = []        
+        
         for virus in self.viruses:
-            toAdd = []            
+            if virus.doesClear() == False:
+                updateVirusesList.append(virus)
+    
+        self.viruses = updateVirusesList
+        print(self.viruses)        
+        currentPopDensity = self.getTotalPop()
+        print(currentPopDensity)
+        toAdd = []
+
+        for virus in self.viruses:                       
             try:
                 toAdd.append(virus.reproduce(currentPopDensity))
+                
             except:
+                print('pass')
                 pass
- 
+        print(toAdd)
         for i in toAdd:
-            self.virues.append(i)
+            self.viruses.append(i)
        
         return self.getTotalPop()
 
@@ -415,3 +423,18 @@ def simulationWithDrug(numViruses, maxPop, maxBirthProb, clearProb, resistances,
     """
 
     # TODO
+
+
+#v1 = SimpleVirus(1.0, 0.0)
+#print(v1.doesClear())
+#print(v1.reproduce(0.5))
+#viruses = [ SimpleVirus(0.21, 0.73), SimpleVirus(0.38, 0.88), SimpleVirus(0.85, 0.73), SimpleVirus(1.0, 0.47), SimpleVirus(0.63, 0.06), SimpleVirus(0.06, 0.62) ]
+#P1 = Patient(viruses, 7)
+virus = SimpleVirus(1.0, 0.0)
+virus2 = SimpleVirus(1.0,1.0)
+patient = Patient([virus], 100)
+patient2 = Patient([virus2],100)
+
+
+
+
