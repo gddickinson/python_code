@@ -162,19 +162,15 @@ class Patient(object):
                 updateVirusesList.append(virus)
     
         self.viruses = updateVirusesList
-        print(self.viruses)        
-        currentPopDensity = self.getTotalPop()
-        print(currentPopDensity)
+        currentPopDensity = (self.getTotalPop()/self.getMaxPop())
         toAdd = []
 
         for virus in self.viruses:                       
             try:
                 toAdd.append(virus.reproduce(currentPopDensity))
                 
-            except:
-                print('pass')
-                pass
-        print(toAdd)
+            except NoChildException:
+                pass        
         for i in toAdd:
             self.viruses.append(i)
        
@@ -200,10 +196,24 @@ def simulationWithoutDrug(numViruses, maxPop, maxBirthProb, clearProb,
     clearProb: Maximum clearance probability (a float between 0-1)
     numTrials: number of simulation runs to execute (an integer)
     """
-
-    # TODO
-
-
+    
+    virus = SimpleVirus(maxBirthProb, clearProb)
+    virusList = []    
+    for i in range(numViruses):
+        virusList.append(virus)
+    
+    trialResults = numpy.empty(300)
+    for i in range (numTrials):
+        patient = Patient(virusList,maxPop)
+        trial = []
+        for x in range(300):
+            trial.append(patient.update())
+        trial = numpy.array(trial)
+        trialResults = trialResults + trial                
+    
+    average = numpy.divide(trialResults,numTrials)
+    pylab.plot(average)
+    
 
 #
 # PROBLEM 4
@@ -430,11 +440,13 @@ def simulationWithDrug(numViruses, maxPop, maxBirthProb, clearProb, resistances,
 #print(v1.reproduce(0.5))
 #viruses = [ SimpleVirus(0.21, 0.73), SimpleVirus(0.38, 0.88), SimpleVirus(0.85, 0.73), SimpleVirus(1.0, 0.47), SimpleVirus(0.63, 0.06), SimpleVirus(0.06, 0.62) ]
 #P1 = Patient(viruses, 7)
-virus = SimpleVirus(1.0, 0.0)
-virus2 = SimpleVirus(1.0,1.0)
-patient = Patient([virus], 100)
-patient2 = Patient([virus2],100)
+#virus = SimpleVirus(1.0, 0.0)
+#virus2 = SimpleVirus(1.0,1.0)
+#patient = Patient([virus], 100)
+#patient2 = Patient([virus2],100)
 
+simulationWithoutDrug(100,1000,0.5,0.99,5)
+pylab.show()
 
 
 
