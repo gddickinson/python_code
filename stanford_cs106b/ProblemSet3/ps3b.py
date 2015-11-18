@@ -165,7 +165,11 @@ class Patient(object):
         currentPopDensity = (self.getTotalPop()/self.getMaxPop())
         toAdd = []
 
-        for virus in self.viruses:                       
+
+
+
+        for virus in self.viruses:
+                     
             try:
                 toAdd.append(virus.reproduce(currentPopDensity))
                 
@@ -173,7 +177,8 @@ class Patient(object):
                 pass        
         for i in toAdd:
             self.viruses.append(i)
-       
+        if self.getTotalPop() >= self.getMaxPop():
+                return self.getMaxPop()        
         return self.getTotalPop()
 
 
@@ -196,25 +201,34 @@ def simulationWithoutDrug(numViruses, maxPop, maxBirthProb, clearProb,
     clearProb: Maximum clearance probability (a float between 0-1)
     numTrials: number of simulation runs to execute (an integer)
     """
-    
+
     virus = SimpleVirus(maxBirthProb, clearProb)
     virusList = []    
     for i in range(numViruses):
         virusList.append(virus)
     
-    trialResults = numpy.empty(300)
+    trialResults = [0] * 300
     for i in range (numTrials):
         patient = Patient(virusList,maxPop)
         trial = []
         for x in range(300):
             trial.append(patient.update())
-        trial = numpy.array(trial)
-        trialResults = trialResults + trial                
-    
-    average = numpy.divide(trialResults,numTrials)
-    pylab.plot(average)
-    
+        #print(trial)
+        for i in range(len(trial)):
+            trialResults[i] = trialResults[i]+trial[i]               
+            
+    average = []
 
+    for time in trialResults:
+        average.append(float(time/numTrials))
+    #print(average)
+    pylab.plot(average, label = "No Drug Resistance")    
+    pylab.xlabel('Time')
+    pylab.ylabel('Average size of virus population')
+    pylab.legend()
+    pylab.title('Average size of virus population vs time ('
+                + str(numTrials) + ' Trials)')
+    pylab.show()
 #
 # PROBLEM 4
 #
@@ -241,20 +255,23 @@ class ResistantVirus(SimpleVirus):
         the probability of the offspring acquiring or losing resistance to a drug.
         """
 
-        # TODO
+        self.maxBirthProb = maxBirthProb
+        self.clearProb = clearProb
+        self.resistances = resistances.copy()
+        self.mutProb = mutProb
 
 
     def getResistances(self):
         """
         Returns the resistances for this virus.
         """
-        # TODO
+        return self.resistances
 
     def getMutProb(self):
         """
         Returns the mutation probability for this virus.
         """
-        # TODO
+        return self.mutProb
 
     def isResistantTo(self, drug):
         """
@@ -266,9 +283,9 @@ class ResistantVirus(SimpleVirus):
 
         returns: True if this virus instance is resistant to the drug, False
         otherwise.
-        """
-        
-        # TODO
+        """        
+        resistances = self.getResistances() 
+        return resistances[drug]
 
 
     def reproduce(self, popDensity, activeDrugs):
@@ -338,7 +355,8 @@ class TreatedPatient(Patient):
         maxPop: The  maximum virus population for this patient (an integer)
         """
 
-        # TODO
+        self.viruses = viruses
+        self.maxPop = maxPop
 
 
     def addPrescription(self, newDrug):
@@ -378,7 +396,18 @@ class TreatedPatient(Patient):
         drugs in the drugResist list.
         """
 
-        # TODO
+        numSuperViruses = 0
+
+        if drugResist != []: 
+            for virus in self.getViruses():
+                count = 0
+                for drug in drugResist:
+                    if virus.isResistantTo(drug) == True:
+                        count += 1
+                if count == len(drugResist): 
+                    numSuperViruses += 1          
+    
+        return numSuperViruses  
 
 
     def update(self):
@@ -445,8 +474,8 @@ def simulationWithDrug(numViruses, maxPop, maxBirthProb, clearProb, resistances,
 #patient = Patient([virus], 100)
 #patient2 = Patient([virus2],100)
 
-simulationWithoutDrug(100,1000,0.5,0.99,5)
-pylab.show()
+#simulationWithoutDrug(100, 1000, 0.1, 0.05, 50)
+
 
 
 
