@@ -361,7 +361,7 @@ class RandomWalkRobot(Robot):
             return
 
 # Uncomment this line to see your implementation of StandardRobot in action!
-#testRobotMovement(RandomWalkRobot, RectangularRoom)
+testRobotMovement(RandomWalkRobot, RectangularRoom)
 
 
 def showPlot1(title, x_label, y_label):

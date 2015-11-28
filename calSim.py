@@ -1,30 +1,109 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Oct 14 18:44:07 2015
+Created on Thu Nov 26 12:49:33 2015
 
-@author: robot
+@author: george
 """
 
 import numpy as np
+import random
+import pylab
+import math
+import time
 
-##define source positions###
-sources = [[50,50,0]]
-##initiate source feed - list of x,y,z positions with Ca
-cyto = sources
 
-## functions ###
 
-def updateCyto(cyto):
-    newcyto = []
-    for i in cyto:
-        move = False:
-        while move == False:                
-            x = cyto[i][0] + randint(-1,2)
-            y = cyto[i][1] + randint(-1,2)
-            z = cyto[i][2] + randint(-1,2)
-            if cyto
-    
-            
-    return newcyto
+class Cell_no_Organelles(object):
+    """
+    Representation of a simplified 2D cell. 
+    """    
 
-    
+    def __init__(self, width = 50, height = 50, startCa = 100, maxCa = 1000, rate = 1):
+        """
+        Initialization function, saves an array storing cell shape, calciumConc, ion channels
+
+        startCa
+        maxCa
+        rate = rate at which calcium moves from one position to adjacent position every time step
+        """
+
+        self.cyto = np.zeros((width,height))
+        self.startCa = startCa
+        self.maxCa = maxCa
+        self.rate = rate
+        if self.startCa <= self.maxCa:        
+            self.cyto = self.cyto + self.startCa
+        else: self.cyto = self.cyto + self.maxCa
+
+    def getCa(self, x, y):
+        """
+        Returns the [calcium] for a position in cyto
+        """
+        return self.cyto[x][y]
+
+
+    def addCa(self, x, y, calciumConc):
+        """
+        addCa to a position in cyto
+        """
+
+        if self.cyto[x][y] + calciumConc <= self.maxCa:        
+            self.cyto[x][y] = self.cyto[x][y] + calciumConc 
+        else:
+            self.cyto[x][y] = self.maxCa
+        return 
+
+    def subtractCa(self, x, y, calciumConc):
+        """
+        addCa to a position in cyto
+        """
+
+        if self.cyto[x][y] - calciumConc >= 0:        
+            self.cyto[x][y] = self.cyto[x][y] - calciumConc 
+        else:
+            self.cyto[x][y] = 0
+        return
+
+
+    def getTotalCa(self):
+        return np.sum(self.cyto)
+
+    def surroundingPositions(self, x,y):
+        """
+        returns valid coordiates in a cell for positions surrounding an x,y position
+        """
+        ans = []
+        position = 8
+                
+        
+        return ans
+
+
+
+
+    def pointSourceCa(self, x, y, rate):
+        """
+        increases calciumConc at x,y position every time step according to rate
+        """
+
+        return      
+
+
+    def pointSinkCa(self, x, y, rate):
+        """
+        decreases calciumConc at x,y position every time step according to rate
+        """
+
+        return  
+
+
+    def update(self):
+        """
+        Update calciumCon for each position
+        
+        return array of positions and calciumConc
+        """
+        
+         
+        return self.cyto
+
