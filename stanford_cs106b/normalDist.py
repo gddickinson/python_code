@@ -24,11 +24,12 @@ def makeNormal(mean, sd, numSamples):
     samples = []
     for i in range(numSamples):
         samples.append(random.gauss(mean, sd))
-    pylab.hist(samples, bins = 101)
+    pylab.hist(samples, bins = 10)
 
 #==============================================================================
-# makeNormal(0, 1.0, 10000000)
-# pylab.show()
+makeNormal(0, 3.0, 10000)
+makeNormal(50, 5.0, 10000)
+pylab.show()
 #==============================================================================
 
 
@@ -41,11 +42,11 @@ def clear(n, clearProb, steps):
         numRemaining.append(n*((1-clearProb)**t))
     pylab.plot(numRemaining, label = 'Exponential Decay')
 
-clear(1000, 0.01, 500)
-pylab.xlabel('Number of Steps')
-pylab.ylabel('Number of Molecules')
+#clear(1000, 0.01, 500)
+#pylab.xlabel('Number of Steps')
+#pylab.ylabel('Number of Molecules')
 #pylab.semilogy()
-pylab.show()
+#pylab.show()
 
 
 def clearSim(n, clearProb, steps):
@@ -59,10 +60,11 @@ def clearSim(n, clearProb, steps):
     pylab.plot(numRemaining, 'ro', label = 'Simulation')
 
 #==============================================================================
-# clear(10000, 0.01, 1000)
+#clear(10000, 0.01, 1000)
 # clearSim(10000, 0.01, 1000)
 # pylab.xlabel('Number of Steps')
 # pylab.ylabel('Number of Molecules')
 # pylab.legend()
 # pylab.show()
 #==============================================================================
+

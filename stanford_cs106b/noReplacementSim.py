@@ -5,9 +5,10 @@ Created on Mon Nov  9 20:46:22 2015
 @author: robot
 """
 import random
+import pylab
+import numpy as np
 
-
-def noReplacementSimulation(numTrials):
+def drawing_without_replacement_sim(numTrials):
     '''
     Runs numTrials trials of a Monte Carlo simulation
     of drawing 3 balls out of a bucket containing
@@ -18,8 +19,7 @@ def noReplacementSimulation(numTrials):
     
 
     def allthesame(numberRed, numberGreen, numberDrawn):
-        
-        
+               
         bucket = []
         draw = []
         for i in range(numberRed):
@@ -40,11 +40,17 @@ def noReplacementSimulation(numTrials):
         
     numberTheSame = 0
     for i in range(numTrials):
-        if allthesame(3,3,3) == True:
+        if allthesame(4,4,3) == True:
             numberTheSame +=1
 
     #print(numberTheSame,numTrials)
     return (float(numberTheSame)/float(numTrials))    
 
-numTrials = 100000
-print(noReplacementSimulation(numTrials))    
+###########################
+ans =[]
+for i in range (250):
+    ans.append(drawing_without_replacement_sim(20000))
+    print(i)
+
+print (np.average(ans))
+pylab.hist(ans)
