@@ -7,9 +7,10 @@ Created on Thu Nov 26 12:49:33 2015
 
 import numpy as np
 import random
-import pylab
+import matplotlib.pyplot as plt
 import math
 import time
+import matplotlib.animation as animation
 
 
 
@@ -18,7 +19,7 @@ class Cell_no_Organelles(object):
     Representation of a simplified 2D cell. 
     """    
 
-    def __init__(self, width = 70, height = 70, startCa = 100, maxCa = 1000, rate = 1):
+    def __init__(self, width = 100, height = 100, startCa = 100, maxCa = 2000, rate = 1):
         """
         Initialization function, saves an array storing cell shape, calciumConc, ion channels
 
@@ -113,10 +114,10 @@ class Cell_no_Organelles(object):
 
     def getSurroundingPositionsWithLowerCa(self, x, y):
         ans = []
-        calciumConc = self.getCa(x,y)
+        calciumConc = self.cyto[x][y]
         positions = self.getSurroundingPositions(x,y)
         for xy in positions:
-            if self.getCa(xy[0],xy[1]) < calciumConc:
+            if self.cyto[xy[0]][xy[1]] < calciumConc:
                 ans.append(xy)
         return ans
             
@@ -140,13 +141,10 @@ class Cell_no_Organelles(object):
         return ans
 
     def setBorderCa(self, calciumConc):
-        for i in range(self.width-1):
-            self.setCa(0, i, calciumConc)
-            self.setCa(self.height-1,i, calciumConc)
-
-        for j in range(self.height-1):
-            self.setCa(i, 0, calciumConc)
-            self.setCa(i, self.width-1, calciumConc)
+        self.cyto[0] = calciumConc
+        self.cyto[-1] = calciumConc
+        self.cyto[:,0] = calciumConc
+        self.cyto[:,-1] = calciumConc
         return
 
     def update_mean(self):
@@ -160,19 +158,42 @@ class Cell_no_Organelles(object):
         for i in range(len(randomXY)):
             self.setBorderCa(100)
             surroundingCa = 0
-            testXYCa = self.getCa(randomXY[i][0],randomXY[i][1])
+            testXYCa = self.cyto[randomXY[i][0]][randomXY[i][1]]
             surroundingXY = self.getSurroundingPositions(randomXY[i][0],randomXY[i][1])
             for j in range(len(surroundingXY)):
-                surroundingCa += self.getCa(surroundingXY[j][0],surroundingXY[j][1])
+                surroundingCa += self.cyto[surroundingXY[j][0]][surroundingXY[j][1]]
             totalCa = testXYCa + surroundingCa
             averageCa = float(totalCa)/float(len(surroundingXY)+1)
             for j in range(len(surroundingXY)):
                 self.setCa(surroundingXY[j][0],surroundingXY[j][1], averageCa)           
-        return 
+        return self.cyto
 
-test = Cell_no_Organelles()
-test.setCa(10,10,1000)
-for i in range(15):   
-    test.update_mean()
+  
+        
     
-pylab.imshow(test.cyto)
+test = Cell_no_Organelles()
+test.setCa(25,25,500)
+#test.setCa(55,55,1000)
+fig = plt.figure()
+#==============================================================================
+# movie = [(test.getCytoCa())]
+# for i in range(30):   
+#     test.update_mean()
+#     movie = movie + [(test.getCytoCa())]
+# plt.imshow(test.cyto)
+#==============================================================================
+
+im = plt.imshow(test.update_mean(), animated=True)
+
+def runSim(*args):
+    print(args)
+    if args == (5,):
+        test.setCa(40,40,500)
+    if args == (20,):
+        test.setCa(25,25,1000)        
+    
+    im.set_array(test.update_mean())
+    return im,
+
+ani = animation.FuncAnimation(fig, runSim, frames= 50,interval=50, blit=True)
+plt.show()
