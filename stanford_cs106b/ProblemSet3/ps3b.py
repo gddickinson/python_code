@@ -479,8 +479,8 @@ class TreatedPatient(Patient):
 #
 # PROBLEM 5
 #
-def simulationWithDrug(numViruses, maxPop, maxBirthProb, clearProb, resistances,
-                       mutProb, numTrials):
+def simulationWithDrug(numViruses=100, maxPop=1000, maxBirthProb=0.1, clearProb=0.05, resistances= {'guttagonol': False, 'grimpex': False},
+                       mutProb=0.005, numTrials=1, timeDrug1Added=150, timeDrug2Added=300):
     """
     Runs simulations and plots graphs for problem 5.
 
@@ -501,39 +501,49 @@ def simulationWithDrug(numViruses, maxPop, maxBirthProb, clearProb, resistances,
     numTrials: number of simulation runs to execute (an integer)
     
     """
-
+    runTime = timeDrug1Added+timeDrug2Added+150
+    timeDrug2Added = timeDrug2Added+timeDrug1Added
     virus = ResistantVirus(maxBirthProb, clearProb, resistances, mutProb)
     virusList = []    
     for i in range(numViruses):
         virusList.append(virus)
     
-    trialResults = [0.0] * 300
-    resistantViruses = [0.0] * 300
+    trialResults = [0.0] * runTime
+    resistantViruses1 = [0.0] * runTime
+    resistantViruses2 = [0.0] * runTime
     for i in range (numTrials):
         patient = TreatedPatient(virusList,maxPop)
         totalVirusPop = []
-        resistantVirusPop = []
-        for x in range(300):
-            if x >= 150:
+        resistantVirusPop1 = []
+        resistantVirusPop2 = []
+        for x in range(runTime):
+            if x >= timeDrug1Added:
                 patient.addPrescription('guttagonol')
+            if x >= timeDrug2Added:
+                patient.addPrescription('grimpex')            
+            
             totalVirusPop.append(float(patient.update()))
-            resistantVirusPop.append(float(patient.getResistPop(['guttagonol'])))
+            resistantVirusPop1.append(float(patient.getResistPop(['guttagonol'])))
+            resistantVirusPop2.append(float(patient.getResistPop(['grimpex'])))
             
         for i in range(len(totalVirusPop)):
             trialResults[i] = float(trialResults[i])+float(totalVirusPop[i])
-            resistantViruses[i] = float(resistantViruses[i]) + float(resistantVirusPop[i])               
-
+            resistantViruses1[i] = float(resistantViruses1[i]) + float(resistantVirusPop1[i])               
+            resistantViruses2[i] = float(resistantViruses2[i]) + float(resistantVirusPop2[i])
             
     totalPopAverage = []
-    resistantPopAverage = []
+    resistantPopAverage1 = []
+    resistantPopAverage2 = []
     for time in trialResults:
         totalPopAverage.append(float(time)/float(numTrials))
-    for time in resistantViruses:
-        resistantPopAverage.append(float(time)/float(numTrials))    
-    
+    for time in resistantViruses1:
+        resistantPopAverage1.append(float(time)/float(numTrials))    
+    for time in resistantViruses2:
+        resistantPopAverage2.append(float(time)/float(numTrials))     
     
     pylab.plot(totalPopAverage, label = "Total Virus Population")
-    pylab.plot(resistantPopAverage, label = "Drug Resistant Virus Population")
+    pylab.plot(resistantPopAverage1, label = "Drug1 Resistant Virus Population")
+    pylab.plot(resistantPopAverage2, label = "Drug2 Resistant Virus Population") 
     pylab.xlabel('Time')
     pylab.ylabel('Average size of virus population')
     pylab.legend()
@@ -542,14 +552,16 @@ def simulationWithDrug(numViruses, maxPop, maxBirthProb, clearProb, resistances,
     pylab.show()
 
 #######################################################
-numViruses = 100
-maxPop = 1000
-maxBirthProb = 0.1
-clearProb = 0.05
-resistances = {'guttagonol': False}
-mutProb = 0.005
-numTrials = 1
+#==============================================================================
+# numViruses = 100
+# maxPop = 1000
+# maxBirthProb = 0.1
+# clearProb = 0.05
+# resistances = {'guttagonol': False}
+# mutProb = 0.005
+# numTrials = 1
+#==============================================================================
 
 
-simulationWithDrug(numViruses, maxPop, maxBirthProb, clearProb, resistances, mutProb, numTrials)
+simulationWithDrug()
 #simulationWithDrug(1, 10, 1.0, 0.0, {}, 1.0, 5)

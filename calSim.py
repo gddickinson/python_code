@@ -19,7 +19,7 @@ class Cell_no_Organelles(object):
     Representation of a simplified 2D cell. 
     """    
 
-    def __init__(self, width = 100, height = 100, startCa = 100, maxCa = 2000, rate = 1):
+    def __init__(self, width = 100, height = 100, startCa = 100, maxCa = 2000):
         """
         Initialization function, saves an array storing cell shape, calciumConc, ion channels
 
@@ -33,7 +33,6 @@ class Cell_no_Organelles(object):
         self.height = height
         self.startCa = startCa
         self.maxCa = maxCa
-        self.rate = rate
         if self.startCa <= self.maxCa:        
             self.cyto = self.cyto + self.startCa
         else: self.cyto = self.cyto + self.maxCa
@@ -166,22 +165,46 @@ class Cell_no_Organelles(object):
             averageCa = float(totalCa)/float(len(surroundingXY)+1)
             for j in range(len(surroundingXY)):
                 self.setCa(surroundingXY[j][0],surroundingXY[j][1], averageCa)           
+
         return self.cyto
 
-  
-        
+class channel(object):
+    """
+    Representation of a basic calcium sensitive channel. 
+    """    
+
+    def __init__(self, x, y, cell, activatingCa = 200, inactivatingCa = 700, conductance=100):
+        """
+        Initializes a position with coordinates (x, y) in cell object
+        """
+        self.x = x  
+        self.y = y
+        self.cell = cell
+        self.activatingCa = activatingCa
+        self.inactivatingCa = inactivatingCa
+        self.conductance = conductance
+        self.activeState = False
+    
+    def getX(self):
+        return self.x
+    
+    def getY(self):
+        return self.y    
+    
+    def updateActiveState(self):
+        #TODO
+        return
+
+    def amountOfCaThisTime(self):
+        self.updateActiveState()
+        if self.activeState == False:
+            return 0
+        return self.conductance
     
 test = Cell_no_Organelles()
 test.setCa(25,25,500)
 #test.setCa(55,55,1000)
 fig = plt.figure()
-#==============================================================================
-# movie = [(test.getCytoCa())]
-# for i in range(30):   
-#     test.update_mean()
-#     movie = movie + [(test.getCytoCa())]
-# plt.imshow(test.cyto)
-#==============================================================================
 
 im = plt.imshow(test.update_mean(), animated=True)
 
@@ -196,4 +219,4 @@ def runSim(*args):
     return im,
 
 ani = animation.FuncAnimation(fig, runSim, frames= 50,interval=50, blit=True)
-plt.show()
+plt.show(ani)

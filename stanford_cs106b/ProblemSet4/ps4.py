@@ -8,7 +8,7 @@ from ps3b import *
 #
 # PROBLEM 1
 #        
-def simulationDelayedTreatment(numTrials):
+def simulationDelayedTreatment(numTrials=1):
     """
     Runs simulations and make histograms for problem 1.
 
@@ -22,12 +22,46 @@ def simulationDelayedTreatment(numTrials):
     numTrials: number of simulation runs to execute (an integer)
     """
     
-    # TODO
+    def simulationWithDrug(numViruses=100, maxPop=1000, maxBirthProb=0.1, clearProb=0.05, resistances= {'guttagonol': False},
+                           mutProb=0.005, numTrials=1, timeDrugAdded=0):
+
+        runTime = timeDrugAdded+150
+        virus = ResistantVirus(maxBirthProb, clearProb, resistances, mutProb)
+        virusList = []    
+        for i in range(numViruses):
+            virusList.append(virus)
+        
+        trialResults = [0.0] * runTime
+        resistantViruses = [0.0] * runTime
+        for i in range (numTrials):
+            patient = TreatedPatient(virusList,maxPop)
+            totalVirusPop = []
+            resistantVirusPop = []
+            for x in range(runTime):
+                if x >= timeDrugAdded:
+                    patient.addPrescription('guttagonol')
+                totalVirusPop.append(float(patient.update()))
+                resistantVirusPop.append(float(patient.getResistPop(['guttagonol'])))
+                
+            for i in range(len(totalVirusPop)):
+                trialResults[i] = float(trialResults[i])+float(totalVirusPop[i])
+                resistantViruses[i] = float(resistantViruses[i]) + float(resistantVirusPop[i])               
+    
+
+        return totalVirusPop, resistantVirusPop
+
+
+    totalPop, resistantPop = simulationWithDrug()
+
+    pylab.hist(totalPop)
+    pylab.xlabel('Total virus population')
+    pylab.ylabel('Number of Trials')
+    pylab.legend()
+    pylab.show()
 
 
 
-
-
+simulationDelayedTreatment()
 
 #
 # PROBLEM 2
