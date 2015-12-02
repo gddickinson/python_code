@@ -11,15 +11,19 @@ import matplotlib.pyplot as plt
 import math
 import time
 import matplotlib.animation as animation
+import cv2
 
-
+filename = '/home/george/Pictures/shakespeare.jpg'
+img = cv2.imread(filename,0)/100
+height = size(img,1)
+width = size(img,0)
 
 class Cell_no_Organelles(object):
     """
     Representation of a simplified 2D cell. 
     """    
 
-    def __init__(self, width = 100, height = 100, startCa = 100, maxCa = 2000):
+    def __init__(self, width = 100, height = 100, startCa = 100, maxCa = 1000, backgroundImg=[]):
         """
         Initialization function, saves an array storing cell shape, calciumConc, ion channels
 
@@ -29,6 +33,7 @@ class Cell_no_Organelles(object):
         """
 
         self.cyto = np.zeros((width,height))
+        self.backgroundImg = backgroundImg
         self.width = width
         self.height = height
         self.startCa = startCa
@@ -155,7 +160,7 @@ class Cell_no_Organelles(object):
         randomXY = self.randomListXY()
         
         for i in range(len(randomXY)):
-            self.setBorderCa(100)
+            self.setBorderCa(self.startCa)
             surroundingCa = 0
             testXYCa = self.cyto[randomXY[i][0]][randomXY[i][1]]
             surroundingXY = self.getSurroundingPositions(randomXY[i][0],randomXY[i][1])
@@ -165,6 +170,9 @@ class Cell_no_Organelles(object):
             averageCa = float(totalCa)/float(len(surroundingXY)+1)
             for j in range(len(surroundingXY)):
                 self.setCa(surroundingXY[j][0],surroundingXY[j][1], averageCa)           
+        
+        if self.backgroundImg != []:
+            self.cyto = self.backgroundImg + self.cyto
 
         return self.cyto
 
@@ -201,7 +209,7 @@ class channel(object):
             return 0
         return self.conductance
     
-test = Cell_no_Organelles()
+test = Cell_no_Organelles(width=width, height=height)
 test.setCa(25,25,500)
 #test.setCa(55,55,1000)
 fig = plt.figure()
@@ -209,12 +217,19 @@ fig = plt.figure()
 im = plt.imshow(test.update_mean(), animated=True)
 
 def runSim(*args):
+    x = random.randint(0,width)
+    y = random.randint(0,height)
+    amount = random.randint(1,1000)
+    z1 = random.randint(0,50)
+    z2 = random.randint(0,50)
+    z3 = random.randint(0,50)
     print(args)
-    if args == (5,):
-        test.setCa(40,40,500)
-    if args == (20,):
-        test.setCa(25,25,1000)        
-    
+    if args == (z1,):
+        test.addCa(x,y,amount)
+    if args == (z2,):
+        test.addCa(x,y,amount)        
+    if args == (z3,):
+        test.addCa(x,y,amount)      
     im.set_array(test.update_mean())
     return im,
 
