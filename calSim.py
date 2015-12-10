@@ -191,7 +191,8 @@ class channel(object):
         self.activatingCa = activatingCa
         self.inactivatingCa = inactivatingCa
         self.conductance = conductance
-        self.activeState = False
+        self.stateOpen = False
+        self.XYCalcium = cell.getCa(self.x,self.y)
     
     def getX(self):
         return self.x
@@ -200,12 +201,13 @@ class channel(object):
         return self.y    
     
     def updateActiveState(self):
-        #TODO
+        if self.XYCalcium <800:
+            
         return
 
     def amountOfCaThisTime(self):
         self.updateActiveState()
-        if self.activeState == False:
+        if self.stateOpen == False:
             return 0
         return self.conductance
     
@@ -233,5 +235,11 @@ def runSim(*args):
     im.set_array(test.update_mean())
     return im,
 
-ani = animation.FuncAnimation(fig, runSim, frames= 50,interval=50, blit=True)
+def runSim2(*args):
+    print(args)
+    im.set_array(test.update_mean())
+    return im,
+
+
+ani = animation.FuncAnimation(fig, runSim2, frames= 50,interval=50, blit=True)
 plt.show(ani)
