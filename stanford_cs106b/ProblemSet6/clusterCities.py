@@ -52,22 +52,43 @@ class Cluster(object):
         are closest to each other, where one point is from 
         self and the other point is from other. Uses the 
         Euclidean dist between 2 points, defined in Point."""
-        # TO DO
-        pass
+        ans = 0.0
+        for point in self.points:
+            for otherpoint in other.points:
+                distance = point.distance(otherpoint)
+                if ans == 0.0:
+                    ans = distance
+                else:
+                    if distance < ans:
+                        ans = distance
+        return ans
+        
     def maxLinkageDist(self, other):
         """ Returns the float distance between the points that 
         are farthest from each other, where one point is from 
         self and the other point is from other. Uses the 
         Euclidean dist between 2 points, defined in Point."""
-        # TO DO
-        pass
+        ans = 0.0
+        for point in self.points:
+            for otherpoint in other.points:
+                distance = point.distance(otherpoint)
+                if distance > ans:
+                    ans = distance
+        return ans
+
     def averageLinkageDist(self, other):
         """ Returns the float average (mean) distance between all 
         pairs of points, where one point is from self and the 
         other point is from other. Uses the Euclidean dist 
         between 2 points, defined in Point."""
-        # TO DO
-        pass
+        resultList = []
+        for point in self.points:
+            for otherpoint in other.points:
+                distance = point.distance(otherpoint)
+                resultList.append(distance)
+        ans = sum(resultList)/len(resultList)
+        return ans
+
     def members(self):
         for p in self.points:
             yield p
@@ -115,20 +136,37 @@ class ClusterSet(object):
         """ Assumes clusters c1 and c2 are in self
         Adds to self a cluster containing the union of c1 and c2
         and removes c1 and c2 from self """
-        # TO DO
-        pass
+        mergedPoints = c1.points + c2.points
+        pointType = c1.pointType
+        mergedCluster = Cluster(mergedPoints,pointType)
+        self.members.remove(c1)
+        self.members.remove(c2)
+        self.add(mergedCluster)
+        return
+
     def findClosest(self, linkage):
         """ Returns a tuple containing the two most similar 
         clusters in self
         Closest defined using the metric linkage """
-        # TO DO
-        pass
+        ans = (self.members[0], self.members[1])
+        shortest = linkage(self.members[0], self.members[1])
+        for i in range(len(self.members)-1):
+            for j in range(i+1, len(self.members)):
+                test = linkage(self.members[i], self.members[j])
+                if test < shortest:
+                    ans = (self.members[i], self.members[j])
+                    shortest = test
+        return ans
+
+
     def mergeOne(self, linkage):
         """ Merges the two most simililar clusters in self
         Similar defined using the metric linkage
         Returns the clusters that were merged """
-        # TO DO
-        pass
+        toMerge = self.findClosest(linkage)
+        self.mergeClusters(toMerge[0],toMerge[1])
+        return toMerge
+
     def numClusters(self):
         return len(self.members)
     def toStr(self):
@@ -218,14 +256,20 @@ def hCluster(points, linkage, numClusters, printHistory):
     print cS.toStr()
     return cS
 
-def test():
-    points = buildCityPoints('cityTemps.txt', False)
-    hCluster(points, Cluster.singleLinkageDist, 10, False)
+
+def test(filename):
+    points = buildCityPoints(filename, False)
+    #hCluster(points, Cluster.singleLinkageDist, 10, False)
     #points = buildCityPoints('cityTemps.txt', True)
     #hCluster(points, Cluster.maxLinkageDist, 10, False)
     #hCluster(points, Cluster.averageLinkageDist, 10, False)
-    #hCluster(points, Cluster.singleLinkageDist, 10, False)
+    hCluster(points, Cluster.singleLinkageDist, 5, False)
 
-#test()
-
-
+#def test2(filename):
+#    points = buildCityPoints('test.txt', False)
+#    hCluster(points, Cluster.singleLinkageDist, 3, False)
+#    hCluster(points, Cluster.maxLinkageDist, 3, False)
+#    hCluster(points, Cluster.averageLinkageDist, 3, False)
+              
+test('cityTemps.txt')
+#test2('test.txt')
