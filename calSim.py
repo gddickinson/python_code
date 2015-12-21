@@ -13,17 +13,19 @@ import time
 import matplotlib.animation as animation
 import cv2
 
-filename = '/home/george/Pictures/shakespeare.jpg'
-img = cv2.imread(filename,0)/100
-height = size(img,1)
-width = size(img,0)
+#==============================================================================
+# filename = '/home/george/Pictures/shakespeare.jpg'
+# img = cv2.imread(filename,0)/100
+# height = size(img,1)
+# width = size(img,0)
+#==============================================================================
 
 class Cell_no_Organelles(object):
     """
     Representation of a simplified 2D cell. 
     """    
 
-    def __init__(self, width = 100, height = 100, startCa = 100, maxCa = 1000, backgroundImg=[]):
+    def __init__(self, width = 100, height = 100, startCa = 100, maxCa = 1000, backgroundImg=[], channelList =[], pumpList=[]):
         """
         Initialization function, saves an array storing cell shape, calciumConc, ion channels
 
@@ -38,6 +40,8 @@ class Cell_no_Organelles(object):
         self.height = height
         self.startCa = startCa
         self.maxCa = maxCa
+        self.channelList = channelList
+        self.pumpList = pumpList
         if self.startCa <= self.maxCa:        
             self.cyto = self.cyto + self.startCa
         else: self.cyto = self.cyto + self.maxCa
@@ -45,14 +49,22 @@ class Cell_no_Organelles(object):
     def setCa(self, x, y, calciumConc):
         """
         addCa to a position in cyto
-        """
-        
+        """        
         if calciumConc <= self.maxCa:        
             self.cyto[x][y] = calciumConc 
         else:
             self.cyto[x][y] = self.maxCa
         return 
 
+    def addChannels (self, channelList):
+        self.channelList = self.channelList + channelList
+        return
+
+    def getChannels(self):
+        ans = []
+        for channel in self.channelList:
+            ans.append((channel.getX(),channel.getY(),channel.stateOpen, self.getCa(channel.getX(),channel.getY())))
+        return ans
 
     def getCa(self, x, y):
         """
@@ -82,7 +94,6 @@ class Cell_no_Organelles(object):
         else:
             self.cyto[x][y] = 0
         return
-
 
     def getTotalCa(self):
         return np.sum(self.cyto)
@@ -125,7 +136,6 @@ class Cell_no_Organelles(object):
                 ans.append(xy)
         return ans
             
-
     def getCytoCa(self):
         return self.cyto
 
@@ -158,7 +168,13 @@ class Cell_no_Organelles(object):
         return array of positions and calciumConc
         """
         randomXY = self.randomListXY()
-        
+
+        for channel in self.channelList:
+            self.addCa(channel.getX(),channel.getY(),channel.amountOfCaThisTime())
+ 
+        for pump in self.pumpList:
+            self.subtractCa(pump.getX(),pump.getY(),pump.amountOfCaThisTime())
+       
         for i in range(len(randomXY)):
             self.setBorderCa(self.startCa)
             surroundingCa = 0
@@ -176,12 +192,12 @@ class Cell_no_Organelles(object):
 
         return self.cyto
 
-class channel(object):
+class Channel(object):
     """
     Representation of a basic calcium sensitive channel. 
     """    
 
-    def __init__(self, x, y, cell, activatingCa = 200, inactivatingCa = 700, conductance=100):
+    def __init__(self, x, y, cell, activatingCa = 110, inactivatingCa = 250, conductance=600):
         """
         Initializes a position with coordinates (x, y) in cell object
         """
@@ -192,7 +208,6 @@ class channel(object):
         self.inactivatingCa = inactivatingCa
         self.conductance = conductance
         self.stateOpen = False
-        self.XYCalcium = cell.getCa(self.x,self.y)
     
     def getX(self):
         return self.x
@@ -201,8 +216,14 @@ class channel(object):
         return self.y    
     
     def updateActiveState(self):
-        if self.XYCalcium <800:
-            
+        xyCalcium = self.cell.getCa(self.getX(),self.getY())
+        if xyCalcium > self.activatingCa and xyCalcium < self.inactivatingCa:
+            chanceOfActivation = ((xyCalcium-self.activatingCa)/(self.inactivatingCa-self.activatingCa))
+            if random.random() > chanceOfActivation:
+                print chanceOfActivation
+                self.stateOpen = True
+        else:
+            self.stateOpen = False
         return
 
     def amountOfCaThisTime(self):
@@ -210,9 +231,62 @@ class channel(object):
         if self.stateOpen == False:
             return 0
         return self.conductance
+
+class Pump(object):
+    """
+    Representation of a basic calcium sensitive channel. 
+    """    
+
+    def __init__(self, x, y, cell, activatingCa = 200, conductance=100):
+        """
+        Initializes a position with coordinates (x, y) in cell object
+        """
+        self.x = x  
+        self.y = y
+        self.cell = cell
+        self.activatingCa = activatingCa
+        self.conductance = conductance
+        self.stateOpen = False
     
-test = Cell_no_Organelles(width=width, height=height)
-test.setCa(25,25,500)
+    def getX(self):
+        return self.x
+    
+    def getY(self):
+        return self.y    
+    
+    def updateActiveState(self):
+        xyCalcium = self.cell.getCa(self.getX(),self.getY())
+        if xyCalcium > self.activatingCa:
+            chanceOfActivation = ((xyCalcium-self.activatingCa)/(self.inactivatingCa-self.activatingCa))
+            if random.random() > chanceOfActivation:
+                print chanceOfActivation
+                self.stateOpen = True
+        else:
+            self.stateOpen = False
+        return
+
+    def amountOfCaThisTime(self):
+        self.updateActiveState()
+        if self.stateOpen == False:
+            return 0
+        return self.conductance
+
+    
+test = Cell_no_Organelles(width = 100, height = 100, startCa = 100, maxCa = 2000)
+
+channel1 = Channel(30,30, test)
+channel2 = Channel(40,40, test)
+channel3 = Channel(50,50, test)
+channel4 = Channel(31,31, test)
+channel5 = Channel(32,32, test)
+channel6 = Channel(30,31, test)
+pump1 = Pump(35,35, test)
+
+channelList= [channel1,channel2,channel3, channel4, channel5, channel6]
+pumpList =[pump1]
+test.addChannels(channelList, pumpList)
+
+test.setCa(29,29,2000)
 #test.setCa(55,55,1000)
 fig = plt.figure()
 
@@ -237,9 +311,12 @@ def runSim(*args):
 
 def runSim2(*args):
     print(args)
+    print(test.getChannels())
     im.set_array(test.update_mean())
     return im,
 
 
-ani = animation.FuncAnimation(fig, runSim2, frames= 50,interval=50, blit=True)
-plt.show(ani)
+if __name__ == '__main__':
+
+    ani = animation.FuncAnimation(fig, runSim2, frames= 50,interval=50, blit=True)
+    plt.show(ani)
