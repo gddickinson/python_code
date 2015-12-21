@@ -107,6 +107,12 @@ class WeightedDigraph(Digraph):
             ans.append(i[0])
         return ans
 
+    def getEdge(self,src, dest):
+        for item in self.edges[src]:
+            if item[0] == dest:
+                return item
+        return None
+
     def __str__(self):
         res = ''
         for k in self.edges:
