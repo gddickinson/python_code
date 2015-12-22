@@ -56,8 +56,9 @@ class Cell_no_Organelles(object):
             self.cyto[x][y] = self.maxCa
         return 
 
-    def addChannels (self, channelList):
+    def addChannels (self, channelList, pumpList):
         self.channelList = self.channelList + channelList
+        self.pumpList = self.pumpList + pumpList
         return
 
     def getChannels(self):
@@ -65,6 +66,13 @@ class Cell_no_Organelles(object):
         for channel in self.channelList:
             ans.append((channel.getX(),channel.getY(),channel.stateOpen, self.getCa(channel.getX(),channel.getY())))
         return ans
+
+    def getPumps(self):
+        ans = []
+        for pump in self.pumpList:
+            ans.append((pump.getX(),pump.getY(),pump.stateOpen, self.getCa(pump.getX(),pump.getY())))
+        return ans
+
 
     def getCa(self, x, y):
         """
@@ -86,10 +94,10 @@ class Cell_no_Organelles(object):
 
     def subtractCa(self, x, y, calciumConc):
         """
-        addCa to a position in cyto
+        subtract Ca from a position in cyto
         """
 
-        if self.cyto[x][y] - calciumConc >= 0:        
+        if self.cyto[x][y] - calciumConc > 0:        
             self.cyto[x][y] = self.cyto[x][y] - calciumConc 
         else:
             self.cyto[x][y] = 0
@@ -173,7 +181,7 @@ class Cell_no_Organelles(object):
             self.addCa(channel.getX(),channel.getY(),channel.amountOfCaThisTime())
  
         for pump in self.pumpList:
-            self.subtractCa(pump.getX(),pump.getY(),pump.amountOfCaThisTime())
+            self.subtractCa(pump.getX(),pump.getY(),230)
        
         for i in range(len(randomXY)):
             self.setBorderCa(self.startCa)
@@ -237,7 +245,7 @@ class Pump(object):
     Representation of a basic calcium sensitive channel. 
     """    
 
-    def __init__(self, x, y, cell, activatingCa = 200, conductance=100):
+    def __init__(self, x, y, cell, activatingCa = 200, conductance=10):
         """
         Initializes a position with coordinates (x, y) in cell object
         """
@@ -281,9 +289,14 @@ channel4 = Channel(31,31, test)
 channel5 = Channel(32,32, test)
 channel6 = Channel(30,31, test)
 pump1 = Pump(35,35, test)
+pump2 = Pump(30,30, test)
+pump3 = Pump(32,32, test)
+pump4 = Pump(33,33, test)
+pump5 = Pump(29,29, test)
+
 
 channelList= [channel1,channel2,channel3, channel4, channel5, channel6]
-pumpList =[pump1]
+pumpList =[pump1, pump2, pump3, pump4, pump5]
 test.addChannels(channelList, pumpList)
 
 test.setCa(29,29,2000)
@@ -311,7 +324,7 @@ def runSim(*args):
 
 def runSim2(*args):
     print(args)
-    print(test.getChannels())
+    print(test.getPumps())
     im.set_array(test.update_mean())
     return im,
 
