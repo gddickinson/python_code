@@ -80,23 +80,72 @@ def printPath(path):
     return result
 
 
-nodes = []
-nodes.append(Node("ABC")) # nodes[0]
-nodes.append(Node("ACB")) # nodes[1]
-nodes.append(Node("BAC")) # nodes[2]
-nodes.append(Node("BCA")) # nodes[3]
-nodes.append(Node("CAB")) # nodes[4]
-nodes.append(Node("CBA")) # nodes[5]
+#nodes = []
+#nodes.append(Node("ABC")) # nodes[0]
+#nodes.append(Node("ACB")) # nodes[1]
+#nodes.append(Node("BAC")) # nodes[2]
+#nodes.append(Node("BCA")) # nodes[3]
+#nodes.append(Node("CAB")) # nodes[4]
+#nodes.append(Node("CBA")) # nodes[5]
+#
+#g = Graph()
+#for n in nodes:
+#    g.addNode(n)
+#
+#g.addEdge(Edge(nodes[0],nodes[1]))
+#g.addEdge(Edge(nodes[0],nodes[2]))
+#g.addEdge(Edge(nodes[1],nodes[4]))
+#g.addEdge(Edge(nodes[2],nodes[3]))
+#g.addEdge(Edge(nodes[3],nodes[5]))
+#g.addEdge(Edge(nodes[4],nodes[5]))
+#
+#print(printPath(nodes))
 
-g = Graph()
+import random
+g = Graph() 
+n = 5
+
+def newNode(name):
+    name = Node(name)
+    return name
+    
+def addEdge(x,y):
+    g.addEdge(Edge(x,y))
+    return
+        
+nodes = []
+for i in range(n):
+    nodes.append(newNode(i)) # newNode takes one parameter, the number of the node
+    
 for n in nodes:
     g.addNode(n)
 
-g.addEdge(Edge(nodes[0],nodes[1]))
-g.addEdge(Edge(nodes[0],nodes[2]))
-g.addEdge(Edge(nodes[1],nodes[4]))
-g.addEdge(Edge(nodes[2],nodes[3]))
-g.addEdge(Edge(nodes[3],nodes[5]))
-g.addEdge(Edge(nodes[4],nodes[5]))
+#for i in range(len(nodes)):
+#    x = random.choice(nodes)
+#    y = random.choice(nodes)
+#    addEdge(x,y)    
 
-print(g.edges())
+#for i in range(len(nodes)):
+#	x = random.choice(nodes)
+#	y = random.choice(nodes)
+#	addEdge(x,y)
+#	addEdge(y,x)
+
+for i in range(len(nodes)):
+	w = random.choice(nodes)
+	x = random.choice(nodes)
+	y = random.choice(nodes)
+	z = random.choice(nodes)
+	addEdge(w,x)
+	addEdge(x,y)
+	addEdge(y,z)
+	addEdge(z,w)
+
+
+
+   
+for n in nodes:
+    print ('parent:', n.getName())
+    for i in g.childrenOf(n):
+        print ('children:', i.getName())
+    print ('-------')
