@@ -38,13 +38,13 @@ import math
 
 def distances(filename1, filename2, output):
     
-    x = np.loadtxt(filename1,skiprows=1,usecols=(0,))
-    y = np.loadtxt(filename1,skiprows=1,usecols=(1,))
+    x = np.loadtxt(filename1,skiprows=1,usecols=(5,))
+    y = np.loadtxt(filename1,skiprows=1,usecols=(6,))
     #print('File1 Loaded')
 
     if filename2 != 'random':
-        x2 = np.loadtxt(filename2,skiprows=0,usecols=(0,))
-        y2 = np.loadtxt(filename2,skiprows=0,usecols=(1,))
+        x2 = np.loadtxt(filename2,skiprows=1,usecols=(5,))
+        y2 = np.loadtxt(filename2,skiprows=1,usecols=(6,))
         print('File2 Loaded')
 
     else:
@@ -122,18 +122,21 @@ def generateRandom(x,y):
     return x,y
 
 
-path = "J:\\WORK\\Calcium_STORM\\150317\\Distance_from_puff_to_nearest_IP3R\\"
-file1 = "150317_Puff_Site_XY_P"
+path = "J:\\WORK_IN_PROGRESS\\Files for cluster analysis\\IP3R1\\UCDavis_Primary_labelled_Ab\\"
+file1 = "140107_UCDavis_primary_1-8000_dilution_00"
 file2 = file1
 
 
 
-for i in range(1,8):
+for i in range(1,4):
     filename1 = path + file1 + str(i) + ".txt"
-    #filename2 = path + file2 + str(i) + ".txt"
-    filename2 = 'random'
+    filename2 = path + file2 + str(i) + ".txt"
+    #filename2 = 'random'
     output = path + file2 + str(i) + "_result" + ".txt"
-    distances(filename1, filename2, output)
+    try:
+        distances(filename1, filename2, output)
+    except:
+        pass
     
     
     
