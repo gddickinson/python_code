@@ -181,7 +181,7 @@ class Cell_no_Organelles(object):
             self.addCa(channel.getX(),channel.getY(),channel.amountOfCaThisTime())
  
         for pump in self.pumpList:
-            self.subtractCa(pump.getX(),pump.getY(),230)
+            self.subtractCa(pump.getX(),pump.getY(),pump.amountOfCaThisTime())
        
         for i in range(len(randomXY)):
             self.setBorderCa(self.startCa)
@@ -245,7 +245,7 @@ class Pump(object):
     Representation of a basic calcium sensitive channel. 
     """    
 
-    def __init__(self, x, y, cell, activatingCa = 200, conductance=10):
+    def __init__(self, x, y, cell, activatingCa = 200, inactivatingCa = 10000, conductance=1000):
         """
         Initializes a position with coordinates (x, y) in cell object
         """
@@ -253,6 +253,7 @@ class Pump(object):
         self.y = y
         self.cell = cell
         self.activatingCa = activatingCa
+        self.inactivatingCa = inactivatingCa
         self.conductance = conductance
         self.stateOpen = False
     
