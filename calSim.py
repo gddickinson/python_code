@@ -205,7 +205,7 @@ class Channel(object):
     Representation of a basic calcium sensitive channel. 
     """    
 
-    def __init__(self, x, y, cell, activatingCa = 110, inactivatingCa = 250, conductance=600):
+    def __init__(self, x, y, cell, activatingCa = 110, inactivatingCa = 130, conductance=600):
         """
         Initializes a position with coordinates (x, y) in cell object
         """
@@ -245,7 +245,7 @@ class Pump(object):
     Representation of a basic calcium sensitive channel. 
     """    
 
-    def __init__(self, x, y, cell, activatingCa = 200, inactivatingCa = 10000, conductance=1000):
+    def __init__(self, x, y, cell, activatingCa = 130, inactivatingCa = 10000, conductance=1000):
         """
         Initializes a position with coordinates (x, y) in cell object
         """
@@ -289,15 +289,25 @@ channel3 = Channel(50,50, test)
 channel4 = Channel(31,31, test)
 channel5 = Channel(32,32, test)
 channel6 = Channel(30,31, test)
-pump1 = Pump(35,35, test)
-pump2 = Pump(30,30, test)
-pump3 = Pump(32,32, test)
-pump4 = Pump(33,33, test)
-pump5 = Pump(29,29, test)
+
+
+#pump1 = Pump(40,40, test)
+#pump2 = Pump(40,41, test)
+#pump3 = Pump(40,42, test)
+#pump4 = Pump(40,43, test)
+#pump5 = Pump(41,40, test)
+#pump6 = Pump(41,41, test)
+#pump7 = Pump(41,42, test)
+#pump8 = Pump(41,43, test)
+
+pumpList = []
+for x in range(0,100,10):
+    for y in range (0,100,10):
+        pumpList.append(Pump(x,y,test))
 
 
 channelList= [channel1,channel2,channel3, channel4, channel5, channel6]
-pumpList =[pump1, pump2, pump3, pump4, pump5]
+#pumpList =[pump1, pump2, pump3, pump4, pump5, pump6, pump7, pump8]
 test.addChannels(channelList, pumpList)
 
 test.setCa(29,29,2000)
