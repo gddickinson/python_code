@@ -24,16 +24,18 @@ import math
 # ###########################################
 #==============================================================================
 
-FileName = 'C:\\Users\\George\\Desktop\\ClusterCenters to Puffs\\p1\\150317_puffCenters_XY_p1.txt'
-FileName2 = 'C:\\Users\\George\\Desktop\\ClusterCenters to Puffs\\p1\\150317_IP3R1_centers_XY_p1.txt'
-Output = 'C:\\Users\\George\\Desktop\\ClusterCenters to Puffs\\p1\\150317_puff_centers_XY_p7_results2.txt'
+#FileName = 'C:\\Users\\George\\Desktop\\ClusterCenters to Puffs\\p7\\150317_KDEL_centers_XY_p7.txt'
+FileName2 = 'C:\\Users\\George\\Desktop\\LaserSpot2\\160128\\160128_XY.txt'
+Output = 'C:\\Users\\George\\Desktop\\LaserSpot2\\160128\\160128_XY_result.txt'
 
-x = np.loadtxt(FileName,skiprows=1,usecols=(0,))
-y = np.loadtxt(FileName,skiprows=1,usecols=(1,))
-print('File1 Loaded')
+#x = np.loadtxt(FileName,skiprows=1,usecols=(0,))
+#y = np.loadtxt(FileName,skiprows=1,usecols=(1,))
+#print('File1 Loaded')
 
-x2 = np.loadtxt(FileName2,skiprows=1,usecols=(0,))
-y2 = np.loadtxt(FileName2,skiprows=1,usecols=(1,))
+x2 = 45
+y2 = 75
+x = np.loadtxt(FileName2,skiprows=1,usecols=(0,))
+y = np.loadtxt(FileName2,skiprows=1,usecols=(1,))
 print('File2 Loaded')
 
 
