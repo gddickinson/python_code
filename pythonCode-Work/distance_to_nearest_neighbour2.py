@@ -32,8 +32,8 @@ Output = 'C:\\Users\\George\\Desktop\\LaserSpot2\\160128\\160128_XY_result.txt'
 #y = np.loadtxt(FileName,skiprows=1,usecols=(1,))
 #print('File1 Loaded')
 
-x2 = 55
-y2 = 44
+x2 = 79
+y2 = 19
 x = np.loadtxt(FileName2,skiprows=1,usecols=(0,))
 y = np.loadtxt(FileName2,skiprows=1,usecols=(1,))
 print('File2 Loaded')
