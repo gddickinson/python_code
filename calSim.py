@@ -228,7 +228,7 @@ class Channel(object):
         if xyCalcium > self.activatingCa and xyCalcium < self.inactivatingCa:
             chanceOfActivation = ((xyCalcium-self.activatingCa)/(self.inactivatingCa-self.activatingCa))
             if random.random() > chanceOfActivation:
-                print chanceOfActivation
+                print (chanceOfActivation)
                 self.stateOpen = True
         else:
             self.stateOpen = False
@@ -268,7 +268,7 @@ class Pump(object):
         if xyCalcium > self.activatingCa:
             chanceOfActivation = ((xyCalcium-self.activatingCa)/(self.inactivatingCa-self.activatingCa))
             if random.random() > chanceOfActivation:
-                print chanceOfActivation
+                print (chanceOfActivation)
                 self.stateOpen = True
         else:
             self.stateOpen = False

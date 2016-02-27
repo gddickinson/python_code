@@ -17,8 +17,8 @@ import pyqtgraph as pg
 import tifffile
 import json
 import re
-import SimpleCV as simplecv
-from SimpleCV import Camera, Display, Image
+#import SimpleCV as simplecv
+#from SimpleCV import Camera, Display, Image
 import pyscreenshot as ImageGrab
 #from PIL import Image
 import cv2
