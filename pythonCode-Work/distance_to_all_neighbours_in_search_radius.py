@@ -38,13 +38,13 @@ import math
 
 def distances(filename1, filename2, output):
     
-    x = np.loadtxt(filename1,skiprows=1,usecols=(5,))
-    y = np.loadtxt(filename1,skiprows=1,usecols=(6,))
+    x = np.loadtxt(filename1,skiprows=1,usecols=(0,))
+    y = np.loadtxt(filename1,skiprows=1,usecols=(1,))
     #print('File1 Loaded')
 
     if filename2 != 'random':
-        x2 = np.loadtxt(filename2,skiprows=1,usecols=(5,))
-        y2 = np.loadtxt(filename2,skiprows=1,usecols=(6,))
+        x2 = np.loadtxt(filename2,skiprows=1,usecols=(0,))
+        y2 = np.loadtxt(filename2,skiprows=1,usecols=(1,))
         print('File2 Loaded')
 
     else:
@@ -101,8 +101,8 @@ def distances(filename1, filename2, output):
     #hist=plt.hist(distanceSet,50)
     #print (distanceSet)
     
-    #fig1 = plt.scatter(data[0],data[1], c='red')
-    #fig2 = plt.scatter(comparisonSet[0],comparisonSet[1], c='green')
+    fig1 = plt.scatter(data[0],data[1], c='red')
+    fig2 = plt.scatter(comparisonSet[0],comparisonSet[1], c='green')
     #fig3 = plt.scatter(data3[0],data3[1], c='blue')
     plt.show()
     return
@@ -122,21 +122,28 @@ def generateRandom(x,y):
     return x,y
 
 
-path = "J:\\WORK_IN_PROGRESS\\Files for cluster analysis\\IP3R1\\UCDavis_Primary_labelled_Ab\\"
-file1 = "140107_UCDavis_primary_1-8000_dilution_00"
-file2 = file1
+path = "C:\\Users\\George\\Desktop\\Puff site distance to IP3R clusters - filtered\\"
+file1 = "trial3_puffs_XY"
+file2 = "trial3_puffs_XY"
 
 
+filename1 = path + file1 + ".txt"
+filename2 = path + file2 + ".txt"
+#filename2 = 'random'
+output = path + file2 + "_result" + ".txt"
 
-for i in range(1,4):
-    filename1 = path + file1 + str(i) + ".txt"
-    filename2 = path + file2 + str(i) + ".txt"
-    #filename2 = 'random'
-    output = path + file2 + str(i) + "_result" + ".txt"
-    try:
-        distances(filename1, filename2, output)
-    except:
-        pass
+distances(filename1, filename2, output)
+
+
+#for i in range(1,4):
+#    filename1 = path + file1 + str(i) + ".txt"
+#    filename2 = path + file2 + str(i) + ".txt"
+#    #filename2 = 'random'
+#    output = path + file2 + str(i) + "_result" + ".txt"
+#    try:
+#        distances(filename1, filename2, output)
+#    except:
+#        pass
     
     
     
