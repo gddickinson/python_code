@@ -24,18 +24,17 @@ import math
 # ###########################################
 #==============================================================================
 
-#FileName = 'C:\\Users\\George\\Desktop\\ClusterCenters to Puffs\\p7\\150317_KDEL_centers_XY_p7.txt'
-FileName2 = 'C:\\Users\\George\\Desktop\\LaserSpot2\\160128\\160128_XY.txt'
-Output = 'C:\\Users\\George\\Desktop\\LaserSpot2\\160128\\160128_XY_result.txt'
+FileName = 'C:\\Users\\George\\Desktop\\Puff site distance to IP3R clusters - filtered\\trial3_IP3R1_XY.txt'
+FileName2 = 'C:\\Users\\George\\Desktop\\Puff site distance to IP3R clusters - filtered\\trial3_IP3R1_XY.txt'
+OutputFilename = 'C:\\Users\\George\\Desktop\\Puff site distance to IP3R clusters - filtered\\trial3_IP3R1_XY_result.txt'
 
-#x = np.loadtxt(FileName,skiprows=1,usecols=(0,))
-#y = np.loadtxt(FileName,skiprows=1,usecols=(1,))
-#print('File1 Loaded')
+x = np.loadtxt(FileName,skiprows=1,usecols=(0,))
+y = np.loadtxt(FileName,skiprows=1,usecols=(1,))
+print('File1 Loaded')
 
-x2 = 96
-y2 = 87
-x = np.loadtxt(FileName2,skiprows=1,usecols=(0,))
-y = np.loadtxt(FileName2,skiprows=1,usecols=(1,))
+
+x2 = np.loadtxt(FileName2,skiprows=1,usecols=(0,))
+y2 = np.loadtxt(FileName2,skiprows=1,usecols=(1,))
 print('File2 Loaded')
 
 
@@ -50,15 +49,16 @@ searchRadius = 2000
 
 ######## Functions ###########################
 #==============================================================================
-# def getNeigbours(x, y, comparisonSet, searchRadius):
-#     keptX = []
-#     keptY = []
-#     for i in range (comparisonSet[0].size):
-#         if abs(x-comparisonSet[0][i]) < searchRadius and abs(y-comparisonSet[1][i]) < searchRadius:
-#             keptX.append(comparisonSet[0][i])
-#             keptY.append(comparisonSet[1][i])
-#     answer = np.vstack((keptX,keptY))
-#     return answer
+def getNeigbours(x, y, comparisonSet, searchRadius):
+    keptX = []
+    keptY = []
+    for i in range (comparisonSet[0].size):
+        if abs(x-comparisonSet[0][i]) < searchRadius and abs(y-comparisonSet[1][i]) < searchRadius:
+            keptX.append(comparisonSet[0][i])
+            keptY.append(comparisonSet[1][i])
+    answer = np.vstack((keptX,keptY))
+    answer = len(answer)
+    return answer
 #==============================================================================
 
 def shortestDistance(x,y, searchSet, searchRadius):
@@ -82,20 +82,31 @@ def dataShortestDist(dataSet,comparisonSet,searchRadius):
         print(i);
     answer = np.vstack((dataX,dataY,dataDist))
     return answer    
+
     
-    
-#data3 = getNeigbours(data[0][3],data[1][3],comparisonSet,searchRadius)
 #data3distance = shortestDistance(data['x'][5],data['y'][5],comparisonSet,searchRadius)
 
-############# NP Array with x,y,dist #####################
-distanceSet = dataShortestDist(data,comparisonSet,searchRadius)
-np.savetxt(Output, np.transpose(distanceSet), delimiter=',')
+############# number of nearest neighbours #####################
+numberNearestLocalizations = []    
+for i in range(len(x)):    
+    numberNearestLocalizations.append(getNeigbours(x[i],y[i],comparisonSet,searchRadius))
+    print (((i)/len(x))*100)
+np.savetxt(OutputFilename, numberNearestLocalizations, delimiter=',')
 print("Result File Saved")
 ###########################################################
-#hist=plt.hist(distanceSet[2],50)
-print (distanceSet)
 
-#fig1 = plt.scatter(data[0],data[1], c='red')
-#fig2 = plt.scatter(comparisonSet[0],comparisonSet[1], c='green')
-#fig3 = plt.scatter(data3[0],data3[1], c='blue')
-plt.show()
+#==============================================================================
+# 
+# ############# NP Array with x,y,dist #####################
+# distanceSet = dataShortestDist(data,comparisonSet,searchRadius)
+# np.savetxt(OutputFilename, np.transpose(distanceSet), delimiter=',')
+# print("Result File Saved")
+# ###########################################################
+# #hist=plt.hist(distanceSet[2],50)
+# print (distanceSet)
+# 
+# #fig1 = plt.scatter(data[0],data[1], c='red')
+# #fig2 = plt.scatter(comparisonSet[0],comparisonSet[1], c='green')
+# #fig3 = plt.scatter(data3[0],data3[1], c='blue')
+#==============================================================================
+#plt.show()
