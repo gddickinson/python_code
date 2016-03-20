@@ -5,7 +5,11 @@ Created on Wed Aug  5 22:14:47 2015
 @author: george
 """
 
-from Tkinter import *
+import sys
+if sys.version_info < (3, 0):
+    from Tkinter import *
+else:
+    from tkinter import *
 
 def checkered(canvas, line_distance):
    # vertical lines at an interval of "line_distance" pixel
@@ -17,8 +21,11 @@ def checkered(canvas, line_distance):
 
 
 master = Tk()
-canvas_width = 200
-canvas_height = 100 
+
+
+
+canvas_width = 600
+canvas_height = 600 
 w = Canvas(master, 
            width=canvas_width,
            height=canvas_height)

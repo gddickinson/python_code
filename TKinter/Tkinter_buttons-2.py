@@ -7,7 +7,11 @@ Created on Wed Aug  5 20:48:09 2015
 
 #http://www.python-course.eu/tkinter_buttons.php
 
-import Tkinter as tk
+import sys
+if sys.version_info < (3, 0):
+    import Tkinter as tk
+else:
+    import tkinter as tk
 
 counter = 0 
 def counter_label(label):

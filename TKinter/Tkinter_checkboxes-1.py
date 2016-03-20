@@ -5,7 +5,11 @@ Created on Wed Aug  5 21:50:33 2015
 @author: george
 """
 
-from Tkinter import *
+import sys
+if sys.version_info < (3, 0):
+    from Tkinter import *
+else:
+    from tkinter import *
 
 master = Tk()
 var1 = IntVar()

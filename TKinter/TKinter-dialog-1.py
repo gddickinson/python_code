@@ -5,7 +5,11 @@ Created on Thu Aug  6 06:09:04 2015
 @author: george
 """
 
-from Tkinter import *
+import sys
+if sys.version_info < (3, 0):
+    from Tkinter import *
+else:
+    from tkinter import *
 from tkMessageBox import *
 
 def answer():

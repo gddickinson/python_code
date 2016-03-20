@@ -401,20 +401,19 @@ totalTimeMean = []
 problemTimeMean = [] 
 customersDealtWithMean = []
 
-numberStaff = 10
+numberStaff = 20
 
 for i in range(numberStaff):
         
-    served,total,problem,dealt = simulation(numberOfCustomers = 800, numberOfRuns = 50, desk =i+1, greeter = numberStaff-i+1)
+    served,total,problem,dealt = simulation(numberOfCustomers = 20, numberOfRuns = 5, desk =i+1, greeter = numberStaff-i+1)
     servedTimeMean.append(served)
     totalTimeMean.append(total)
     problemTimeMean.append(problem) 
     customersDealtWithMean.append(dealt)
 
 pylab.plot(totalTimeMean)
+pylab.plot(servedTimeMean)
+pylab.plot(problemTimeMean)
 pylab.xlabel('# at desks')
 pylab.ylabel('time (min*10)')
-
-pylab.plot(customersDealtWithMean)
-pylab.xlabel('# at desks')
-pylab.ylabel('customers dealt with')
+pylab.plot.legend()

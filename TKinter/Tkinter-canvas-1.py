@@ -10,12 +10,16 @@ Created on Wed Aug  5 22:03:07 2015
 #We kept the first example intentionally very simple. We create a canvas and draw a straight horizontal line into this canvas. This line vertically cuts the canvas into two areas. 
 #The casting to an integer value in the assignment "y = int(canvas_height / 2)" is superfluous, because create_line can work with float values as well. They are automatically turned into integer values. In the following you can see the code of our first simple script: 
 
+import sys
+if sys.version_info < (3, 0):
+    from Tkinter import *
+else:
+    from tkinter import *
 
-from Tkinter import *
 master = Tk()
 
-canvas_width = 80
-canvas_height = 40
+canvas_width = 200
+canvas_height = 200
 w = Canvas(master, 
            width=canvas_width,
            height=canvas_height)

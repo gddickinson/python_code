@@ -16,8 +16,8 @@ import pyqtgraph as pg
 import tifffile
 import json
 import re
-import SimpleCV as simplecv
-from SimpleCV import Camera, Display, Image
+#import SimpleCV as simplecv
+#from SimpleCV import Camera, Display, Image
 import pyscreenshot as ImageGrab
 #from PIL import Image
 import cv2
@@ -531,7 +531,7 @@ class Viewer(QtGui.QMainWindow):
         time.sleep(.05)
 
     def cameraRecordDialog(self):        
-        cap = cv2.VideoCapture(0)
+        cap = cv2.VideoCapture(-1)
 
         #app2 = QtGui.QApplication(sys.argv)
         dialogbox = Form()
