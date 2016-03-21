@@ -101,10 +101,10 @@ def distances(filename1, filename2, output):
     #hist=plt.hist(distanceSet,50)
     #print (distanceSet)
     
-    fig1 = plt.scatter(data[0],data[1], c='red')
-    fig2 = plt.scatter(comparisonSet[0],comparisonSet[1], c='green')
+    #fig1 = plt.scatter(data[0],data[1], c='red')
+    #fig2 = plt.scatter(comparisonSet[0],comparisonSet[1], c='green')
     #fig3 = plt.scatter(data3[0],data3[1], c='blue')
-    plt.show()
+    #plt.show()
     return
 
 def generateRandom(x,y):        
@@ -122,9 +122,9 @@ def generateRandom(x,y):
     return x,y
 
 
-path = "C:\\Users\\George\\Desktop\\Puff site distance to IP3R clusters - filtered\\"
-file1 = "trial3_puffs_XY"
-file2 = "trial3_puffs_XY"
+path = "C:\\Users\\George\\Desktop\\ClusterCenters to Puffs\\2Colour\\150317\\p7\\"
+file1 = "150317_puffs_XY_p7"
+file2 = "150317_KDEL_centers_over125pointsXY_p7"
 
 
 filename1 = path + file1 + ".txt"
