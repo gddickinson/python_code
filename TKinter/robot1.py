@@ -68,35 +68,44 @@ class game:
 
 
     def forward(self):
+        differenceX = self.x1 - self.x
+        differenceY = self.y1 - self.y      
+        
         self.x = self.x1
         self.y = self.y1
 
-        self.x1 = self.x1 + (self.x1-self.x)
-        self.x2 = self.x2 + (self.x1-self.x)
-        self.x3 = self.x3 + (self.x1-self.x)
-        self.y1 = self.y1 + (self.y1-self.y)
-        self.y2 = self.y2 + (self.y1-self.y)
-        self.y3 = self.y3 + (self.y1-self.y)
+
+        self.x1 = self.x1 + differenceX
+        self.x2 = self.x2 + differenceX
+        self.x3 = self.x3 + differenceX
+        self.y1 = self.y1 + differenceY
+        self.y2 = self.y2 + differenceY
+        self.y3 = self.y3 + differenceY
 
 
     def reverse(self):
-        self.x = self.x - (self.x1/10)
-        self.y = self.y - (self.y1/10)
-               
-        self.x1 = self.x
-        self.x2 = self.x + 5
-        self.x3 = self.x - 5
-        self.y1 = self.y + 10
-        self.y2 = self.y - 10
-        self.y3 = self.y - 10
+        differenceX = self.x1 - self.x
+        differenceY = self.y1 - self.y      
+        
+        self.x = self.x - differenceX
+        self.y = self.y - differenceY
+
+
+        self.x1 = self.x1 - differenceX
+        self.x2 = self.x2 - differenceX
+        self.x3 = self.x3 - differenceX
+        self.y1 = self.y1 - differenceY
+        self.y2 = self.y2 - differenceY
+        self.y3 = self.y3 - differenceY
         
         
     
     def rotateRight(self):
-        self.rotation += 1
+        self.rotation += 10
+        
 
     def rotateLeft(self):
-        self.rotation -= 1
+        self.rotation -= 10
 
 
     def paint(self):
@@ -134,8 +143,8 @@ class game:
         self.x1, self.y1 = self.rotatePoint((self.x,self.y),(self.x1,self.y1), self.rotation)        
         self.x2, self.y2 = self.rotatePoint((self.x,self.y),(self.x2,self.y2), self.rotation)
         self.x3, self.y3 = self.rotatePoint((self.x,self.y),(self.x3,self.y3), self.rotation)
-        print(self.x, self.y)
         
+        self.rotation = 0.0
 
             
     
