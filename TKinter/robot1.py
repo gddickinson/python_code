@@ -45,8 +45,7 @@ class game:
         self.time=0
         self.RUN=True
         
-        #self.point=0
-        
+        #self.point=0        
         self.x=100.0
         self.y=100.0
         self.x1 = self.x
@@ -66,15 +65,12 @@ class game:
         self.run()
 
 
-
     def forward(self):
         differenceX = self.x1 - self.x
         differenceY = self.y1 - self.y      
         
         self.x = self.x1
         self.y = self.y1
-
-
         self.x1 = self.x1 + differenceX
         self.x2 = self.x2 + differenceX
         self.x3 = self.x3 + differenceX
@@ -82,31 +78,24 @@ class game:
         self.y2 = self.y2 + differenceY
         self.y3 = self.y3 + differenceY
 
-
     def reverse(self):
         differenceX = self.x1 - self.x
         differenceY = self.y1 - self.y      
         
         self.x = self.x - differenceX
         self.y = self.y - differenceY
-
-
         self.x1 = self.x1 - differenceX
         self.x2 = self.x2 - differenceX
         self.x3 = self.x3 - differenceX
         self.y1 = self.y1 - differenceY
         self.y2 = self.y2 - differenceY
         self.y3 = self.y3 - differenceY
-        
-        
-    
+                    
     def rotateRight(self):
         self.rotation += 10
         
-
     def rotateLeft(self):
         self.rotation -= 10
-
 
     def paint(self):
         self.canvas.delete(ALL)
@@ -146,8 +135,7 @@ class game:
         
         self.rotation = 0.0
 
-            
-    
+                
     def run(self):
         if self.RUN is True:
             self.time+=1
