@@ -122,9 +122,9 @@ def generateRandom(x,y):
     return x,y
 
 
-path = "C:\\Users\\George\\Desktop\\ClusterCenters to Puffs\\2Colour\\150317\\p7\\"
-file1 = "150317_puffs_XY_p7"
-file2 = "150317_KDEL_centers_over125pointsXY_p7"
+path = "C:\\Users\\George\\Desktop\\ClusterCenters to Puffs\\2Colour\\150723\\"
+file1 = "150723_COS_AfterCellights_AllRuns_Puff_clipped_XY"
+file2 = "150723_COS_AfterCellights_AllRuns_KDEL_clusteredCentersXY"
 
 
 filename1 = path + file1 + ".txt"
