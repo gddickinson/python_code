@@ -8,10 +8,17 @@ Created on Sun Mar 20 08:45:01 2016
 from tkinter import *
 from random import *
 import numpy as np
+from rrb3 import *
+
+#### raspirobot board ###
+#### https://github.com/simonmonk/raspirobotboard3 ####
+batteryVoltage = 12
+motorVoltage = 6
+robotControl = (batteryVoltage, motorVoltage)
 
 
 class Robot:
-    def __init__(self):
+    def __init__(self, robotControl):
         
         self.width = 500
         self.height = 500
@@ -26,8 +33,6 @@ class Robot:
         
         self.clock=Label(self.frame, bg="black", fg="white")
         self.clock.pack()
-        #self.points=Label(self.frame, bg="black", fg="white")
-        #self.points.pack()
         self.forward_button = Button(self.frame, bg="black", fg="white", text="Forward",command=self.forward)
         self.forward_button.pack()
         self.rotateLeft_button = Button(self.frame, bg="black", fg="white", text="Rotate Left",command=self.rotateLeft)
@@ -63,10 +68,7 @@ class Robot:
         self.size=1
         self.canvas.bind("<ButtonPress-1>", self.onMClick)
         self.root.bind("<Key>", self.keyPress)
-        #self.root.bind("<Left>", self.rotateLeft)
-        #self.root.bind("<Right>", self.rotateRight)
-        #self.root.bind("<Up>", self.forward)
-        #self.root.bind("<Down>", self.reverse)
+
         self.run()
 
     def forward(self):
@@ -81,6 +83,8 @@ class Robot:
         self.y1 = self.y1 + differenceY
         self.y2 = self.y2 + differenceY
         self.y3 = self.y3 + differenceY
+        
+        self.robotControl.forward()
 
     def reverse(self):
         differenceX = self.x1 - self.x
@@ -163,4 +167,4 @@ class Robot:
         self.canvas.unbind("<ButtonPress-1>")
         self.canvas.unbind("<Key>")
  
-app=Robot()
+app=Robot(robotControl = (batteryVoltage, motorVoltage))
