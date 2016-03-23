@@ -10,7 +10,7 @@ from random import *
 import numpy as np
 
 
-class game:
+class Robot:
     def __init__(self):
         
         self.width = 500
@@ -26,18 +26,18 @@ class game:
         
         self.clock=Label(self.frame, bg="black", fg="white")
         self.clock.pack()
-        self.points=Label(self.frame, bg="black", fg="white")
-        self.points.pack()
-        self.forward = Button(self.frame, bg="black", fg="white", text="Forward",command=self.forward)
-        self.forward.pack()
-        self.rotateLeft = Button(self.frame, bg="black", fg="white", text="Rotate Left",command=self.rotateLeft)
-        self.rotateLeft.pack(side=LEFT)
-        self.rotateRight = Button(self.frame, bg="black", fg="white", text="Rotate Right",command=self.rotateRight)
-        self.rotateRight.pack(side=RIGHT)
+        #self.points=Label(self.frame, bg="black", fg="white")
+        #self.points.pack()
+        self.forward_button = Button(self.frame, bg="black", fg="white", text="Forward",command=self.forward)
+        self.forward_button.pack()
+        self.rotateLeft_button = Button(self.frame, bg="black", fg="white", text="Rotate Left",command=self.rotateLeft)
+        self.rotateLeft_button.pack(side=LEFT)
+        self.rotateRight_button = Button(self.frame, bg="black", fg="white", text="Rotate Right",command=self.rotateRight)
+        self.rotateRight_button.pack(side=RIGHT)
         self.button=Button(self.frame, bg="black", fg="white", text="Click to start",command=self.start)
         self.button.pack()
-        self.reverse = Button(self.frame, bg="black", fg="white", text="Reverse",command=self.reverse)
-        self.reverse.pack()
+        self.reverse_button = Button(self.frame, bg="black", fg="white", text="Reverse",command=self.reverse)
+        self.reverse_button.pack()
         
         self.root.mainloop()
 
@@ -62,8 +62,12 @@ class game:
 
         self.size=1
         self.canvas.bind("<ButtonPress-1>", self.onMClick)
+        self.root.bind("<Key>", self.keyPress)
+        #self.root.bind("<Left>", self.rotateLeft)
+        #self.root.bind("<Right>", self.rotateRight)
+        #self.root.bind("<Up>", self.forward)
+        #self.root.bind("<Down>", self.reverse)
         self.run()
-
 
     def forward(self):
         differenceX = self.x1 - self.x
@@ -114,6 +118,19 @@ class game:
         self.targetx=event.x
         self.targety=event.y
 
+    def keyPress(self,event):
+        #print("Pressed", event.keysym)
+        if event.keysym == "Right":
+            self.rotateRight()
+        if event.keysym == "Left":
+            self.rotateLeft()
+        if event.keysym == "Up":
+            self.forward()
+        if event.keysym == "Down":
+            self.reverse()
+        if event.keysym == "q":
+            self.root.destroy()
+
     def rotatePoint(self,centerPoint,point,angle):
         """Rotates a point around another centerPoint. Angle is in degrees.
         Rotation is counter-clockwise"""
@@ -126,15 +143,11 @@ class game:
 
     
     def move(self, b,speed):
-        #return
         ###rotation###
-
         self.x1, self.y1 = self.rotatePoint((self.x,self.y),(self.x1,self.y1), self.rotation)        
         self.x2, self.y2 = self.rotatePoint((self.x,self.y),(self.x2,self.y2), self.rotation)
-        self.x3, self.y3 = self.rotatePoint((self.x,self.y),(self.x3,self.y3), self.rotation)
-        
+        self.x3, self.y3 = self.rotatePoint((self.x,self.y),(self.x3,self.y3), self.rotation)        
         self.rotation = 0.0
-
                 
     def run(self):
         if self.RUN is True:
@@ -148,5 +161,6 @@ class game:
     def end(self):
         self.RUN=False
         self.canvas.unbind("<ButtonPress-1>")
+        self.canvas.unbind("<Key>")
  
-app=game()
+app=Robot()
