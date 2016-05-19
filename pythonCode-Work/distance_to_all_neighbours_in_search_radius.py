@@ -122,31 +122,46 @@ def generateRandom(x,y):
     return x,y
 
 
-path = "C:\\Users\\George\\Desktop\\ClusterCenters to Puffs\\2Colour\\150723\\"
-file1 = "150723_COS_AfterCellights_AllRuns_Puff_clipped_XY"
-file2 = "150723_COS_AfterCellights_AllRuns_KDEL_clusteredCentersXY"
+#==============================================================================
+# path = "J:\\WORK_IN_PROGRESS\\STORM\\2-colour\\IP3R1_Tubulin\\"
+# file1 = "150223SY5Y_Tubulin_XY"
+# file2 = "150223SY5Y_Tubulin_XY"
+# 
+# 
+# filename1 = path + file1 + ".txt"
+# filename2 = path + file2 + ".txt"
+# #filename2 = 'random'
+# output = path + file2 + "_result" + ".txt"
+# 
+# distances(filename1, filename2, output)
+#==============================================================================
 
-
-filename1 = path + file1 + ".txt"
-filename2 = path + file2 + ".txt"
-#filename2 = 'random'
-output = path + file2 + "_result" + ".txt"
-
-distances(filename1, filename2, output)
-
-
-#for i in range(1,4):
-#    filename1 = path + file1 + str(i) + ".txt"
-#    filename2 = path + file2 + str(i) + ".txt"
-#    #filename2 = 'random'
-#    output = path + file2 + str(i) + "_result" + ".txt"
-#    try:
-#        distances(filename1, filename2, output)
-#    except:
+#==============================================================================
+# 
+# #for i in range(1,4):
+# #    filename1 = path + file1 + str(i) + ".txt"
+# #    filename2 = path + file2 + str(i) + ".txt"
+# #    #filename2 = 'random'
+# #    output = path + file2 + str(i) + "_result" + ".txt"
+# #    try:
+# #        distances(filename1, filename2, output)
+# #    except:
+#==============================================================================
 #        pass
+  
+ 
+path1 = 'J:\\WORK_IN_PROGRESS\\STORM\\Calcium_STORM\\150317\\Distance_from_puff_to_nearest_IP3R\\puffs_andIP3R-clusters\\IP3R1\\'
+path2 = 'J:\\WORK_IN_PROGRESS\\STORM\\Calcium_STORM\\150317\\Distance_from_puff_to_nearest_IP3R\\puffs_andIP3R-clusters\\puffs\\'
+path3 = 'J:\\WORK_IN_PROGRESS\\STORM\\Calcium_STORM\\150317\\Distance_from_puff_to_nearest_IP3R\\puffs_andIP3R-clusters\\result_allNeighbours\\'
+files = os.listdir(path1)
+
+for FileName in files:
+
+    filename = path1 + FileName
+    filename2 = path2 + FileName
+    output = path3 + 'result_' + FileName   
     
-    
-    
+    distances(filename1, filename2, output)
    
     
     

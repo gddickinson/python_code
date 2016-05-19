@@ -25,14 +25,16 @@ import os
 # ###########################################
 #==============================================================================
 
-path = 'C:\\Users\\George\\Desktop\\Nocodazole\\individualCells\\puf centeroids\\'
-files = os.listdir(path)
+path1 = 'J:\\WORK_IN_PROGRESS\\STORM\\Calcium_STORM\\150503\\Distance_from_puff_to_nearest_IP3R\\KDEL_andIP3R-clusters\\IP3R1\\'
+path2 = 'J:\\WORK_IN_PROGRESS\\STORM\\Calcium_STORM\\150503\\Distance_from_puff_to_nearest_IP3R\\KDEL_andIP3R-clusters\\KDEL\\'
+path3 = 'J:\\WORK_IN_PROGRESS\\STORM\\Calcium_STORM\\150503\\Distance_from_puff_to_nearest_IP3R\\KDEL_andIP3R-clusters\\result\\'
+files = os.listdir(path1)
 
 for filename in files:
 
-    FileName = 'C:\\Users\\George\\Desktop\\Nocodazole\\individualCells\\puf centeroids\\' + filename
-    FileName2 = FileName
-    OutputFilename = 'C:\\Users\\George\\Desktop\\Nocodazole\\individualCells\\puf centeroids\\result' + filename
+    FileName = path1 + filename
+    FileName2 = path2 + filename
+    OutputFilename = path3 + 'result_' + filename
     
     x = np.loadtxt(FileName,skiprows=0,usecols=(0,))
     y = np.loadtxt(FileName,skiprows=0,usecols=(1,))
