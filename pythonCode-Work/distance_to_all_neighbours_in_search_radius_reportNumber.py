@@ -9,6 +9,7 @@ import numpy as np
 import matplotlib
 from matplotlib import pyplot as plt
 import math
+import os
 #from scipy import spatial
 #####  random data  ######################
 #==============================================================================
@@ -56,7 +57,7 @@ def distances(filename1, filename2, output):
     ##############################################
     
     ########### Set square search area ############
-    searchRadius = 5000
+    searchRadius = 1000
     ##############################################
     
     ######## Functions ###########################
@@ -70,21 +71,22 @@ def distances(filename1, filename2, output):
         answer = np.vstack((keptX,keptY))
         return answer
     
-    def getDistances(x,y, searchSet, searchRadius):
-        answer = []
-        for i in range (searchSet[0].size):
-            dist = math.sqrt((x-searchSet[0][i])*(x-searchSet[0][i])) + ((y-searchSet[1][i])*(y-searchSet[1][i]))
-            if dist < searchRadius:
-                answer.append(dist)
-        #print(answer)
-        return answer
+#    def getDistances(x,y, searchSet, searchRadius):
+#        answer = []
+#        for i in range (searchSet[0].size):
+#            dist = math.sqrt((x-searchSet[0][i])*(x-searchSet[0][i])) + ((y-searchSet[1][i])*(y-searchSet[1][i]))
+#            if dist < searchRadius:
+#                answer.append(dist)
+#        #print(answer)
+#        return answer
     
     def allDists(dataSet,comparisonSet,searchRadius):
         dataDist = []    
         for i in range (dataSet[0].size):
-            distance1 = (getDistances(dataSet[0][i],dataSet[1][i],getNeighbours(dataSet[0][i],dataSet[1][i],comparisonSet,searchRadius),searchRadius))
-            for s in range (len(distance1)):
-                dataDist.append(distance1[s])
+            distance1 = getNeighbours(dataSet[0][i],dataSet[1][i],comparisonSet,searchRadius)
+            dataDist.append(distance1[0].size)
+#            for s in range (len(distance1)):
+#                dataDist.append(len(distance1[s]))
             print((i/dataSet[0].size)*100,"%");
         return dataDist   
         
@@ -151,7 +153,7 @@ def generateRandom(x,y):
   
  
 path1 = 'J:\\WORK_IN_PROGRESS\\STORM\\CALCIUM_STORM\\1-colour experiments\\SY5Y_IP3R1-n-term_Calcium\\150115_trial4-IP3R1_IP3R2_IP3R3_KDEL-BleachSteps\\number_of_IP3R1_around_puffs\\puffSite\\'
-path2 = 'J:\\WORK_IN_PROGRESS\\STORM\\CALCIUM_STORM\\1-colour experiments\\SY5Y_IP3R1-n-term_Calcium\\150115_trial4-IP3R1_IP3R2_IP3R3_KDEL-BleachSteps\\number_of_IP3R1_around_puffs\\KDEL\\'
+path2 = 'J:\\WORK_IN_PROGRESS\\STORM\\CALCIUM_STORM\\1-colour experiments\\SY5Y_IP3R1-n-term_Calcium\\150115_trial4-IP3R1_IP3R2_IP3R3_KDEL-BleachSteps\\number_of_IP3R1_around_puffs\\IP3R3\\'
 path3 = 'J:\\WORK_IN_PROGRESS\\STORM\\CALCIUM_STORM\\1-colour experiments\\SY5Y_IP3R1-n-term_Calcium\\150115_trial4-IP3R1_IP3R2_IP3R3_KDEL-BleachSteps\\number_of_IP3R1_around_puffs\\'
 files = os.listdir(path1)
 

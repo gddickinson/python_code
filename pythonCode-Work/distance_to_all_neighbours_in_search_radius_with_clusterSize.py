@@ -9,6 +9,7 @@ import numpy as np
 import matplotlib
 from matplotlib import pyplot as plt
 import math
+import os
 #from scipy import spatial
 #####  random data  ######################
 #==============================================================================
@@ -40,6 +41,7 @@ def distances(filename1, filename2, output):
     
     x = np.loadtxt(filename1,skiprows=1,usecols=(0,))
     y = np.loadtxt(filename1,skiprows=1,usecols=(1,))
+    clusterSize = np.loadtxt(filename1,skiprows=1,usecols=(2,))
     #print('File1 Loaded')
 
     if filename2 != 'random':
@@ -51,12 +53,12 @@ def distances(filename1, filename2, output):
         x2,y2 = generateRandom(x,y)
         print('Random points generated')
     ###### Make array #################
-    data = np.vstack((x,y))
+    data = np.vstack((x,y,clusterSize))
     comparisonSet = np.vstack((x2,y2))
     ##############################################
     
     ########### Set square search area ############
-    searchRadius = 5000
+    searchRadius = 40000
     ##############################################
     
     ######## Functions ###########################
@@ -80,13 +82,16 @@ def distances(filename1, filename2, output):
         return answer
     
     def allDists(dataSet,comparisonSet,searchRadius):
-        dataDist = []    
+        dataDist = []
+        clusters = []
         for i in range (dataSet[0].size):
             distance1 = (getDistances(dataSet[0][i],dataSet[1][i],getNeighbours(dataSet[0][i],dataSet[1][i],comparisonSet,searchRadius),searchRadius))
+            clusterSize = dataSet[2][i]
             for s in range (len(distance1)):
                 dataDist.append(distance1[s])
+                clusters.append(clusterSize)
             print((i/dataSet[0].size)*100,"%");
-        return dataDist   
+        return dataDist, clusters   
         
 
 
@@ -94,8 +99,9 @@ def distances(filename1, filename2, output):
     #data3distance = shortestDistance(data['x'][5],data['y'][5],comparisonSet,searchRadius)
     
     ############# NP Array with x,y,dist #####################
-    distanceSet = allDists(data,comparisonSet,searchRadius)
-    np.savetxt(output, np.transpose(distanceSet), delimiter=',')
+    distanceSet, clusterSet = allDists(data,comparisonSet,searchRadius)
+    result = np.vstack((clusterSet,distanceSet))
+    np.savetxt(output, np.transpose(result), delimiter=',')
     print("Result File Saved")
     ###########################################################
     #hist=plt.hist(distanceSet,50)
@@ -150,9 +156,9 @@ def generateRandom(x,y):
 #        pass
   
  
-path1 = 'J:\\WORK_IN_PROGRESS\\STORM\\CALCIUM_STORM\\1-colour experiments\\SY5Y_IP3R1-n-term_Calcium\\150115_trial4-IP3R1_IP3R2_IP3R3_KDEL-BleachSteps\\number_of_IP3R1_around_puffs\\puffSite\\'
-path2 = 'J:\\WORK_IN_PROGRESS\\STORM\\CALCIUM_STORM\\1-colour experiments\\SY5Y_IP3R1-n-term_Calcium\\150115_trial4-IP3R1_IP3R2_IP3R3_KDEL-BleachSteps\\number_of_IP3R1_around_puffs\\KDEL\\'
-path3 = 'J:\\WORK_IN_PROGRESS\\STORM\\CALCIUM_STORM\\1-colour experiments\\SY5Y_IP3R1-n-term_Calcium\\150115_trial4-IP3R1_IP3R2_IP3R3_KDEL-BleachSteps\\number_of_IP3R1_around_puffs\\'
+path1 = 'J:\\WORK_IN_PROGRESS\\STORM\\Calcium_STORM\\150503\\Distance_from_puff_to_nearest_IP3R\\puffs_andIP3R-clusters\\IP3R1_clusterSize\\'
+path2 = 'J:\\WORK_IN_PROGRESS\\STORM\\Calcium_STORM\\150503\\Distance_from_puff_to_nearest_IP3R\\puffs_andIP3R-clusters\\puffs\\'
+path3 = 'J:\\WORK_IN_PROGRESS\\STORM\\Calcium_STORM\\150503\\Distance_from_puff_to_nearest_IP3R\\puffs_andIP3R-clusters\\result_allNeighbours_with_clusterSize\\'
 files = os.listdir(path1)
 
 for FileName in files:

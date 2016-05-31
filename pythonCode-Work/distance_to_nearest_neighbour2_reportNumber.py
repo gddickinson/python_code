@@ -25,9 +25,9 @@ import os
 # ###########################################
 #==============================================================================
 
-path1 = 'J:\\WORK_IN_PROGRESS\\STORM\\Calcium_STORM\\150317\\Distance_from_puff_to_nearest_IP3R\\KDEL_andIP3R-clusters\\IP3R1\\'
-path2 = 'J:\\WORK_IN_PROGRESS\\STORM\\Calcium_STORM\\150317\\Distance_from_puff_to_nearest_IP3R\\KDEL_andIP3R-clusters\\KDEL\\'
-path3 = 'J:\\WORK_IN_PROGRESS\\STORM\\Calcium_STORM\\150317\\Distance_from_puff_to_nearest_IP3R\\KDEL_andIP3R-clusters\\result_nearestNeigbours\\'
+path1 = 'J:\\WORK_IN_PROGRESS\\STORM\\SY5Y_IP3R1-n-term_Calcium\\101222_trial2\\number_of_IP3Rs_around_puffs\\puffSite\\'
+path2 = 'J:\\WORK_IN_PROGRESS\\STORM\\SY5Y_IP3R1-n-term_Calcium\\101222_trial2\\number_of_IP3Rs_around_puffs\\IP3R1\\'
+path3 = 'J:\\WORK_IN_PROGRESS\\STORM\\SY5Y_IP3R1-n-term_Calcium\\101222_trial2\\number_of_IP3Rs_around_puffs\\'
 files = os.listdir(path1)
 
 for filename in files:
@@ -36,13 +36,13 @@ for filename in files:
     FileName2 = path2 + filename
     OutputFilename = path3 + 'result_' + filename
     
-    x = np.loadtxt(FileName,skiprows=0,usecols=(0,))
-    y = np.loadtxt(FileName,skiprows=0,usecols=(1,))
+    x = np.loadtxt(FileName,skiprows=1,usecols=(0,))
+    y = np.loadtxt(FileName,skiprows=1,usecols=(1,))
     print('File1 Loaded')
     
     
-    x2 = np.loadtxt(FileName2,skiprows=0,usecols=(0,))
-    y2 = np.loadtxt(FileName2,skiprows=0,usecols=(1,))
+    x2 = np.loadtxt(FileName2,skiprows=1,usecols=(0,))
+    y2 = np.loadtxt(FileName2,skiprows=1,usecols=(1,))
     print('File2 Loaded')
     
     
@@ -52,7 +52,7 @@ for filename in files:
     ##############################################
     
     ########### Set square search area ############
-    searchRadius = 40000
+    searchRadius = 5000
     ##############################################
     
     ######## Functions ###########################
@@ -95,24 +95,24 @@ for filename in files:
         
     #data3distance = shortestDistance(data['x'][5],data['y'][5],comparisonSet,searchRadius)
     
-    ############# number of nearest neighbours #####################
-    #numberNearestLocalizations = []    
-    #for i in range(len(x)):    
-    #    numberNearestLocalizations.append(getNeigbours(x[i],y[i],comparisonSet,searchRadius))
-    #    print (((i)/len(x))*100)
-    #np.savetxt(OutputFilename, numberNearestLocalizations, delimiter=',')
-    #print("Result File Saved")
-    ###########################################################
+    ############ number of nearest neighbours #####################
+    numberNearestLocalizations = []    
+    for i in range(len(x)):    
+        numberNearestLocalizations.append(getNeigbours(x[i],y[i],comparisonSet,searchRadius))
+        print (((i)/len(x))*100)
+    np.savetxt(OutputFilename, numberNearestLocalizations, delimiter=',')
+    print("Result File Saved")
+    ##########################################################
     
     #==============================================================================
     # 
     # ############# NP Array with x,y,dist #####################
-    distanceSet = dataShortestDist(data,comparisonSet,searchRadius)
-    
-    uniqueDistances = list(set(distanceSet[2]))
-    
-    np.savetxt(OutputFilename, np.transpose(uniqueDistances), delimiter=',')
-    print("Result File Saved")
+#    distanceSet = dataShortestDist(data,comparisonSet,searchRadius)
+#    
+#    #uniqueDistances = list(set(distanceSet[2]))
+#    
+#    np.savetxt(OutputFilename, np.transpose(uniqueDistances), delimiter=',')
+#    print("Result File Saved")
     ###########################################################
     #hist=plt.hist(distanceSet[2])
     #print (distanceSet)
