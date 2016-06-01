@@ -9,6 +9,7 @@ import numpy as np
 import matplotlib
 from matplotlib import pyplot as plt
 import math
+import os
 #from scipy import spatial
 #####  random data  ######################
 #==============================================================================
@@ -56,7 +57,7 @@ def distances(filename1, filename2, output):
     ##############################################
     
     ########### Set square search area ############
-    searchRadius = 5000
+    searchRadius = 2000
     ##############################################
     
     ######## Functions ###########################
@@ -150,16 +151,16 @@ def generateRandom(x,y):
 #        pass
   
  
-path1 = 'J:\\WORK_IN_PROGRESS\\STORM\\CALCIUM_STORM\\1-colour experiments\\SY5Y_IP3R1-n-term_Calcium\\150115_trial4-IP3R1_IP3R2_IP3R3_KDEL-BleachSteps\\number_of_IP3R1_around_puffs\\puffSite\\'
-path2 = 'J:\\WORK_IN_PROGRESS\\STORM\\CALCIUM_STORM\\1-colour experiments\\SY5Y_IP3R1-n-term_Calcium\\150115_trial4-IP3R1_IP3R2_IP3R3_KDEL-BleachSteps\\number_of_IP3R1_around_puffs\\KDEL\\'
-path3 = 'J:\\WORK_IN_PROGRESS\\STORM\\CALCIUM_STORM\\1-colour experiments\\SY5Y_IP3R1-n-term_Calcium\\150115_trial4-IP3R1_IP3R2_IP3R3_KDEL-BleachSteps\\number_of_IP3R1_around_puffs\\'
+path1 = r'J:\WORK_IN_PROGRESS\STORM\CALCIUM_STORM\2-colour experiments\150503\number_of_IP3R1_around_puffs\puffSite\\'
+path2 = r'J:\WORK_IN_PROGRESS\STORM\CALCIUM_STORM\2-colour experiments\150503\number_of_IP3R1_around_puffs\IP3R1\\'
+path3 = r'J:\WORK_IN_PROGRESS\STORM\CALCIUM_STORM\2-colour experiments\150503\number_of_IP3R1_around_puffs\\'
 files = os.listdir(path1)
 
 for FileName in files:
 
     filename1 = path1 + FileName
     filename2 = path2 + FileName
-    output = path3 + 'result_' + FileName   
+    output = path3 + 'result_allDistances_IP3R1' + FileName   
     
     distances(filename1, filename2, output)
    

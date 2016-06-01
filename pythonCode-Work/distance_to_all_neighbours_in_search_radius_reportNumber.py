@@ -152,9 +152,9 @@ def generateRandom(x,y):
 #        pass
   
  
-path1 = 'J:\\WORK_IN_PROGRESS\\STORM\\CALCIUM_STORM\\1-colour experiments\\SY5Y_IP3R1-n-term_Calcium\\150115_trial4-IP3R1_IP3R2_IP3R3_KDEL-BleachSteps\\number_of_IP3R1_around_puffs\\puffSite\\'
-path2 = 'J:\\WORK_IN_PROGRESS\\STORM\\CALCIUM_STORM\\1-colour experiments\\SY5Y_IP3R1-n-term_Calcium\\150115_trial4-IP3R1_IP3R2_IP3R3_KDEL-BleachSteps\\number_of_IP3R1_around_puffs\\IP3R3\\'
-path3 = 'J:\\WORK_IN_PROGRESS\\STORM\\CALCIUM_STORM\\1-colour experiments\\SY5Y_IP3R1-n-term_Calcium\\150115_trial4-IP3R1_IP3R2_IP3R3_KDEL-BleachSteps\\number_of_IP3R1_around_puffs\\'
+path1 = 'J:\\WORK_IN_PROGRESS\\STORM\\CALCIUM_STORM\\1-colour experiments\\SY5Y_Calcium_STORM_IP3R2\\distances\\puffSites\\'
+path2 = 'J:\\WORK_IN_PROGRESS\\STORM\\CALCIUM_STORM\\1-colour experiments\\SY5Y_Calcium_STORM_IP3R2\\distances\\IP3R1\\'
+path3 = 'J:\\WORK_IN_PROGRESS\\STORM\\CALCIUM_STORM\\1-colour experiments\\SY5Y_Calcium_STORM_IP3R2\\distances\\'
 files = os.listdir(path1)
 
 for FileName in files:
