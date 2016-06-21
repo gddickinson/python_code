@@ -74,10 +74,11 @@ def distances(filename1, filename2, output):
     def getDistances(x,y, searchSet, searchRadius):
         answer = []
         for i in range (searchSet[0].size):
-            dist = math.sqrt((x-searchSet[0][i])*(x-searchSet[0][i])) + ((y-searchSet[1][i])*(y-searchSet[1][i]))
+            dist =((x-searchSet[0][i])*(x-searchSet[0][i])) + ((y-searchSet[1][i])*(y-searchSet[1][i]))
+            dist = math.sqrt(dist)
             if dist < searchRadius:
                 answer.append(dist)
-        #print(answer)
+        print(answer)
         return answer
     
     def allDists(dataSet,comparisonSet,searchRadius):
@@ -86,7 +87,7 @@ def distances(filename1, filename2, output):
             distance1 = (getDistances(dataSet[0][i],dataSet[1][i],getNeighbours(dataSet[0][i],dataSet[1][i],comparisonSet,searchRadius),searchRadius))
             for s in range (len(distance1)):
                 dataDist.append(distance1[s])
-            print((i/dataSet[0].size)*100,"%");
+            print(int((i/dataSet[0].size)*100),"%");
         return dataDist   
         
 
@@ -99,8 +100,8 @@ def distances(filename1, filename2, output):
     np.savetxt(output, np.transpose(distanceSet), delimiter=',')
     print("Result File Saved")
     ###########################################################
-    #hist=plt.hist(distanceSet,50)
-    #print (distanceSet)
+    hist=plt.hist(distanceSet,50)
+    print (len(distanceSet))
     
     #fig1 = plt.scatter(data[0],data[1], c='red')
     #fig2 = plt.scatter(comparisonSet[0],comparisonSet[1], c='green')
@@ -151,18 +152,20 @@ def generateRandom(x,y):
 #        pass
   
  
-path1 = r'J:\WORK_IN_PROGRESS\STORM\CALCIUM_STORM\2-colour experiments\150503\number_of_IP3R1_around_puffs\puffSite\\'
-path2 = r'J:\WORK_IN_PROGRESS\STORM\CALCIUM_STORM\2-colour experiments\150503\number_of_IP3R1_around_puffs\IP3R1\\'
-path3 = r'J:\WORK_IN_PROGRESS\STORM\CALCIUM_STORM\2-colour experiments\150503\number_of_IP3R1_around_puffs\\'
+pathBase = r'C:\Users\George\Desktop\jeff_test\\'
+ 
+path1 = pathBase + r'\data1\\'
+path2 = pathBase + r'\data2\\'
+path3 = pathBase
 files = os.listdir(path1)
 
 for FileName in files:
 
     filename1 = path1 + FileName
     filename2 = path2 + FileName
-    output = path3 + 'result_allDistances_IP3R1' + FileName   
+    output = path3 + 'result_allDistances' + FileName   
     
     distances(filename1, filename2, output)
    
-    
+   
     

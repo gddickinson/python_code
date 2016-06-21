@@ -75,7 +75,8 @@ def distances(filename1, filename2, output):
     def getDistances(x,y, searchSet, searchRadius):
         answer = []
         for i in range (searchSet[0].size):
-            dist = math.sqrt((x-searchSet[0][i])*(x-searchSet[0][i])) + ((y-searchSet[1][i])*(y-searchSet[1][i]))
+            dist = ((x-searchSet[0][i])*(x-searchSet[0][i])) + ((y-searchSet[1][i])*(y-searchSet[1][i]))
+            dist = math.sqrt(dist)
             if dist < searchRadius:
                 answer.append(dist)
         #print(answer)

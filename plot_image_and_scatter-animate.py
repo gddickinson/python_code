@@ -11,15 +11,15 @@ from __future__ import (absolute_import, division,print_function, unicode_litera
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 import numpy as np
-#import win32com.client
-#from win32com.client import constants
+import win32com.client
+from win32com.client import constants
 import time
 from pylab import rcParams
 ######## Set filenammes & variables ###########################################
-imageName  = 'J:\\WORK\\STORM_After-Cellights-and-Calcium-Imaging\\COS-CellLights-Red_ER\\150717\\150717_cos_celllights-er-rfp_5umcal520_1umip3_1umegta_uv-flash-ER_before_calcium-imaging_average.tif'
+imageName  = r'J:\WORK_IN_PROGRESS\STORM\CellLights_AND_FIXATION\Calcium_Imaging_and_fixation\COS-CellLights-Red_ER\150723\150723_cos_celllights-er-rfp_5umcal520_1umip3_1umegta_uv-flash_beforeCalciumImaging_frames1-50_average_divideByLowPassFilter.tif'
 #imageName  = 'J:\\WORK\\STORM_After-Cellights-and-Calcium-Imaging\\COS-CellLights-Red_ER\\150717\\150717_cos_celllights-er-rfp_5umcal520_1umip3_1umegta_uv-flash-ER_before_calcium-imaging_average_divided-by-low-pass.tif'
-puffFileName = 'J:\\WORK\\STORM_After-Cellights-and-Calcium-Imaging\\COS-CellLights-Red_ER\\150717\\150717_cos_celllights-er-rfp_5umcal520_1umip3_1umegta_uv-flash-calcium-imaging_FLIKA_XY.txt'
-STORMFileName = 'J:\\WORK\\STORM_After-Cellights-and-Calcium-Imaging\\COS-CellLights-Red_ER\\150717\\150717_Cos_STORM_IP3R1-NTerm-A405-A647_test2_filtered-5in100.txt'
+puffFileName = r'J:\WORK_IN_PROGRESS\STORM\CellLights_AND_FIXATION\Calcium_Imaging_and_fixation\COS-CellLights-Red_ER\150723\150723_COS_CellLights-ER-RFP_5uMCal520_1uMIP3_1uMEGTA_UV-Flash-calciumImaging.xlsx'
+STORMFileName = r'J:\WORK_IN_PROGRESS\STORM\CellLights_AND_FIXATION\Calcium_Imaging_and_fixation\COS-CellLights-Red_ER\150723\150723_Cos_STORM_KDEL_XY.txt'
 
 scaleFactor = 2 ##for FLIKA performed with pixel bining
 scaleFactor2 = 160  ##160 nm / pixel
@@ -34,43 +34,43 @@ implot = plt.imshow(im, cmap=cm.Greys_r, interpolation = 'nearest')
 ################### extract puff coordinates ##################################
 
 ######### For excel files - sometimes works!!! ######
-#def extractPuffData(data_name, puffFileName, scaleFactor):
-#    excel = win32com.client.Dispatch("Excel.Application")
-#    #excel.Visible = True
-#    workbook = excel.Workbooks.Open(puffFileName)
-#    sheet = workbook.Worksheets('Puff Data')
-#    
-#    header=np.array(sheet.Rows(1).Value[0])
-#    nCols=np.max(np.argwhere(header.astype(np.bool)))+1
-#    nPuffs=np.max(np.argwhere(np.array(sheet.Columns(1).Value).astype(np.bool)))
-#    header=header[:nCols]
-#    puff_info=[]
-#    
-#    for row in np.arange(nPuffs)+2:
-#        puff=np.array(sheet.Rows(int(row)).Value[0][:nCols])
-#        puff_info.append(dict(zip(header,puff)))
-#    
-#    puff_data = []
-#    
-#    for i,puff in enumerate(puff_info):
-#        puff_data.append(puff[data_name]*scaleFactor)
-#        
-#    
-#    excel.Application.Quit()
-#    return puff_data
+def extractPuffData(data_name, puffFileName, scaleFactor):
+    excel = win32com.client.Dispatch("Excel.Application")
+    #excel.Visible = True
+    workbook = excel.Workbooks.Open(puffFileName)
+    sheet = workbook.Worksheets('Event Data')
+    
+    header=np.array(sheet.Rows(1).Value[0])
+    nCols=np.max(np.argwhere(header.astype(np.bool)))+1
+    nPuffs=np.max(np.argwhere(np.array(sheet.Columns(1).Value).astype(np.bool)))
+    header=header[:nCols]
+    puff_info=[]
+    
+    for row in np.arange(nPuffs)+2:
+        puff=np.array(sheet.Rows(int(row)).Value[0][:nCols])
+        puff_info.append(dict(zip(header,puff)))
+    
+    puff_data = []
+    
+    for i,puff in enumerate(puff_info):
+        puff_data.append(puff[data_name]*scaleFactor)
+        
+    
+    excel.Application.Quit()
+    return puff_data
+
+##puffX = extractPuffData('x', puffFileName, scaleFactor)
+##puffY = extractPuffData('y', puffFileName, scaleFactor)
+
+#puffX = np.loadtxt(puffFileName,skiprows=1,usecols=(0,))
+#puffY = np.loadtxt(puffFileName,skiprows=1,usecols=(1,))
 #
-#puffX = extractPuffData('x', puffFileName, scaleFactor)
-#puffY = extractPuffData('y', puffFileName, scaleFactor)
-
-puffX = np.loadtxt(puffFileName,skiprows=1,usecols=(0,))
-puffY = np.loadtxt(puffFileName,skiprows=1,usecols=(1,))
-
-puffX = np.multiply(puffX, scaleFactor)
-puffY = np.multiply(puffY, scaleFactor)
+#puffX = np.multiply(puffX, scaleFactor)
+#puffY = np.multiply(puffY, scaleFactor)
 
 ######################## extract STORM coordinates ############################
-STORMX = np.loadtxt(STORMFileName,skiprows=1,usecols=(3,))
-STORMY = np.loadtxt(STORMFileName,skiprows=1,usecols=(4,))
+STORMX = np.loadtxt(STORMFileName,skiprows=1,usecols=(0,))
+STORMY = np.loadtxt(STORMFileName,skiprows=1,usecols=(1,))
 
 STORMX = np.divide(STORMX,scaleFactor2)
 STORMY = np.divide(STORMY,scaleFactor2)
@@ -152,7 +152,7 @@ def transformData(STORMX, STORMY, rate):
 ######################## Initial scatter plot #################################
 
 plt.scatter(STORMX,STORMY, c='r', edgecolor ='', s=1)
-plt.scatter(puffX,puffY, c ='y', s =20)
+#plt.scatter(puffX,puffY, c ='y', s =20)
 plt.draw()
 time.sleep(1)
 
@@ -165,7 +165,7 @@ while char != 'q':
     plt.clf()
     implot = plt.imshow(im, cmap=cm.Greys_r, interpolation = 'nearest')
     plt.scatter(STORMX,STORMY, c='r', edgecolor ='', s=1)
-    plt.scatter(puffX,puffY, c ='y', s =20)
+    #plt.scatter(puffX,puffY, c ='y', s =20)
     
     plt.draw()
     time.sleep(1)
