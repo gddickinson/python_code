@@ -57,7 +57,7 @@ def distances(filename1, filename2, output):
     ##############################################
     
     ########### Set square search area ############
-    searchRadius = 2000
+    searchRadius = 5000
     ##############################################
     
     ######## Functions ###########################
@@ -78,7 +78,7 @@ def distances(filename1, filename2, output):
             dist = math.sqrt(dist)
             if dist < searchRadius:
                 answer.append(dist)
-        print(answer)
+        #print(answer)
         return answer
     
     def allDists(dataSet,comparisonSet,searchRadius):
@@ -87,8 +87,23 @@ def distances(filename1, filename2, output):
             distance1 = (getDistances(dataSet[0][i],dataSet[1][i],getNeighbours(dataSet[0][i],dataSet[1][i],comparisonSet,searchRadius),searchRadius))
             for s in range (len(distance1)):
                 dataDist.append(distance1[s])
-            print(int((i/dataSet[0].size)*100),"%");
+            print(float((i/dataSet[0].size)*100),"%");
         return dataDist   
+
+
+    #### Needs testing#####
+    def allDistsNoRedundancies(dataSet,comparisonSet,searchRadius):
+        dataColumn = []
+        dataDist = np.zeros(dataSet[0].size,dataSet[0].size)    
+        for i in range (dataSet[0].size):
+            distance1 = (getDistances(dataSet[0][i],dataSet[1][i],getNeighbours(dataSet[0][i],dataSet[1][i],comparisonSet,searchRadius),searchRadius))
+            for s in range (len(distance1)):
+                dataColumn.append(distance1[s])
+            dataDist[:,i] = dataColumn
+            dataColumn = []
+            print(float((i/dataSet[0].size)*100),"%");
+        print (dataDist)
+        return dataDist 
         
 
 
@@ -97,6 +112,7 @@ def distances(filename1, filename2, output):
     
     ############# NP Array with x,y,dist #####################
     distanceSet = allDists(data,comparisonSet,searchRadius)
+    #distanceSet = allDistsNoRedundancies(data,comparisonSet,searchRadius)
     np.savetxt(output, np.transpose(distanceSet), delimiter=',')
     print("Result File Saved")
     ###########################################################
@@ -152,11 +168,11 @@ def generateRandom(x,y):
 #        pass
   
  
-pathBase = r'C:\Users\George\Desktop\jeff_test\\'
+pathBase = r'J:\WORK_IN_PROGRESS\STORM\Files for cluster analysis\IP3R1\UCDavis_Primary_labelled_Ab\Results\\'
  
-path1 = pathBase + r'\data1\\'
-path2 = pathBase + r'\data2\\'
-path3 = pathBase
+path1 = pathBase + r'\1-8000_dilution_data_xy\data\\'
+path2 = pathBase + r'\1-8000_dilution_data_xy\data\\'
+path3 = pathBase + r'\1-8000_dilution_data_xy\result_allDistances\\'
 files = os.listdir(path1)
 
 for FileName in files:
