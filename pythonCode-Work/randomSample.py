@@ -12,14 +12,14 @@ import matplotlib.mlab as mlab
 import matplotlib.pyplot as plt
 
 
-filename = r"J:\WORK_IN_PROGRESS\STORM\Files for cluster analysis\IP3R1\UCDavis_Primary_labelled_Ab\Results\1-8000_dilution_data_xy\result_allDistances\result_allDistances140107_UCDavis_primary_1-8000_dilution_003_crop3.txt"
-output = r"J:\WORK_IN_PROGRESS\STORM\Files for cluster analysis\IP3R1\UCDavis_Primary_labelled_Ab\Results\1-8000_dilution_data_xy\result_allDistances\result_allDistances140107_UCDavis_primary_1-8000_dilution_003_crop3_RandomSample.txt"
+filename = r"C:\Users\George\Desktop\randomScatter_test\result\result_allDistancesresults.txt"
+output = r"C:\Users\George\Desktop\randomScatter_test\result\result_allDistancesresults_RandomSample.txt"
 
 data = np.loadtxt(filename, delimiter=',')
 print("File loaded")
 
-randomSample = np.random.choice(data,100000,replace=False)
+randomSample = np.random.choice(data,500000,replace=False)
 
-np.savetxt(output, randomSample, delimiter=',')
+np.savetxt(output, randomSample, delimiter='\t')
 print("Result File Saved")
 

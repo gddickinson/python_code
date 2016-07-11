@@ -39,13 +39,13 @@ import os
 
 def distances(filename1, filename2, output):
     
-    x = np.loadtxt(filename1,skiprows=1,usecols=(0,))
-    y = np.loadtxt(filename1,skiprows=1,usecols=(1,))
+    x = np.loadtxt(filename1,skiprows=0,usecols=(0,))
+    y = np.loadtxt(filename1,skiprows=0,usecols=(1,))
     #print('File1 Loaded')
 
     if filename2 != 'random':
-        x2 = np.loadtxt(filename2,skiprows=1,usecols=(0,))
-        y2 = np.loadtxt(filename2,skiprows=1,usecols=(1,))
+        x2 = np.loadtxt(filename2,skiprows=0,usecols=(0,))
+        y2 = np.loadtxt(filename2,skiprows=0,usecols=(1,))
         print('File2 Loaded')
 
     else:
@@ -168,11 +168,11 @@ def generateRandom(x,y):
 #        pass
   
  
-pathBase = r'J:\WORK_IN_PROGRESS\STORM\Files for cluster analysis\IP3R1\UCDavis_Primary_labelled_Ab\Results\\'
+pathBase = r'C:\Users\George\Desktop\randomScatter_test\\'
  
-path1 = pathBase + r'\1-8000_dilution_data_xy\data\\'
-path2 = pathBase + r'\1-8000_dilution_data_xy\data\\'
-path3 = pathBase + r'\1-8000_dilution_data_xy\result_allDistances\\'
+path1 = pathBase + r'\data\\'
+path2 = pathBase + r'\data\\'
+path3 = pathBase + r'\result\\'
 files = os.listdir(path1)
 
 for FileName in files:
