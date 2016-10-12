@@ -41,6 +41,7 @@ if __name__ == '__main__':
 
 ############################################################################
 #handwritten number data
+    digits = datasets.load_digits()
     X = digits.images.reshape((digits.images.shape[0], -1))
     X = X/16
 

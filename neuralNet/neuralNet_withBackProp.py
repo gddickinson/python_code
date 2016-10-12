@@ -23,7 +23,7 @@ def tanh(x):
 def tanh_prime(x):
     return 1.0 - x**2
 
-def unrollImages(pathRoot, numberOfLabels, blackAndWhite = False, X_ScaleFactor = 255):
+def unrollImages(pathRoot, numberOfLabels, blackAndWhite = False, X_ScaleFactor = 128):
 
     def flattenImage(filename):
         img = imread(filename, flatten = blackAndWhite)
@@ -51,12 +51,13 @@ def unrollImages(pathRoot, numberOfLabels, blackAndWhite = False, X_ScaleFactor 
     X = np.array(createXArray(dataSet))
     Y = np.array(createYArray(dataSet,numberOfLabels))
     
-    return X/X_ScaleFactor, Y
+    return (X-X_ScaleFactor)/X_ScaleFactor, Y
 
-def unrollSingleImage(filename, blackAndWhite = False, X_ScaleFactor = 255):
+def unrollSingleImage(filename, blackAndWhite = False, X_ScaleFactor = 128):
+    #X_ScaleFactor for RGB images with pixel intensities of 0 - 255
     img = imread(filename, flatten = blackAndWhite)
     img = img.flatten()
-    return img/X_ScaleFactor
+    return (img-(X_ScaleFactor))/X_ScaleFactor #scaling for gradient descent optimization
 
 
 
