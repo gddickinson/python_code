@@ -51,7 +51,7 @@ class NeuralNetwork:
             
             i = np.random.randint(X.shape[0])
             a = [X[i]]
-            print(a)
+            #print(a)
             for l in range(len(self.weights)):
                     dot_value = np.dot(a[l], self.weights[l])
                     activation = self.activation(dot_value)
