@@ -5,6 +5,9 @@ Created on Mon Nov 14 14:56:46 2016
 @author: george
 """
 
+from matplotlib import pyplot as plt
+
+
 # -----------
 # User Instructions
 #
@@ -57,3 +60,13 @@ def smooth(path, weight_data = 0.5, weight_smooth = 0.1, tolerance = 0.000001):
     return newpath # Leave this line for the grader!
 
 printpaths(path,smooth(path))
+
+test = smooth(path)
+
+x=[]
+y=[]
+for i in test:
+    x.append(i[0])
+    y.append(i[1]) 
+
+plt.scatter(x,y)
