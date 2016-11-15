@@ -25,5 +25,5 @@ def newsearch(L, e):
 L = [0,1,2,3]
 e = 0
 
-print search(L,e)
-print newsearch (L,e)
+print (search(L,e))
+print (newsearch (L,e))
