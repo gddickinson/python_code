@@ -35,7 +35,7 @@ class binaryTree(object):
 def DFSBinary(root, fcn):
     queue = [root]
     while len(queue) > 0:
-        print 'at node ' + str(queue[0].getValue())
+        print ('at node ' + str(queue[0].getValue()))
         if fcn(queue[0]):
             return True
         else:
@@ -50,7 +50,7 @@ def DFSBinary(root, fcn):
 def BFSBinary(root, fcn):
     queue = [root]
     while len(queue) > 0:
-        print 'at node ' + str(queue[0].getValue())
+        print ('at node ' + str(queue[0].getValue()))
         if fcn(queue[0]):
             return True
         else:
@@ -117,11 +117,11 @@ def lt6(node):
 
 # test examples
 
-print 'DFS'
+print ('DFS')
 DFSBinary(n5, find6)
 
-print ''
-print 'BFS'
+print ('')
+print ('BFS')
 BFSBinary(n5, find6)
 
 
@@ -148,10 +148,10 @@ def TracePath(node):
         return [node] + TracePath(node.getParent())
 
 
-print''
-print 'DFS path'
+print ('')
+print ('DFS path')
 pathTo6 = DFSBinaryPath(n5, find6)
-print [e.getValue() for e in pathTo6]
+print ([e.getValue() for e in pathTo6])
 
 
 ## make a decision tree
@@ -179,10 +179,10 @@ def DFSDTree(root, valueFcn, constraintFcn):
         if constraintFcn(queue[0].getValue()):
             if best == None:
                 best = queue[0]
-                print best.getValue()
+                print (best.getValue())
             elif valueFcn(queue[0].getValue()) > valueFcn(best.getValue()):
                 best = queue[0]
-                print best.getValue()
+                print (best.getValue())
             temp = queue.pop(0)
             if temp.getRightBranch():
                 queue.insert(0, temp.getRightBranch())
@@ -190,7 +190,7 @@ def DFSDTree(root, valueFcn, constraintFcn):
                 queue.insert(0, temp.getLeftBranch())
         else:
             queue.pop(0)
-    print 'visited', visited
+    print ('visited', visited)
     return best
 
 
@@ -203,10 +203,10 @@ def BFSDTree(root, valueFcn, constraintFcn):
         if constraintFcn(queue[0].getValue()):
             if best == None:
                 best = queue[0]
-                print best.getValue()
+                print (best.getValue())
             elif valueFcn(queue[0].getValue()) > valueFcn(best.getValue()):
                 best = queue[0]
-                print best.getValue()
+                print (best.getValue())
             temp = queue.pop(0)
             if temp.getLeftBranch():
                 queue.append(temp.getLeftBranch())
@@ -214,7 +214,7 @@ def BFSDTree(root, valueFcn, constraintFcn):
                 queue.append(temp.getRightBranch())
         else:
             queue.pop(0)
-    print 'visited', visited
+    print ('visited', visited)
     return best  
 
 a = [6,3]
@@ -238,15 +238,15 @@ def WeightsBelow10(lst):
 def WeightsBelow6(lst):
     return sumWeights(lst) <= 6
 
-print ''
-print 'DFS decision tree'
+print ('')
+print ('DFS decision tree')
 foobar = DFSDTree(treeTest, sumValues, WeightsBelow10)
-print foobar.getValue()
+print (foobar.getValue())
 
-print ''
-print 'BFS decision tree'
+print ('')
+print ('BFS decision tree')
 foobarnew = BFSDTree(treeTest, sumValues, WeightsBelow10)
-print foobarnew.getValue()
+print (foobarnew.getValue())
 
 
 def DFSDTreeGoodEnough(root, valueFcn, constraintFcn, stopFcn):
@@ -258,12 +258,12 @@ def DFSDTreeGoodEnough(root, valueFcn, constraintFcn, stopFcn):
         if constraintFcn(stack[0].getValue()):
             if best == None:
                 best = stack[0]
-                print best.getValue()
+                print (best.getValue())
             elif valueFcn(stack[0].getValue()) > valueFcn(best.getValue()):
                 best = stack[0]
-                print best.getValue()
+                print (best.getValue())
             if stopFcn(best.getValue()):
-                print 'visited', visited
+                print ('visited', visited)
                 return best
             temp = stack.pop(0)
             if temp.getRightBranch():
@@ -272,7 +272,7 @@ def DFSDTreeGoodEnough(root, valueFcn, constraintFcn, stopFcn):
                 stack.insert(0, temp.getLeftBranch())
         else:
             stack.pop(0)
-    print 'visited', visited
+    print ('visited', visited)
     return best
 
 def BFSDTreeGoodEnough(root, valueFcn, constraintFcn, stopFcn):
@@ -284,12 +284,12 @@ def BFSDTreeGoodEnough(root, valueFcn, constraintFcn, stopFcn):
         if constraintFcn(queue[0].getValue()):
             if best == None:
                 best = queue[0]
-                print best.getValue()
+                print (best.getValue())
             elif valueFcn(queue[0].getValue()) > valueFcn(best.getValue()):
                 best = queue[0]
-                print best.getValue()
+                print (best.getValue())
             if stopFcn(best.getValue()):
-                print 'visited', visited
+                print ('visited', visited)
                 return best
             temp = queue.pop(0)
             if temp.getLeftBranch():
@@ -298,23 +298,23 @@ def BFSDTreeGoodEnough(root, valueFcn, constraintFcn, stopFcn):
                 queue.append(temp.getRightBranch())
         else:
             queue.pop(0)
-    print 'visited', visited
+    print ('visited', visited)
     return best
 
 def atLeast15(lst):
     return sumValues(lst) >= 15
 
-print ''
-print 'DFS decision tree good enough'
+print ('')
+print ('DFS decision tree good enough')
 foobar = DFSDTreeGoodEnough(treeTest, sumValues, WeightsBelow10,
                                    atLeast15)
-print foobar.getValue()
+print (foobar.getValue())
 
-print ''
-print 'BFS decision tree good enough'
+print ('')
+print ('BFS decision tree good enough')
 foobarnew = BFSDTreeGoodEnough(treeTest, sumValues, WeightsBelow10,
                                       atLeast15)
-print foobarnew.getValue()
+print (foobarnew.getValue())
 
 def DTImplicit(toConsider, avail):
     if toConsider == [] or avail == 0:
@@ -336,19 +336,19 @@ stuff = [a,b,c,d]
 
 val, taken = DTImplicit(stuff, 10)
 
-print ''
-print 'implicit decision search'
-print 'value of stuff'
-print val
-print 'actual stuff'
-print taken
+print ('')
+print ('implicit decision search')
+print ('value of stuff')
+print (val)
+print ('actual stuff')
+print (taken)
 
 
 def DFSBinaryNoLoop(root, fcn):
     queue = [root]
     seen = []
     while len(queue) > 0:
-        print 'at node ' + str(queue[0].getValue())
+        print ('at node ' + str(queue[0].getValue()))
         if fcn(queue[0]):
             return True
         else:
