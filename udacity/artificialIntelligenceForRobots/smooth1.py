@@ -29,8 +29,8 @@ from copy import deepcopy
 # thank you to EnTerr for posting this on our discussion forum
 def printpaths(path,newpath):
     for old,new in zip(path,newpath):
-        print '['+ ', '.join('%.3f'%x for x in old) + \
-               '] -> ['+ ', '.join('%.3f'%x for x in new) +']'
+        print ('['+ ', '.join('%.3f'%x for x in old) + \
+               '] -> ['+ ', '.join('%.3f'%x for x in new) +']')
 
 # Don't modify path inside your function.
 path = [[0, 0],
@@ -43,7 +43,7 @@ path = [[0, 0],
         [4, 3],
         [4, 4]]
 
-def smooth(path, weight_data = 0.5, weight_smooth = 0.1, tolerance = 0.000001):
+def smooth(path, weight_data = 0.1, weight_smooth = 0.9, tolerance = 0.000001):
 
     # Make a deep copy of path into newpath
     newpath = deepcopy(path)
