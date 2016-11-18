@@ -178,7 +178,8 @@ def naive_next_pos(measurement, OTHER = None):
     position, so it always guesses that the first position will be the next."""
     if not OTHER: # this is the first measurement
         OTHER = measurement
-    xy_estimate = OTHER 
+    xy_estimate = OTHER
+    print(measurement)
     return xy_estimate, OTHER
 
 # This is how we create a target bot. Check the robot.py file to understand
