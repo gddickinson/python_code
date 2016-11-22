@@ -12,6 +12,7 @@ Created on Sun Nov  6 22:10:32 2016
 # any provided code OR comments. Good luck!
 
 from math import *
+from matplotlib import pylab as plt
 
 class matrix:
     
@@ -155,6 +156,7 @@ def filter(x, P):
         x = (F * x) + u
         P = F * P * F.transpose()
         
+        
         # measurement update
         Z = matrix([measurements[n]])
         y = Z.transpose() - (H * x)
@@ -162,12 +164,17 @@ def filter(x, P):
         K = P * H.transpose() * S.inverse()
         x = x + (K * y)
         P = (I - (K * H)) * P
-    
-    print ('x= ')
+ 
+    x = (F * x) + u
+    P = F * P * F.transpose()
+
+   
+    print ('newx= ')
     x.show()
-    print ('P= ')
+    print ('newP= ')
     P.show()
 
+    return x, P
 ########################################
 
 print ("### 4-dimensional example ###")
@@ -197,4 +204,18 @@ I =  matrix([[1.,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]])# 4d identity matrix
 
 ###### DO NOT MODIFY ANYTHING HERE #######
 
-filter(x, P)
+predict, newP = filter(x, P)
+
+x= []
+y= []
+for i in range(len(measurements)):
+    x.append(measurements[i][0])
+    y.append(measurements[i][1])
+
+newx = predict.value[0][0]
+newy = predict.value[1][0]
+
+print((newx,newy))
+
+plt.scatter(x,y)
+#plt.scatter(newx,newy)

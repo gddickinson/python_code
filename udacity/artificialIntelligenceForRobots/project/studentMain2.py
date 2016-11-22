@@ -76,65 +76,68 @@ def estimate_next_pos(measurement, OTHER = None):
 
     if not OTHER: # this is the first measurement
         OTHER = [[],[],[]]
+        OTHER[0].append((0,0))
 
-    OTHER[0].append(measurement)
-    #print(OTHER[0][0][0])
-    initial_x = OTHER[0][0][0]
-    initial_y = OTHER[0][0][1]        
+    OTHER[1].append((distance_between(measurement,OTHER[0][-1])))
     
-
-    dt = 0.8
-    
-    x = matrix([[initial_x], [initial_y], [0.], [0.]]) # initial state (location and velocity)
-
-    u = matrix([[0.], [0.], [0.], [0.]]) # external motion
-    
-    #### DO NOT MODIFY ANYTHING ABOVE HERE ####
-    #### fill this in, remember to use the matrix() function!: ####
-    
-    prob = 0.01
-    measurment_uncertainty = 0.001    
-    
-    
-    P =  matrix([[0.,0.,0.,0.],[0.,0.,0.,0.],[0.,0.,prob,0.],[0.,0.,0.,prob]])# initial uncertainty: 0 for positions x and y, 1000 for the two velocities (diagonal matrix first two diagonals for uncertainty of x,y position, next two for uncertainity of x,v velocites)
-    F =  matrix([[1.,0.,dt,0.],[0.,1.,0.,dt],[0.,0.,1.,0.],[0.,0.,0.,1.]])# next state function: generalize the 2d version to 4d
-    H =  matrix([[1,0,0,0],[0,1,0,0]])# measurement function: reflect the fact that we observe x and y but not the two velocities - projection matrix projecting position and not velocity
-    R =  matrix([[measurment_uncertainty,0.],[0.,measurment_uncertainty]])# measurement uncertainty: use 2x2 matrix with 0.1 as main diagonal
-    I =  matrix([[1.,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]])# 4d identity matrix
-
-
-
-    def filter(x, P, measurements):
-        for n in range(len(measurements)):
-            
-            # prediction
-            x = (F * x) + u
-            P = F * P * F.transpose()
-            
-            
-            # measurement update
-            Z = matrix([measurements[n]])
-            y = Z.transpose() - (H * x)
-            S = H * P * H.transpose() + R
-            K = P * H.transpose() * S.inverse()
-            x = x + (K * y)
-            P = (I - (K * H)) * P
      
-        x = (F * x) + u
-        P = F * P * F.transpose()
-        
-        return x, P
+    def get_orientation(position1,position2):
+        x = position2[0]-position1[0]
+        y = position2[1]-position1[1]
 
-    measurements = OTHER[0]
-    newX, newP = filter(x,P,measurements)
+        theta = degrees(atan2(y,x))
+        return theta
 
-    xy_estimate = (newX.value[0][0],newX.value[1][0])
-    OTHER[1] = newX
-    OTHER[2] = newP
+    theta = get_orientation(OTHER[0][-1], measurement)
     
-    print('meas: ', measurement, ' estimate: ', xy_estimate)    
+    OTHER[0].append(measurement)
+    OTHER[2].append(theta)
+    #print(OTHER)
+
+    def kalman_filter(x, P, measurements):
+        for n in range(len(measurements)):
+            # prediction
+            x = F*x+u
+            P = F*P*F.transpose()
+           
+            # measurement update
+            y = matrix([[float(measurements[n])]]) - H*x
+            S = H* P *H.transpose() + R
+            K = P*H.transpose()*S.inverse() #Kalman gain matrix
+            x = x + (K*y)
+            P = (I-K*H)*P 
+
+                       
+        return x,P
+
+    dt = 0.01
+
+    prob = 0.001
+    measurement_uncertainty = 0.0001    
     
+    x = matrix([[0.], [0.]]) # initial state (location and velocity)
+    P = matrix([[prob, 0.], [0., prob]]) # initial uncertainty
+    u = matrix([[0.], [0.]]) # external motion
+    F = matrix([[1., dt], [0, 1.]]) # next state function
+    H = matrix([[1., 0.]]) # measurement function
+    R = matrix([[measurement_uncertainty]]) # measurement uncertainty
+    I = matrix([[1., 0.], [0., 1.]]) # identity matrix
+
+
+    theta_estimate, thetaP = kalman_filter(x,P,OTHER[2])
+    distance_estimate, distanceP = kalman_filter(x,P,OTHER[1])
     
+    #print(theta_estimate.value[0][0])    
+    #print(distance_estimate.value[0][0]) 
+
+    distancePrime = distance_estimate.value[0][0]
+    thetaPrime = theta_estimate.value[0][0]
+    
+    newX = measurement[0] + (distancePrime*cos(thetaPrime))
+    newY = measurement[1] + (distancePrime*sin(thetaPrime))
+
+    xy_estimate = (newX,newY)
+    #print(measurement,thetaPrime, distancePrime,xy_estimate)
     return xy_estimate, OTHER 
 
 # A helper function you may find useful.
