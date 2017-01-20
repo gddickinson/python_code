@@ -85,7 +85,7 @@ fig, axes = plt.subplots(2, 2, figsize=(7, 6), sharex=True, sharey=True,
 ax = axes.ravel()
 
 ax[0].imshow(image)
-ax[0].set_title("Original image")
+ax[0].set_title("Original image (# of pixels = %d)" % (image_x * image_y))
 
 ax[1].imshow(image_red)
 ax[1].set_title("red (# of pixels = %d)" % red_pixel)
