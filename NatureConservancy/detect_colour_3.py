@@ -13,8 +13,8 @@ from skimage import io
 import copy
 
 #define path
-path = r"C:\Users\George\Desktop\images\\"
-file = r"trees_sky.jpg"
+path = r"C:\Users\George\Desktop\images\Image_Interpretation\Rock House Photos\RH001\\"
+file = r"IMG_2108.jpg"
 filename = path + file
 
 #open image file
@@ -51,7 +51,7 @@ for x in range (image_x):
     for y in range (image_y):
         #count red pixels
         if image[x,y][r] > image[x,y][g] and image[x,y][r] > image[x,y][b]:
-            image_red[x,y] = red
+            image_red[x,y] = [image[x,y][r],0,0]
             image_green[x,y] = white
             image_blue[x,y] = white
             red_pixel += 1
@@ -59,7 +59,7 @@ for x in range (image_x):
         #count green pixels   
         elif image[x,y][g] > image[x,y][r] and image[x,y][g] > image[x,y][b]:
             image_red[x,y] = white
-            image_green[x,y] = green
+            image_green[x,y] = [0,image[x,y][g],0]
             image_blue[x,y] = white
             green_pixel += 1
 
@@ -67,7 +67,7 @@ for x in range (image_x):
         elif image[x,y][b] > image[x,y][r] and image[x,y][b] > image[x,y][g]:
             image_red[x,y] = white
             image_green[x,y] = white
-            image_blue[x,y] = blue
+            image_blue[x,y] = [0,0,image[x,y][b]]
             blue_pixel += 1
         
         #pixels with equivalent values
