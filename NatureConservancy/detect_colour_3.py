@@ -5,25 +5,27 @@ Created on Thu Jan 19 15:44:57 2017
 @author: George
 """
 
-## import the necessary packages
-#import skimage
+# import packages
 import numpy as np
 import matplotlib.pyplot as plt
 from skimage.color import rgb2hed
 from skimage import io
 import copy
-#
+
 #define path
 path = r"C:\Users\George\Desktop\images\\"
-file = r"leafy-trees-sky.jpg"
+file = r"trees_sky.jpg"
 filename = path + file
 
+#open image file
 image = io.imread(filename)
 
+#set up arrays
 image_red = copy.deepcopy(image)
 image_green = copy.deepcopy(image)
 image_blue = copy.deepcopy(image)
 
+#set image size variables
 image_x, image_y = image.shape[0:2]
 
 #image array index
@@ -38,13 +40,13 @@ blue = [0,0,255]
 black = [0,0,0]
 white = [255,255,255]    
 
-#variables for pixel count    
+#pixel countvariables  
 red_pixel = 0
 green_pixel = 0
 blue_pixel = 0
 equivalent_pixel = 0
 
-    
+ #loop through all pixels in image and set pixel to maximum channel value - count pixels in each channel   
 for x in range (image_x):
     for y in range (image_y):
         #count red pixels
@@ -77,8 +79,7 @@ for x in range (image_x):
 
 
 
-#plot
-
+#plot result
 fig, axes = plt.subplots(2, 2, figsize=(7, 6), sharex=True, sharey=True,
                          subplot_kw={'adjustable': 'box-forced'})
 ax = axes.ravel()
