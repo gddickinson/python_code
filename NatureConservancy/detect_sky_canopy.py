@@ -15,6 +15,7 @@ import copy
 path = r"C:\Users\George\Desktop\images\Image_Interpretation\Rock House Photos\RH001\\"
 file = r"IMG_2108.jpg"
 filename = path + file
+filename2 = path + "result_" + file
 
 #set limits for thresholding by brightness
 dark_threshold = 100
@@ -127,3 +128,5 @@ print ("canopy: %.2f" % (canopy_pixel/(image_x * image_y)*100), "%")
 print ("unassigned: %.2f" % (equivalent_pixel/(image_x * image_y)*100), "%")
 print ("total pixels counted = ", sky_pixel + canopy_pixel + equivalent_pixel)
 #print ("missing pixels = ", (image_x * image_y)-(sky_pixel + canopy_pixel + equivalent_pixel))
+
+#io.imsave(filename2,image_sky)
