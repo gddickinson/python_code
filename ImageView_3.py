@@ -19,7 +19,7 @@ import json
 import re
 #import SimpleCV as simplecv
 #from SimpleCV import Camera, Display, Image
-import pyscreenshot as ImageGrab
+#import pyscreenshot as ImageGrab
 #from PIL import Image
 import cv2
 from PyQt4.QtCore import *
