@@ -12,8 +12,8 @@ from skimage import io
 import copy
 
 #define path
-path = r"C:\Users\George\Desktop\images\Image_Interpretation\Rock House Photos\RH001\\"
-file = r"IMG_2108.jpg"
+path = r"C:\Google Drive\Image_Interpretation\PVER Photos\DL005\\"
+file = r"IMG_2053.jpg"
 filename = path + file
 filename2 = path + "result_" + file
 

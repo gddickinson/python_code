@@ -20,8 +20,8 @@ from skimage.morphology import closing, square
 from skimage.color import label2rgb
 
 #define path
-path = r"C:\Users\George\Desktop\images\Image_Interpretation\PVER Photos\DL008\\"
-file = r"IMG_2073.jpg"
+path = r"C:\Google Drive\Image_Interpretation\PVER Photos\DL006\\"
+file = r"IMG_2040.jpg"
 filename = path + file
 filename2 = path + "result_" + file
 filename3 = path + "result_other_" + file
