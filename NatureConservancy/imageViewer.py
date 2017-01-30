@@ -277,7 +277,8 @@ class Viewer(QtGui.QMainWindow):
 
     def initConsole(self):
         self.console = Form()        
-        self.console.connect(self.console.button1,SIGNAL("clicked()"),self.testPrint)
+        #self.console.connect(self.console.button1,SIGNAL("clicked()"),self.testPrint)
+        self.console.connect(self.console.button1,SIGNAL("clicked()"),self.detect_coverBoard)
         self.console.show()
 
 
@@ -405,17 +406,103 @@ class Viewer(QtGui.QMainWindow):
             imgROI = self.roiImg
             imgROI = np.fliplr(imgROI)
             img = pg.ImageItem(imgROI)
-            #img.rotate(180.0)
+            
             v1a.addItem(img)
+            
+            global ROI_image
+            ROI_image = copy.deepcopy(imgROI)
                         
-            if QtCore.QCoreApplication.instance() != None: #change this
-                w.close()
-                app.closeAllWindows()
-                break       
+            if QtCore.QCoreApplication.instance() != None: #something is wrong here - change this
+                #w.close()
+                app.closeAllWindows() # this is giving an error - but removing if statement causes ROIexaminer to fail!!
+                break   
+
         return
 
-    
+####################################################################################################
+    def detect_coverBoard(self):
+        print('start analysis')
+        #set up arrays
+        global ROI_image
+        image = copy.deepcopy(ROI_image)
+                
+        image_original = copy.deepcopy(image)
+        image_board = copy.deepcopy(image)
+        image_other = copy.deepcopy(image)
+                
+        
+        #set image size variables
+        image_x, image_y = image.shape[0:2]
+        
+        center_x = int(image_x/2)
+        center_y = int(image_y/2)
+        
+        #image array index
+        r = 0
+        g = 1
+        b = 2
+        
+#        # colour settings   
+#        red = [255,0,0]
+#        green = [0,255,0]
+#        blue = [0,0,255]
+#        black = [0,0,0]
+#        white = [255,255,255]    
+        
+        #pixel countvariables  
+        board_pixel = 0
+        other_pixel = 0
+        
+        
+        
+         #loop through all pixels in image and set pixel to maximum channel value - count pixels in each channel   
+        for x in range (image_x):
+            for y in range (image_y):
+                #pixels with equivalent values
+                if image[x,y][b] == image[x,y][g]:
+                    image_other[x,y] = 0
+                    image_board[x,y] = 255
+                    other_pixel += 1
+        
+                #count board pixels
+                elif image[x,y][r] > image[x,y][g] and image[x,y][r] > image[x,y][b] and image[x,y][g]/image[x,y][b] > 1.2 and image[x,y][g]/image[x,y][b] < 3 and image[x,y][r]/image[x,y][g] > 1.4 and image[x,y][r]/image[x,y][g] < 2.8:
+                    
+                    if image[x,y][r] > 115 and image[x,y][r] < 210 and image[x,y][g] > 40 and image[x,y][g] < 110 and image[x,y][b] > 15 and image[x,y][b] < 75:
+                        
+                        image_board[x,y] = 0
+                        image_other[x,y] = 255
+                        board_pixel += 1
+        
+                    
+                    else:
+                        image_board[x,y] = 255
+                        image_other[x,y] = 0
+                        other_pixel += 1
+                    
+                #count green pixels   
+                elif image[x,y][g] > image[x,y][r] and image[x,y][g] > image[x,y][b]:
+                    image_other[x,y] = 0
+                    image_board[x,y] = 255
+                    other_pixel += 1
+        
+                #count blue pixels 
+                elif image[x,y][b] > image[x,y][r] and image[x,y][b] > image[x,y][g]:
+                    image_board[x,y] = 255
+                    image_other[x,y] = 0
+                    other_pixel += 1
+                
+                else:
+                    image_other[x,y] = 0
+                    image_board[x,y] = 255
+                    other_pixel += 1        
 
+        
+        print("board_pixel = ", board_pixel)
+        
+        
+        
+####################################################################################################
+        
     def quitDialog(self):
         self.ImageView.close()
         self.console.close()      
@@ -425,6 +512,8 @@ class Viewer(QtGui.QMainWindow):
             app = QtGui.QApplication(sys.argv)
         sys.exit(app.exec_())
         return
+
+
 
     def closeEvent(self, event): 
          #==============================================================================

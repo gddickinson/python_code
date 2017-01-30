@@ -7,8 +7,12 @@ Created on Thu Jan 19 15:44:57 2017
 
 # import packages
 import numpy as np
+import matplotlib
+matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
+
+
 from skimage import io
 from skimage.color import rgb2gray
 import copy
