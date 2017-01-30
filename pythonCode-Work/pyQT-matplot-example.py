@@ -9,7 +9,7 @@ import sys
 from PyQt4 import QtGui
 
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlibimport NavigationToolbar2QTAgg as NavigationToolbar
+from matplotlib import NavigationToolbar2QTAgg as NavigationToolbar
 import matplotlib.pyplot as plt
 
 import random

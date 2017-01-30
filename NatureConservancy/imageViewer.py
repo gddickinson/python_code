@@ -2,7 +2,7 @@
 """
 Created on Sat Oct 10 12:14:34 2015
 
-@author: robot
+@author: george
 """
 from __future__ import (absolute_import, division,print_function, unicode_literals)
 from future.builtins import (bytes, dict, int, list, object, range, str, ascii, chr, hex, input, next, oct, open, pow, round, super, filter, map, zip)
@@ -38,9 +38,6 @@ else:
     from functools import partial
 
 
-global globimg
-globimg = 'OFF'
-
 
 class ZeroSpinBox(QSpinBox):
     
@@ -56,29 +53,119 @@ class ZeroSpinBox(QSpinBox):
             self.emit(SIGNAL("atzero"),self.zeros)
 
 
+class Form(QDialog):
+    def __init__(self, parent = None):
+        super(Form, self).__init__(parent)
+        
+        self.filterBox=QComboBox()
+        self.filterBox.addItem("No Filter")
+        
+        self.SpinBox1=QDoubleSpinBox()
+        self.SpinBox1.setRange(0,1000)
+        self.SpinBox1.setValue(1.00)
+
+        self.SpinBox2=QDoubleSpinBox()
+        self.SpinBox2.setRange(0,1000)
+        self.SpinBox2.setValue(1.00)
+        
+        self.filterLabel=QLabel("No Filter")       
+        self.filterFlag = 'No Filter'
+        
+        self.dial = QDial()
+        self.dial.setNotchesVisible(True)
+        self.zerospinbox = ZeroSpinBox()
+  
+        self.sld1 = QtGui.QSlider(QtCore.Qt.Vertical, self)
+        self.sld1.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.sld1.setGeometry(30, 40, 100, 30)
+   
+        self.sld2 = QtGui.QSlider(QtCore.Qt.Vertical, self)
+        self.sld2.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.sld2.setGeometry(30, 40, 100, 30)
+
+        self.sld3 = QtGui.QSlider(QtCore.Qt.Vertical, self)
+        self.sld3.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.sld3.setGeometry(30, 40, 100, 30)
+        
+        self.sld4 = QtGui.QSlider(QtCore.Qt.Vertical, self)
+        self.sld4.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.sld4.setGeometry(30, 40, 100, 30)
+      
+        self.button1 = QPushButton("ON")
+        self.onFlag = False
+        
+        layout = QHBoxLayout()
+        layout.addWidget(self.dial)
+        layout.addWidget(self.zerospinbox)
+        layout.addWidget(self.button1)
+        layout.addWidget(self.sld1)
+        layout.addWidget(self.sld2)
+        layout.addWidget(self.sld3)
+        layout.addWidget(self.sld4)
+                
+        self.setLayout(layout)
+                       
+        self.connect(self.dial,SIGNAL("valueChanged(int)"), self.zerospinbox.setValue)
+        self.connect(self.zerospinbox,SIGNAL("valueChanged(int)"),self.dial.setValue)
+        self.connect(self.zerospinbox,SIGNAL("atzero"),self.announce)
+        self.connect(self.button1,SIGNAL("clicked()"),self.button_1)
+        self.connect(self.sld1,SIGNAL("valueChanged(int)"), self.slider_1)
+        self.connect(self.sld2,SIGNAL("valueChanged(int)"), self.slider_2)
+        self.connect(self.sld3,SIGNAL("valueChanged(int)"), self.slider_3)
+        self.connect(self.sld4,SIGNAL("valueChanged(int)"), self.slider_4)
+
+
+    def button_1(self):
+        if self.onFlag == False:
+            self.onFlag = True
+            self.button1.setText("ON")
+        else:
+            self.onFlag = False
+            self.button1.setText("OFF")
+        
+
+    def slider_1(self):
+        print ("Not implemented")
+
+    def slider_2(self):
+        print ("Not implemented")
+
+    def slider_3(self):
+        print ("Not implemented")
+
+    def slider_4(self):
+        print ("Not implemented")
+           
+    def announce(self,zeros):
+        print ("ZeroSpinBox has been at zero %d times" %zeros)
+
+    def updateUi(self):
+        self.filterType = unicode(self.filterBox.currentText())
+        self.filterLabel.setText(self.filterType)
+        self.filterFlag = str(self.filterType)
+
+
 class Viewer(QtGui.QMainWindow):
     
     def __init__(self):
-        super(Viewer, self).__init__()
+        super(Viewer, self).__init__() 
         
         self.initUI()
         
+        
+        
+        
     def initUI(self):      
 
-        self.ImageView = pg.ImageView()
+        self.ImageView = pg.ImageView(view=pg.PlotItem())        
         self.resize(800,800)
         self.setCentralWidget(self.ImageView)
         self.statusBar()
-
-        openTiff = QtGui.QAction(QtGui.QIcon('open.png'), 'Open tiff', self)
-        openTiff.setShortcut('Ctrl+O')
-        openTiff.setStatusTip('Open new File')
-        openTiff.triggered.connect(self.openDialog1)
-        
+      
         openImage = QtGui.QAction(QtGui.QIcon('open.png'), 'Open image', self)
-        openImage.setShortcut('Ctrl+I')
+        openImage.setShortcut('Ctrl+O')
         openImage.setStatusTip('Open new Image')
-        openImage.triggered.connect(self.openDialog3)
+        openImage.triggered.connect(self.openDialog)
         
         saveFile = QtGui.QAction(QtGui.QIcon('save.png'), 'Save', self)
         saveFile.setShortcut('Ctrl+S')
@@ -104,15 +191,24 @@ class Viewer(QtGui.QMainWindow):
         flipUD.setShortcut('Ctrl+8')
         flipUD.setStatusTip('Flip horizontal')
         flipUD.triggered.connect(self.flipImageUD)
-
+       
         quitApp = QtGui.QAction(QtGui.QIcon('save.png'), 'Quit Now', self)
         quitApp.setShortcut('Ctrl+Q')
         quitApp.setStatusTip('Quit')
         quitApp.triggered.connect(self.quitDialog)
+        
+        activateExaminer = QtGui.QAction(QtGui.QIcon('save.png'), 'ROI Examiner', self)
+        activateExaminer.setShortcut('Ctrl+E')
+        activateExaminer.setStatusTip('Start Examiner')
+        activateExaminer.triggered.connect(self.startROIExaminer) 
+
+        activateConsole = QtGui.QAction(QtGui.QIcon('save.png'), 'ROI Console', self)
+        activateConsole.setShortcut('Ctrl+R')
+        activateConsole.setStatusTip('Start Console')
+        activateConsole.triggered.connect(self.initConsole) 
 
         menubar = self.menuBar()
         fileMenu = menubar.addMenu('&File')
-        fileMenu.addAction(openTiff)
         fileMenu.addAction(openImage)
         fileMenu.addAction(saveFile)
   
@@ -125,10 +221,68 @@ class Viewer(QtGui.QMainWindow):
         fileMenu2 = menubar.addMenu("&Quit")
         fileMenu2.addAction(quitApp)
 
-      
+        fileMenu3 = menubar.addMenu('&ROI Examiner')
+        fileMenu3.addAction(activateExaminer)
+        fileMenu3.addAction(activateConsole)
+
+
+#        fileMenu3 = menubar.addMenu('&Analysis')
+#        fileMenu3.addAction(analysis1)
+       
         #self.setGeometry(300, 300, 350, 300)
+
         self.setWindowTitle('ImageView')
+
+#        def updateROI(roi):                                    
+#            self.roiImg = self.ImageView.getProcessedImage()
+#            #arr = self.roiImg.getNumpy()
+#            arr = np.array(self.roiImg)
+#            
+#            x = self.roi1.getArrayRegion(arr, self.ImageView.getImageItem())
+#            self.roiImg = x
+#            
+#            
+#        def rectROI(self):           
+#            self.roiImg = []
+#            self.roi1 = pg.RectROI([40, 40], [40, 40], pen=(0,9))    
+#            self.roi1.addRotateHandle([1,0], [0.5, 0.5])
+#            self.roi1.sigRegionChanged.connect(updateROI)
+#            self.ImageView.addItem(self.roi1)
+#            return
+         
+        #rectROI(self)
+        self.initROI()        
         self.show()
+
+    def initConsole(self):
+        self.console = Form()        
+        self.console.connect(self.console.button1,SIGNAL("clicked()"),self.testPrint)
+        self.console.show()
+
+
+    def testPrint(self):
+        print("test passed")
+
+    def initROI(self):
+
+        def updateROI(roi):                                    
+            self.roiImg = self.ImageView.getProcessedImage()
+            #arr = self.roiImg.getNumpy()
+            arr = np.array(self.roiImg)
+            
+            x = self.roi1.getArrayRegion(arr, self.ImageView.getImageItem())
+            self.roiImg = x
+            
+            
+        def rectROI(self):           
+            self.roiImg = []
+            self.roi1 = pg.RectROI([40, 40], [40, 40], pen=(0,9))    
+            self.roi1.addRotateHandle([1,0], [0.5, 0.5])
+            self.roi1.sigRegionChanged.connect(updateROI)
+            self.ImageView.addItem(self.roi1)
+            return 
+
+        rectROI(self)
 
 
     def txt2dict(metadata):
@@ -147,57 +301,17 @@ class Viewer(QtGui.QMainWindow):
         return meta
 
 
-    def open_tiff(self,filename):
-
-        self.statusBar().showMessage('Loading {}'.format(os.path.basename(filename)))
-        t=time.time()
-        Tiff=tifffile.TiffFile(filename)
-        try:
-            metadata=Tiff[0].image_description
-            metadata = self.txt2dict(metadata)
-        except AttributeError:
-            metadata=dict()
-        tif=Tiff.asarray().astype(np.float64)
-        Tiff.close()        
-        #tif=imread(filename,plugin='tifffile').astype(g.m.settings['internal_data_type'])
-        if len(tif.shape)>3: # WARNING THIS TURNS COLOR movies TO BLACK AND WHITE BY AVERAGING ACROSS THE THREE CHANNELS
-            tif=np.mean(tif,3)
-        tif=np.squeeze(tif) #this gets rid of the meaningless 4th dimention in .stk files
-        if len(tif.shape)==3: #this could either be a movie or a colored still frame
-            if tif.shape[2]==3: #this is probably a colored still frame
-                tif=np.mean(tif,2)
-                tif=np.transpose(tif,(1,0)) # This keeps the x and y the same as in FIJI. 
-            else:
-                tif=np.transpose(tif,(0,2,1)) # This keeps the x and y the same as in FIJI. 
-        elif len(tif.shape)==2: # I haven't tested whether this preserved the x y and keeps it the same as in FIJI.  TEST THIS!!
-            tif=np.transpose(tif,(0,1))
-        self.statusBar().showMessage('{} successfully loaded ({} s)'.format(os.path.basename(filename), time.time()-t))
-        return tif  
-
-
     def open_image(self, filename):
         self.statusBar().showMessage('Loading {}'.format(os.path.basename(filename)))
         t=time.time()
-        newimg = io.imread(filename)      
-        #newimg = np.array(img) 
+        newimg = io.imread(filename)
+        newimg = np.rot90(newimg,k=1)
+        newimg = np.flipud(newimg)
         self.statusBar().showMessage('{} successfully loaded ({} s)'.format(os.path.basename(filename), time.time()-t))
         return newimg
-
-        
-    def openDialog1(self):
-
-        filename = QtGui.QFileDialog.getOpenFileName(self, 'Open tiff file', 
-                '/home', '*.tif *.tiff *.stk')
-        
-        filename=str(filename)
-        if filename=='':
-            return False
-        else:
-            data = self.open_tiff(filename)
-            print(len(data.shape))
-            self.ImageView.setImage(data)
+       
             
-    def openDialog3(self):
+    def openDialog(self):
         filename = QtGui.QFileDialog.getOpenFileName(self, 'Open Image file', 
                 '/home')        
         filename=str(filename)
@@ -205,8 +319,9 @@ class Viewer(QtGui.QMainWindow):
             return False
         else:            
             data = self.open_image(filename)                        
-            #print(len(data.shape))
-            self.ImageView.setImage(data)                               
+            print(len(data.shape))
+            self.ImageView.setImage(data)
+                              
 
     def saveDialog(self):
         
@@ -243,8 +358,48 @@ class Viewer(QtGui.QMainWindow):
         self.ImageView.setImage(img)
         return
 
+    def startROIExaminer(self):
+        try:
+            #imgROI = self.ImageView.getProcessedImage()
+            imgROI = self.roiImg
+        except:
+            print('No image loaded')
+            return
+       
+        ## create GUI
+        app = QtGui.QPixmap()
+        w = pg.GraphicsWindow(size=(500,400), border=True)
+        w.setWindowTitle('ROI Examiner')        
+        #text = """Testing..."""
+
+        w1 = w.addLayout(row=0, col=0)
+        #label1 = w1.addLabel(text, row=0, col=0)
+        v1a = w1.addViewBox(row=0, col=0, lockAspect=True)
+        img = pg.ImageItem(imgROI)
+        v1a.addItem(img)
+        #self.v1a.disableAutoRange('xy')
+        #self.v1a.autoRange()
+        while True:
+            v1a.removeItem(img)
+            imgROI = self.roiImg
+            imgROI = np.fliplr(imgROI)
+            img = pg.ImageItem(imgROI)
+            #img.rotate(180.0)
+            v1a.addItem(img)
+                        
+            if QtCore.QCoreApplication.instance() != None: #change this
+                app.closeAllWindows()
+                break       
+        return
+
+    
+
+
+
     def quitDialog(self):
         self.ImageView.close()
+        self.console.close()
+        self.miniViewer.close()       
         if QtCore.QCoreApplication.instance() != None:
             app = QtCore.QCoreApplication.instance()	
         else:
@@ -263,11 +418,13 @@ class Viewer(QtGui.QMainWindow):
 
         if reply == QtGui.QMessageBox.Yes:
             event.accept()
+            self.miniViewer.close()
+            self.console.close()
+            
         else:
             event.ignore()
 
-
-        
+     
 def main():
     if QtCore.QCoreApplication.instance() != None:
         app = QtCore.QCoreApplication.instance()	

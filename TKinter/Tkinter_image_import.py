@@ -5,7 +5,7 @@ Created on Wed Aug  5 20:34:47 2015
 @author: george
 """
 
-from Tkinter import *
+from tkinter import *
 
 root = Tk()
 logo = PhotoImage(file="banana.gif")

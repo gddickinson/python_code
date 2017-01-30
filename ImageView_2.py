@@ -18,9 +18,9 @@ import json
 import re
 #import SimpleCV as simplecv
 #from SimpleCV import Camera, Display, Image
-import pyscreenshot as ImageGrab
+#import pyscreenshot as ImageGrab
 #from PIL import Image
-import cv2
+#import cv2
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 if sys.version_info[:2]<(2,5):
