@@ -68,6 +68,14 @@ class Form(QDialog):
         self.SpinBox2.setRange(0,1000)
         self.SpinBox2.setValue(1.00)
         
+        self.SpinBox3=QDoubleSpinBox()
+        self.SpinBox3.setRange(0,1000)
+        self.SpinBox3.setValue(1.00)
+
+        self.SpinBox4=QDoubleSpinBox()
+        self.SpinBox4.setRange(0,1000)
+        self.SpinBox4.setValue(1.00)  
+        
         self.filterLabel=QLabel("No Filter")       
         self.filterFlag = 'No Filter'
         
@@ -76,18 +84,22 @@ class Form(QDialog):
         self.zerospinbox = ZeroSpinBox()
   
         self.sld1 = QtGui.QSlider(QtCore.Qt.Vertical, self)
+        self.sld1.setTickPosition(QSlider.TicksBelow)
         self.sld1.setFocusPolicy(QtCore.Qt.NoFocus)
         self.sld1.setGeometry(30, 40, 100, 30)
    
         self.sld2 = QtGui.QSlider(QtCore.Qt.Vertical, self)
+        self.sld2.setTickPosition(QSlider.TicksBelow)
         self.sld2.setFocusPolicy(QtCore.Qt.NoFocus)
         self.sld2.setGeometry(30, 40, 100, 30)
 
         self.sld3 = QtGui.QSlider(QtCore.Qt.Vertical, self)
+        self.sld3.setTickPosition(QSlider.TicksBelow)
         self.sld3.setFocusPolicy(QtCore.Qt.NoFocus)
         self.sld3.setGeometry(30, 40, 100, 30)
         
         self.sld4 = QtGui.QSlider(QtCore.Qt.Vertical, self)
+        self.sld4.setTickPosition(QSlider.TicksBelow)
         self.sld4.setFocusPolicy(QtCore.Qt.NoFocus)
         self.sld4.setGeometry(30, 40, 100, 30)
       
@@ -99,9 +111,13 @@ class Form(QDialog):
         layout.addWidget(self.zerospinbox)
         layout.addWidget(self.button1)
         layout.addWidget(self.sld1)
+        layout.addWidget(self.SpinBox1)
         layout.addWidget(self.sld2)
+        layout.addWidget(self.SpinBox2)     
         layout.addWidget(self.sld3)
+        layout.addWidget(self.SpinBox3)        
         layout.addWidget(self.sld4)
+        layout.addWidget(self.SpinBox4)
                 
         self.setLayout(layout)
                        
@@ -109,11 +125,18 @@ class Form(QDialog):
         self.connect(self.zerospinbox,SIGNAL("valueChanged(int)"),self.dial.setValue)
         self.connect(self.zerospinbox,SIGNAL("atzero"),self.announce)
         self.connect(self.button1,SIGNAL("clicked()"),self.button_1)
+        
         self.connect(self.sld1,SIGNAL("valueChanged(int)"), self.slider_1)
+        self.connect(self.sld1,SIGNAL("valueChanged(int)"),self.SpinBox1.setValue)
+        
         self.connect(self.sld2,SIGNAL("valueChanged(int)"), self.slider_2)
+        self.connect(self.sld2,SIGNAL("valueChanged(int)"),self.SpinBox2.setValue)
+       
         self.connect(self.sld3,SIGNAL("valueChanged(int)"), self.slider_3)
+        self.connect(self.sld3,SIGNAL("valueChanged(int)"),self.SpinBox3.setValue)
+        
         self.connect(self.sld4,SIGNAL("valueChanged(int)"), self.slider_4)
-
+        self.connect(self.sld4,SIGNAL("valueChanged(int)"),self.SpinBox4.setValue)
 
     def button_1(self):
         if self.onFlag == False:
@@ -151,9 +174,7 @@ class Viewer(QtGui.QMainWindow):
         super(Viewer, self).__init__() 
         
         self.initUI()
-        
-        
-        
+
         
     def initUI(self):      
 
@@ -388,18 +409,16 @@ class Viewer(QtGui.QMainWindow):
             v1a.addItem(img)
                         
             if QtCore.QCoreApplication.instance() != None: #change this
+                w.close()
                 app.closeAllWindows()
                 break       
         return
 
     
 
-
-
     def quitDialog(self):
         self.ImageView.close()
-        self.console.close()
-        self.miniViewer.close()       
+        self.console.close()      
         if QtCore.QCoreApplication.instance() != None:
             app = QtCore.QCoreApplication.instance()	
         else:
@@ -418,7 +437,6 @@ class Viewer(QtGui.QMainWindow):
 
         if reply == QtGui.QMessageBox.Yes:
             event.accept()
-            self.miniViewer.close()
             self.console.close()
             
         else:
