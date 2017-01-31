@@ -47,20 +47,6 @@ else:
 global roi_origin, roi_size, newimg, original_image
 
 
-class ZeroSpinBox(QSpinBox):
-
-    zeros = 0
-
-    def __init__(self, parent = None):
-        super(ZeroSpinBox, self).__init__(parent)
-        self.connect(self,SIGNAL("valueChanged(int)"),self.checkzero)
-
-    def checkzero(self):
-        if self.value() == 0:
-            self.zeros +=1
-            self.emit(SIGNAL("atzero"),self.zeros)
-
-
 class Form(QDialog):
     def __init__(self, parent = None):
         super(Form, self).__init__(parent)
@@ -73,9 +59,15 @@ class Form(QDialog):
         self.green_max = 110
         self.blue_min = 15
         self.blue_max = 75
+        
+        #ratio variables
+        self.green_blue_ratio_min = 1.2
+        self.green_blue_ratio_max = 3.0
+        self.red_green_ratio_min = 1.4
+        self.red_green_ratio_max = 2.8
 
-        self.filterBox=QComboBox()
-        self.filterBox.addItem("No Filter")
+        # self.filterBox=QComboBox()
+        # self.filterBox.addItem("No Filter")
 
         self.SpinBox1=QDoubleSpinBox()
         self.SpinBox1.setRange(0,self.red_max)
@@ -100,13 +92,26 @@ class Form(QDialog):
         self.SpinBox6=QDoubleSpinBox()
         self.SpinBox6.setRange(self.blue_min,255)
         self.SpinBox6.setValue(self.blue_max)
+        
+        self.SpinBox7=QDoubleSpinBox()
+        self.SpinBox7.setRange(0,self.green_blue_ratio_max)
+        self.SpinBox7.setValue(self.green_blue_ratio_min)
 
-        self.filterLabel=QLabel("No Filter")
-        self.filterFlag = 'No Filter'
+        self.SpinBox8=QDoubleSpinBox()
+        self.SpinBox8.setRange(self.green_blue_ratio_min,255)
+        self.SpinBox8.setValue(self.green_blue_ratio_max)      
 
-        self.dial = QDial()
-        self.dial.setNotchesVisible(True)
-        self.zerospinbox = ZeroSpinBox()
+        self.SpinBox9=QDoubleSpinBox()
+        self.SpinBox9.setRange(0,self.red_green_ratio_max)
+        self.SpinBox9.setValue(self.red_green_ratio_min)
+
+        self.SpinBox10=QDoubleSpinBox()
+        self.SpinBox10.setRange(self.red_green_ratio_min,255)
+        self.SpinBox10.setValue(self.red_green_ratio_max)  
+
+
+        # self.filterLabel=QLabel("No Filter")
+        # self.filterFlag = 'No Filter'
 
         self.sld1 = QtGui.QSlider(QtCore.Qt.Vertical, self)
         self.sld1.setRange(0,255)
@@ -149,33 +154,90 @@ class Form(QDialog):
         self.sld6.setFocusPolicy(QtCore.Qt.NoFocus)
         self.sld6.setValue(self.blue_max)
         self.sld6.setGeometry(30, 40, 100, 30)
+        
+        self.sld7 = QtGui.QSlider(QtCore.Qt.Vertical, self)
+        self.sld7.setRange(0,255)
+        self.sld7.setTickPosition(QSlider.TicksBelow)
+        self.sld7.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.sld7.setValue(self.green_blue_ratio_min)
+        self.sld7.setGeometry(30, 40, 100, 30)
 
-        self.button1 = QPushButton("ON")
+        self.sld8 = QtGui.QSlider(QtCore.Qt.Vertical, self)
+        self.sld8.setRange(0,255)
+        self.sld8.setTickPosition(QSlider.TicksAbove)
+        self.sld8.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.sld8.setValue(self.green_blue_ratio_max)
+        self.sld8.setGeometry(30, 40, 100, 30)       
+        
+        self.sld9 = QtGui.QSlider(QtCore.Qt.Vertical, self)
+        self.sld9.setRange(0,255)
+        self.sld9.setTickPosition(QSlider.TicksBelow)
+        self.sld9.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.sld9.setValue(self.red_green_ratio_min)
+        self.sld9.setGeometry(30, 40, 100, 30)
+
+        self.sld10 = QtGui.QSlider(QtCore.Qt.Vertical, self)
+        self.sld10.setRange(0,255)
+        self.sld10.setTickPosition(QSlider.TicksAbove)
+        self.sld10.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.sld10.setValue(self.red_green_ratio_max)
+        self.sld10.setGeometry(30, 40, 100, 30)        
+        
+
+        self.button1 = QPushButton("Run")
         self.onFlag = False
 
-        layout = QHBoxLayout()
-        layout.addWidget(self.dial)
-        layout.addWidget(self.zerospinbox)
-        layout.addWidget(self.button1)
-        layout.addWidget(self.sld1)
-        layout.addWidget(self.sld2)
-        layout.addWidget(self.SpinBox1)
-        layout.addWidget(self.SpinBox2)
-        layout.addWidget(self.sld3)
-        layout.addWidget(self.sld4)
-        layout.addWidget(self.SpinBox3)
-        layout.addWidget(self.SpinBox4)
-        layout.addWidget(self.sld5)
-        layout.addWidget(self.sld6)
-        layout.addWidget(self.SpinBox5)
-        layout.addWidget(self.SpinBox6)
+        self.buttonRed = QPushButton("RED")
+        self.buttonGreen = QPushButton("GREEN")
+        self.buttonBlue = QPushButton("BLUE")
+             
+        self.buttonGreenBlueRatio = QPushButton("GREEN/BLUE")
+        self.buttonRedGreenRatio = QPushButton("RED/GREEN")
+        
+
+        layout = QGridLayout()
+        #layout.addWidget(self.dial, 0,0)
+        #layout.addWidget(self.zerospinbox, 0,1)
+        layout.addWidget(self.button1, 0, 0)
+        layout.addWidget(self.buttonRed, 1, 0)
+        layout.addWidget(self.sld1, 1, 1)
+        layout.addWidget(self.sld2, 1, 2)
+        layout.addWidget(self.SpinBox1, 1, 3)
+        layout.addWidget(self.SpinBox2, 1, 4)
+        layout.addWidget(self.buttonGreen, 2, 0)
+        layout.addWidget(self.sld3, 2, 1)
+        layout.addWidget(self.sld4, 2, 2)
+        layout.addWidget(self.SpinBox3, 2, 3)
+        layout.addWidget(self.SpinBox4, 2, 4)
+        layout.addWidget(self.buttonBlue, 3, 0)
+        layout.addWidget(self.sld5,3, 1)
+        layout.addWidget(self.sld6, 3, 2)
+        layout.addWidget(self.SpinBox5, 3, 3)
+        layout.addWidget(self.SpinBox6, 3, 4)
+        
+        layout.addWidget(self.buttonGreenBlueRatio, 1, 5)
+        layout.addWidget(self.sld7, 1, 6)
+        layout.addWidget(self.sld8, 1, 7)
+        layout.addWidget(self.SpinBox7, 1, 8)
+        layout.addWidget(self.SpinBox8, 1, 9)
+
+        layout.addWidget(self.buttonRedGreenRatio, 2, 5)
+        layout.addWidget(self.sld9, 2, 6)
+        layout.addWidget(self.sld10, 2, 7)
+        layout.addWidget(self.SpinBox9, 2, 8)
+        layout.addWidget(self.SpinBox10, 2, 9)        
 
         self.setLayout(layout)
 
-        self.connect(self.dial,SIGNAL("valueChanged(int)"), self.zerospinbox.setValue)
-        self.connect(self.zerospinbox,SIGNAL("valueChanged(int)"),self.dial.setValue)
-        self.connect(self.zerospinbox,SIGNAL("atzero"),self.announce)
         self.connect(self.button1,SIGNAL("clicked()"),self.button_1)
+
+        self.connect(self.buttonRed,SIGNAL("clicked()"),self.button_red)
+        self.connect(self.buttonGreen,SIGNAL("clicked()"),self.button_green)
+        self.connect(self.buttonBlue,SIGNAL("clicked()"),self.button_blue)
+        
+        self.connect(self.buttonGreenBlueRatio,SIGNAL("clicked()"),self.button_green_blue_ratio)
+        self.connect(self.buttonRedGreenRatio,SIGNAL("clicked()"),self.button_red_green_ratio)
+        
 
         self.connect(self.sld1,SIGNAL("valueChanged(int)"), self.slider_1)
         self.connect(self.sld1,SIGNAL("valueChanged(int)"),self.SpinBox1.setValue)
@@ -195,16 +257,79 @@ class Form(QDialog):
         self.connect(self.sld6,SIGNAL("valueChanged(int)"), self.slider_6)
         self.connect(self.sld6,SIGNAL("valueChanged(int)"),self.SpinBox6.setValue)
 
+        self.connect(self.sld7,SIGNAL("valueChanged(int)"), self.slider_7)
+        self.connect(self.sld7,SIGNAL("valueChanged(int)"),self.SpinBox7.setValue)
+
+        self.connect(self.sld8,SIGNAL("valueChanged(int)"), self.slider_8)
+        self.connect(self.sld8,SIGNAL("valueChanged(int)"),self.SpinBox8.setValue)
+
+        self.connect(self.sld9,SIGNAL("valueChanged(int)"), self.slider_9)
+        self.connect(self.sld9,SIGNAL("valueChanged(int)"),self.SpinBox9.setValue)
+
+        self.connect(self.sld10,SIGNAL("valueChanged(int)"), self.slider_10)
+        self.connect(self.sld10,SIGNAL("valueChanged(int)"),self.SpinBox10.setValue)
 
 
 
     def button_1(self):
         if self.onFlag == False:
             self.onFlag = True
-            self.button1.setText("ON")
+            self.button1.setText("Run")
         else:
             self.onFlag = False
-            self.button1.setText("OFF")
+            self.button1.setText("Run")
+
+
+    def button_red(self):
+        self.red_min = 115
+        self.red_max = 210
+        self.sld2.setValue(self.red_max)
+        self.sld1.setValue(self.red_min)
+        self.SpinBox2.setValue(self.red_max)
+        self.SpinBox2.setRange(self.red_min,255)
+        self.SpinBox1.setValue(self.red_min)
+        self.SpinBox1.setRange(0,self.red_max)
+
+
+    def button_green(self):
+        self.green_min = 40
+        self.green_max = 110
+        self.sld4.setValue(self.green_max)
+        self.sld3.setValue(self.green_min)
+        self.SpinBox4.setValue(self.green_max)
+        self.SpinBox4.setRange(self.green_min,255)
+        self.SpinBox3.setValue(self.green_min)
+        self.SpinBox3.setRange(0,self.green_max)
+
+    def button_blue(self):
+        self.blue_min = 15
+        self.blue_max = 75
+        self.sld6.setValue(self.blue_max)
+        self.sld5.setValue(self.blue_min)
+        self.SpinBox6.setValue(self.blue_max)
+        self.SpinBox6.setRange(self.blue_min,255)
+        self.SpinBox5.setValue(self.blue_min)
+        self.SpinBox5.setRange(0,self.blue_max)
+
+    def button_green_blue_ratio(self):
+        self.green_blue_ratio_min = 1.2
+        self.green_blue_ratio_max = 3.0
+        self.sld8.setValue(self.green_blue_ratio_max)
+        self.sld7.setValue(self.green_blue_ratio_min)
+        self.SpinBox8.setValue(self.green_blue_ratio_max)
+        self.SpinBox8.setRange(self.green_blue_ratio_min,255)
+        self.SpinBox7.setValue(self.green_blue_ratio_min)
+        self.SpinBox7.setRange(0,self.green_blue_ratio_max)
+    
+    def button_red_green_ratio(self):
+        self.red_green_ratio_min = 1.4
+        self.red_green_ratio_max = 2.8  
+        self.sld10.setValue(self.red_green_ratio_max)
+        self.sld9.setValue(self.red_green_ratio_min)
+        self.SpinBox10.setValue(self.red_green_ratio_max)
+        self.SpinBox10.setRange(self.red_green_ratio_min,255)
+        self.SpinBox9.setValue(self.red_green_ratio_min)
+        self.SpinBox9.setRange(0,self.red_green_ratio_max)
 
 
     def slider_1(self):
@@ -215,25 +340,77 @@ class Form(QDialog):
             self.sld1.setValue(self.red_max)
             self.SpinBox1.setValue(self.red_max)
 
-
     def slider_2(self):
         if self.sld2.value() > self.red_min:
             self.red_max = self.sld2.value()
+            self.SpinBox1.setRange(0,self.red_max)
+        else:
+            self.sld2.setValue(self.red_min)
+            self.SpinBox2.setValue(self.red_min)
 
     def slider_3(self):
-        self.green_min = self.sld3.value()
+        if self.sld3.value() < self.green_max:
+            self.green_min = self.sld3.value()
+            self.SpinBox4.setRange(self.green_min,255)
+        else:
+            self.sld3.setValue(self.green_max)
+            self.SpinBox3.setValue(self.green_max)
 
     def slider_4(self):
-        self.green_max = self.sld4.value()
+        if self.sld4.value() > self.green_min:
+            self.green_max = self.sld4.value()
+            self.SpinBox3.setRange(0,self.green_max)
+        else:
+            self.sld4.setValue(self.green_min)
+            self.SpinBox4.setValue(self.green_min)
 
     def slider_5(self):
-        self.blue_min = self.sld5.value()
+        if self.sld5.value() < self.blue_max:
+            self.blue_min = self.sld5.value()
+            self.SpinBox6.setRange(self.blue_min,255)
+        else:
+            self.sld5.setValue(self.blue_max)
+            self.SpinBox5.setValue(self.blue_max)
 
     def slider_6(self):
-        self.blue_max = self.sld6.value()
+        if self.sld6.value() > self.blue_min:
+            self.blue_max = self.sld6.value()
+            self.SpinBox5.setRange(0,self.blue_max)
+        else:
+            self.sld6.setValue(self.blue_min)
+            self.SpinBox6.setValue(self.blue_min)
 
-    def announce(self,zeros):
-        print ("ZeroSpinBox has been at zero %d times" %zeros)
+    def slider_7(self):
+        if self.sld7.value() < self.green_blue_ratio_max:
+            self.green_blue_ratio_min = self.sld7.value()
+            self.SpinBox8.setRange(self.green_blue_ratio_min,255)
+        else:
+            self.sld7.setValue(self.green_blue_ratio_max)
+            self.SpinBox7.setValue(self.green_blue_ratio_max)
+
+    def slider_8(self):
+        if self.sld8.value() > self.green_blue_ratio_min:
+            self.green_blue_ratio_max = self.sld8.value()
+            self.SpinBox7.setRange(0,self.green_blue_ratio_max)
+        else:
+            self.sld8.setValue(self.green_blue_ratio_min)
+            self.SpinBox8.setValue(self.green_blue_ratio_min)
+
+    def slider_9(self):
+        if self.sld9.value() < self.red_green_ratio_max:
+            self.red_green_ratio_min = self.sld9.value()
+            self.SpinBox10.setRange(self.red_green_ratio_min,255)
+        else:
+            self.sld9.setValue(self.red_green_ratio_max)
+            self.SpinBox9.setValue(self.red_green_ratio_max)
+
+    def slider_10(self):
+        if self.sld10.value() > self.red_green_ratio_min:
+            self.red_green_ratio_max = self.sld10.value()
+            self.SpinBox9.setRange(0,self.red_green_ratio_max)
+        else:
+            self.sld10.setValue(self.red_green_ratio_min)
+            self.SpinBox10.setValue(self.red_green_ratio_min)
 
     def updateUi(self):
         self.filterType = unicode(self.filterBox.currentText())
@@ -510,6 +687,10 @@ class Viewer(QtGui.QMainWindow):
         image_x_end = image_x_origin + int(roi_size[0])
         image_y_end = image_y_origin + int(roi_size[1])
 
+        #area based on rectangular roi
+        roi_area = int(roi_size[0])*int(roi_size[1])
+
+
         #print ("end ", image_x_end, image_y_end)
 
         center_x = int(roi_size[0]/2)
@@ -539,8 +720,13 @@ class Viewer(QtGui.QMainWindow):
         blue_min = self.console.blue_min
         blue_max = self.console.blue_max
 
+        #ratio variables
+        green_blue_ratio_min = self.console.green_blue_ratio_min
+        green_blue_ratio_max = self.console.green_blue_ratio_max
+        red_green_ratio_min = self.console.red_green_ratio_min
+        red_green_ratio_max = self.console.red_green_ratio_max
 
-         #loop through all pixels in image and set pixel to maximum channel value - count pixels in each channel
+        #loop through all pixels in image and set pixel to maximum channel value - count pixels in each channel
         for x in range (image_x_origin,image_x_end):
             for y in range (image_y_origin,image_y_end):
                 #pixels with equivalent values
@@ -550,14 +736,23 @@ class Viewer(QtGui.QMainWindow):
                     other_pixel += 1
 
                 #count board pixels
-                elif image[x,y][r] > image[x,y][g] and image[x,y][r] > image[x,y][b] and image[x,y][g]/image[x,y][b] > 1.2 and image[x,y][g]/image[x,y][b] < 3 and image[x,y][r]/image[x,y][g] > 1.4 and image[x,y][r]/image[x,y][g] < 2.8:
+                elif ((image[x,y][r] > image[x,y][g]) 
+                        and (image[x,y][r] > image[x,y][b]) 
+                        and ((image[x,y][g]/image[x,y][b]) > green_blue_ratio_min) 
+                        and ((image[x,y][g]/image[x,y][b]) < green_blue_ratio_max) 
+                        and ((image[x,y][r]/image[x,y][g]) > red_green_ratio_min) 
+                        and ((image[x,y][r]/image[x,y][g]) < red_green_ratio_max)):
 
-                    if image[x,y][r] > red_min and image[x,y][r] < red_max and image[x,y][g] > green_min and image[x,y][g] < green_max and image[x,y][b] > blue_min and image[x,y][b] < blue_max:
+                    if (image[x,y][r] > red_min 
+                        and image[x,y][r] < red_max 
+                        and image[x,y][g] > green_min 
+                        and image[x,y][g] < green_max 
+                        and image[x,y][b] > blue_min 
+                        and image[x,y][b] < blue_max):
 
                         image_board[x,y] = 0
                         image_other[x,y] = 255
                         board_pixel += 1
-
 
                     else:
                         image_board[x,y] = 255
@@ -584,6 +779,7 @@ class Viewer(QtGui.QMainWindow):
 
         print("board_pixels = ", board_pixel)
         print("other_pixels = ", other_pixel)
+        print("ROI_pixels = ", roi_area)
 
         #plot result
         image_board = np.rot90(image_board, k=1)
