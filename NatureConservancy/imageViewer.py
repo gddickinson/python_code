@@ -42,6 +42,9 @@ if sys.version_info[:2]<(2,5):
 else:
     from functools import partial
 
+#global variables
+
+global roi_origin, roi_size, newimg, original_image
 
 
 class ZeroSpinBox(QSpinBox):
@@ -75,28 +78,28 @@ class Form(QDialog):
         self.filterBox.addItem("No Filter")
 
         self.SpinBox1=QDoubleSpinBox()
-        self.SpinBox1.setRange(0,255)
-        self.SpinBox1.setValue(1)
+        self.SpinBox1.setRange(0,self.red_max)
+        self.SpinBox1.setValue(self.red_min)
 
         self.SpinBox2=QDoubleSpinBox()
-        self.SpinBox2.setRange(0,255)
-        self.SpinBox2.setValue(255)
+        self.SpinBox2.setRange(self.red_min,255)
+        self.SpinBox2.setValue(self.red_max)
 
         self.SpinBox3=QDoubleSpinBox()
-        self.SpinBox3.setRange(0,255)
-        self.SpinBox3.setValue(1)
+        self.SpinBox3.setRange(0,self.green_max)
+        self.SpinBox3.setValue(self.green_min)
 
         self.SpinBox4=QDoubleSpinBox()
-        self.SpinBox4.setRange(0,255)
-        self.SpinBox4.setValue(255)
+        self.SpinBox4.setRange(self.green_min,255)
+        self.SpinBox4.setValue(self.green_max)
 
         self.SpinBox5=QDoubleSpinBox()
-        self.SpinBox5.setRange(0,255)
-        self.SpinBox5.setValue(1)
+        self.SpinBox5.setRange(0,self.blue_max)
+        self.SpinBox5.setValue(self.blue_min)
 
         self.SpinBox6=QDoubleSpinBox()
-        self.SpinBox6.setRange(0,255)
-        self.SpinBox6.setValue(255)
+        self.SpinBox6.setRange(self.blue_min,255)
+        self.SpinBox6.setValue(self.blue_max)
 
         self.filterLabel=QLabel("No Filter")
         self.filterFlag = 'No Filter'
@@ -114,7 +117,7 @@ class Form(QDialog):
 
         self.sld2 = QtGui.QSlider(QtCore.Qt.Vertical, self)
         self.sld2.setRange(0,255)
-        self.sld2.setTickPosition(QSlider.TicksBelow)
+        self.sld2.setTickPosition(QSlider.TicksAbove)
         self.sld2.setFocusPolicy(QtCore.Qt.NoFocus)
         self.sld2.setValue(self.red_max)
         self.sld2.setGeometry(30, 40, 100, 30)
@@ -128,7 +131,7 @@ class Form(QDialog):
 
         self.sld4 = QtGui.QSlider(QtCore.Qt.Vertical, self)
         self.sld4.setRange(0,255)
-        self.sld4.setTickPosition(QSlider.TicksBelow)
+        self.sld4.setTickPosition(QSlider.TicksAbove)
         self.sld4.setFocusPolicy(QtCore.Qt.NoFocus)
         self.sld4.setValue(self.green_max)
         self.sld4.setGeometry(30, 40, 100, 30)
@@ -142,7 +145,7 @@ class Form(QDialog):
 
         self.sld6 = QtGui.QSlider(QtCore.Qt.Vertical, self)
         self.sld6.setRange(0,255)
-        self.sld6.setTickPosition(QSlider.TicksBelow)
+        self.sld6.setTickPosition(QSlider.TicksAbove)
         self.sld6.setFocusPolicy(QtCore.Qt.NoFocus)
         self.sld6.setValue(self.blue_max)
         self.sld6.setGeometry(30, 40, 100, 30)
@@ -205,10 +208,17 @@ class Form(QDialog):
 
 
     def slider_1(self):
-        self.red_min = self.sld1.value()
+        if self.sld1.value() < self.red_max:
+            self.red_min = self.sld1.value()
+            self.SpinBox2.setRange(self.red_min,255)
+        else:
+            self.sld1.setValue(self.red_max)
+            self.SpinBox1.setValue(self.red_max)
+
 
     def slider_2(self):
-        self.red_max = self.sld2.value()
+        if self.sld2.value() > self.red_min:
+            self.red_max = self.sld2.value()
 
     def slider_3(self):
         self.green_min = self.sld3.value()
@@ -380,8 +390,9 @@ class Viewer(QtGui.QMainWindow):
     def open_image(self, filename):
         self.statusBar().showMessage('Loading {}'.format(os.path.basename(filename)))
         t=time.time()
-        global newimg
+        global newimg, original_image
         newimg = io.imread(filename)
+        original_image = copy.deepcopy(newimg)
         newimg = np.rot90(newimg,k=1)
         newimg = np.flipud(newimg)
         self.statusBar().showMessage('{} successfully loaded ({} s)'.format(os.path.basename(filename), time.time()-t))
