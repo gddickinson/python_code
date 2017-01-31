@@ -21,6 +21,7 @@ import json
 import re
 
 from skimage import io
+from skimage import util
 from skimage.color import rgb2gray
 import copy
 from skimage.filters import threshold_otsu
@@ -61,6 +62,15 @@ class Form(QDialog):
     def __init__(self, parent = None):
         super(Form, self).__init__(parent)
 
+
+        #filter variables
+        self.red_min = 115
+        self.red_max = 210
+        self.green_min = 40
+        self.green_max = 110
+        self.blue_min = 15
+        self.blue_max = 75
+
         self.filterBox=QComboBox()
         self.filterBox.addItem("No Filter")
 
@@ -99,39 +109,42 @@ class Form(QDialog):
         self.sld1.setRange(0,255)
         self.sld1.setTickPosition(QSlider.TicksBelow)
         self.sld1.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.sld1.setValue(self.red_min)
         self.sld1.setGeometry(30, 40, 100, 30)
 
         self.sld2 = QtGui.QSlider(QtCore.Qt.Vertical, self)
         self.sld2.setRange(0,255)
         self.sld2.setTickPosition(QSlider.TicksBelow)
         self.sld2.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.sld2.setValue(255)
+        self.sld2.setValue(self.red_max)
         self.sld2.setGeometry(30, 40, 100, 30)
 
         self.sld3 = QtGui.QSlider(QtCore.Qt.Vertical, self)
         self.sld3.setRange(0,255)
         self.sld3.setTickPosition(QSlider.TicksBelow)
         self.sld3.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.sld3.setValue(self.green_min)
         self.sld3.setGeometry(30, 40, 100, 30)
 
         self.sld4 = QtGui.QSlider(QtCore.Qt.Vertical, self)
         self.sld4.setRange(0,255)
         self.sld4.setTickPosition(QSlider.TicksBelow)
         self.sld4.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.sld4.setValue(255)
+        self.sld4.setValue(self.green_max)
         self.sld4.setGeometry(30, 40, 100, 30)
 
         self.sld5 = QtGui.QSlider(QtCore.Qt.Vertical, self)
         self.sld5.setRange(0,255)
         self.sld5.setTickPosition(QSlider.TicksBelow)
         self.sld5.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.sld5.setValue(self.blue_min)
         self.sld5.setGeometry(30, 40, 100, 30)
 
         self.sld6 = QtGui.QSlider(QtCore.Qt.Vertical, self)
         self.sld6.setRange(0,255)
         self.sld6.setTickPosition(QSlider.TicksBelow)
         self.sld6.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.sld6.setValue(255)
+        self.sld6.setValue(self.blue_max)
         self.sld6.setGeometry(30, 40, 100, 30)
 
         self.button1 = QPushButton("ON")
@@ -192,22 +205,22 @@ class Form(QDialog):
 
 
     def slider_1(self):
-        print ("Not implemented")
+        self.red_min = self.sld1.value()
 
     def slider_2(self):
-        print ("Not implemented")
+        self.red_max = self.sld2.value()
 
     def slider_3(self):
-        print ("Not implemented")
+        self.green_min = self.sld3.value()
 
     def slider_4(self):
-        print ("Not implemented")
+        self.green_max = self.sld4.value()
 
     def slider_5(self):
-        print ("Not implemented")
+        self.blue_min = self.sld5.value()
 
     def slider_6(self):
-        print ("Not implemented")
+        self.blue_max = self.sld6.value()
 
     def announce(self,zeros):
         print ("ZeroSpinBox has been at zero %d times" %zeros)
@@ -263,6 +276,11 @@ class Viewer(QtGui.QMainWindow):
         flipUD.setStatusTip('Flip horizontal')
         flipUD.triggered.connect(self.flipImageUD)
 
+        invert = QtGui.QAction(QtGui.QIcon('open.png'), 'Invert', self)
+        invert.setShortcut('Ctrl+I')
+        invert.setStatusTip('Invert')
+        invert.triggered.connect(self.invert)
+
         quitApp = QtGui.QAction(QtGui.QIcon('save.png'), 'Quit Now', self)
         quitApp.setShortcut('Ctrl+Q')
         quitApp.setStatusTip('Quit')
@@ -288,6 +306,7 @@ class Viewer(QtGui.QMainWindow):
         fileMenu1.addAction(rotateClock)
         fileMenu1.addAction(flipLR)
         fileMenu1.addAction(flipUD)
+        fileMenu1.addAction(invert)
 
         fileMenu2 = menubar.addMenu("&Quit")
         fileMenu2.addAction(quitApp)
@@ -394,27 +413,39 @@ class Viewer(QtGui.QMainWindow):
 
     def rotateImageCounter(self):
         img = self.ImageView.getProcessedImage()
-        img = np.rot90(img,k=3)
-        self.ImageView.setImage(img)
+        global newimg
+        newimg = np.rot90(img,k=3)
+        self.ImageView.setImage(newimg)
         return
 
     def rotateImageClock(self):
         img = self.ImageView.getProcessedImage()
-        img = np.rot90(img,k=1)
-        self.ImageView.setImage(img)
+        global newimg
+        newimg = np.rot90(img,k=1)
+        self.ImageView.setImage(newimg)
         return
 
     def flipImageLR(self):
         img = self.ImageView.getProcessedImage()
-        img = np.fliplr(img)
-        self.ImageView.setImage(img)
+        global newimg
+        newimg = np.fliplr(img)
+        self.ImageView.setImage(newimg)
         return
 
     def flipImageUD(self):
         img = self.ImageView.getProcessedImage()
-        img = np.flipud(img)
-        self.ImageView.setImage(img)
+        global newimg
+        newimg = np.flipud(img)
+        self.ImageView.setImage(newimg)
         return
+
+    def invert(self):
+        img = self.ImageView.getProcessedImage()
+        global newimg
+        newimg = np.invert(img)
+        self.ImageView.setImage(newimg)
+        return
+
 
     def startROIExaminer(self):
         try:
@@ -490,12 +521,12 @@ class Viewer(QtGui.QMainWindow):
         other_pixel = 0
 
         #filter variables
-        red_min = 115
-        red_max = 210
-        green_min = 40
-        green_max = 110
-        blue_min = 15
-        blue_max = 75
+        red_min = self.console.red_min
+        red_max = self.console.red_max
+        green_min = self.console.green_min
+        green_max = self.console.green_max
+        blue_min = self.console.blue_min
+        blue_max = self.console.blue_max
 
 
          #loop through all pixels in image and set pixel to maximum channel value - count pixels in each channel
