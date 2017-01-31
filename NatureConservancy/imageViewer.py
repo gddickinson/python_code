@@ -29,6 +29,7 @@ from skimage.segmentation import clear_border
 from skimage.measure import label, regionprops
 from skimage.morphology import closing, square
 from skimage.color import label2rgb
+from scipy.ndimage import interpolation
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
@@ -59,7 +60,7 @@ class Form(QDialog):
         self.green_max = 110
         self.blue_min = 15
         self.blue_max = 75
-        
+
         #ratio variables
         self.green_blue_ratio_min = 1.2
         self.green_blue_ratio_max = 3.0
@@ -92,14 +93,14 @@ class Form(QDialog):
         self.SpinBox6=QDoubleSpinBox()
         self.SpinBox6.setRange(self.blue_min,255)
         self.SpinBox6.setValue(self.blue_max)
-        
+
         self.SpinBox7=QDoubleSpinBox()
         self.SpinBox7.setRange(0,self.green_blue_ratio_max)
         self.SpinBox7.setValue(self.green_blue_ratio_min)
 
         self.SpinBox8=QDoubleSpinBox()
         self.SpinBox8.setRange(self.green_blue_ratio_min,255)
-        self.SpinBox8.setValue(self.green_blue_ratio_max)      
+        self.SpinBox8.setValue(self.green_blue_ratio_max)
 
         self.SpinBox9=QDoubleSpinBox()
         self.SpinBox9.setRange(0,self.red_green_ratio_max)
@@ -107,7 +108,7 @@ class Form(QDialog):
 
         self.SpinBox10=QDoubleSpinBox()
         self.SpinBox10.setRange(self.red_green_ratio_min,255)
-        self.SpinBox10.setValue(self.red_green_ratio_max)  
+        self.SpinBox10.setValue(self.red_green_ratio_max)
 
 
         # self.filterLabel=QLabel("No Filter")
@@ -154,7 +155,7 @@ class Form(QDialog):
         self.sld6.setFocusPolicy(QtCore.Qt.NoFocus)
         self.sld6.setValue(self.blue_max)
         self.sld6.setGeometry(30, 40, 100, 30)
-        
+
         self.sld7 = QtGui.QSlider(QtCore.Qt.Vertical, self)
         self.sld7.setRange(0,255)
         self.sld7.setTickPosition(QSlider.TicksBelow)
@@ -167,8 +168,8 @@ class Form(QDialog):
         self.sld8.setTickPosition(QSlider.TicksAbove)
         self.sld8.setFocusPolicy(QtCore.Qt.NoFocus)
         self.sld8.setValue(self.green_blue_ratio_max)
-        self.sld8.setGeometry(30, 40, 100, 30)       
-        
+        self.sld8.setGeometry(30, 40, 100, 30)
+
         self.sld9 = QtGui.QSlider(QtCore.Qt.Vertical, self)
         self.sld9.setRange(0,255)
         self.sld9.setTickPosition(QSlider.TicksBelow)
@@ -181,8 +182,8 @@ class Form(QDialog):
         self.sld10.setTickPosition(QSlider.TicksAbove)
         self.sld10.setFocusPolicy(QtCore.Qt.NoFocus)
         self.sld10.setValue(self.red_green_ratio_max)
-        self.sld10.setGeometry(30, 40, 100, 30)        
-        
+        self.sld10.setGeometry(30, 40, 100, 30)
+
 
         self.button1 = QPushButton("Run")
         self.onFlag = False
@@ -190,10 +191,10 @@ class Form(QDialog):
         self.buttonRed = QPushButton("RED")
         self.buttonGreen = QPushButton("GREEN")
         self.buttonBlue = QPushButton("BLUE")
-             
+
         self.buttonGreenBlueRatio = QPushButton("GREEN/BLUE")
         self.buttonRedGreenRatio = QPushButton("RED/GREEN")
-        
+
 
         layout = QGridLayout()
         #layout.addWidget(self.dial, 0,0)
@@ -214,7 +215,7 @@ class Form(QDialog):
         layout.addWidget(self.sld6, 3, 2)
         layout.addWidget(self.SpinBox5, 3, 3)
         layout.addWidget(self.SpinBox6, 3, 4)
-        
+
         layout.addWidget(self.buttonGreenBlueRatio, 1, 5)
         layout.addWidget(self.sld7, 1, 6)
         layout.addWidget(self.sld8, 1, 7)
@@ -225,7 +226,7 @@ class Form(QDialog):
         layout.addWidget(self.sld9, 2, 6)
         layout.addWidget(self.sld10, 2, 7)
         layout.addWidget(self.SpinBox9, 2, 8)
-        layout.addWidget(self.SpinBox10, 2, 9)        
+        layout.addWidget(self.SpinBox10, 2, 9)
 
         self.setLayout(layout)
 
@@ -234,10 +235,10 @@ class Form(QDialog):
         self.connect(self.buttonRed,SIGNAL("clicked()"),self.button_red)
         self.connect(self.buttonGreen,SIGNAL("clicked()"),self.button_green)
         self.connect(self.buttonBlue,SIGNAL("clicked()"),self.button_blue)
-        
+
         self.connect(self.buttonGreenBlueRatio,SIGNAL("clicked()"),self.button_green_blue_ratio)
         self.connect(self.buttonRedGreenRatio,SIGNAL("clicked()"),self.button_red_green_ratio)
-        
+
 
         self.connect(self.sld1,SIGNAL("valueChanged(int)"), self.slider_1)
         self.connect(self.sld1,SIGNAL("valueChanged(int)"),self.SpinBox1.setValue)
@@ -320,10 +321,10 @@ class Form(QDialog):
         self.SpinBox8.setRange(self.green_blue_ratio_min,255)
         self.SpinBox7.setValue(self.green_blue_ratio_min)
         self.SpinBox7.setRange(0,self.green_blue_ratio_max)
-    
+
     def button_red_green_ratio(self):
         self.red_green_ratio_min = 1.4
-        self.red_green_ratio_max = 2.8  
+        self.red_green_ratio_max = 2.8
         self.sld10.setValue(self.red_green_ratio_max)
         self.sld9.setValue(self.red_green_ratio_min)
         self.SpinBox10.setValue(self.red_green_ratio_max)
@@ -444,14 +445,24 @@ class Viewer(QtGui.QMainWindow):
         saveFile.triggered.connect(self.saveDialog)
 
         rotateCounter = QtGui.QAction(QtGui.QIcon('open.png'), 'Rotate Counterclock', self)
-        rotateCounter.setShortcut('Ctrl+9')
+        rotateCounter.setShortcut('Ctrl+<')
         rotateCounter.setStatusTip('Rotate Counterclock')
         rotateCounter.triggered.connect(self.rotateImageCounter)
 
         rotateClock = QtGui.QAction(QtGui.QIcon('open.png'), 'Rotate Clock', self)
-        rotateClock.setShortcut('Ctrl+0')
+        rotateClock.setShortcut('Ctrl+>')
         rotateClock.setStatusTip('Rotate Clock')
         rotateClock.triggered.connect(self.rotateImageClock)
+
+        rotateCounter_90 = QtGui.QAction(QtGui.QIcon('open.png'), 'Rotate Counterclock 90', self)
+        rotateCounter_90.setShortcut('Ctrl+9')
+        rotateCounter_90.setStatusTip('Rotate Counterclock 90')
+        rotateCounter_90.triggered.connect(self.rotateImageCounter_90)
+
+        rotateClock_90 = QtGui.QAction(QtGui.QIcon('open.png'), 'Rotate Clock 90', self)
+        rotateClock_90.setShortcut('Ctrl+0')
+        rotateClock_90.setStatusTip('Rotate Clock 90')
+        rotateClock_90.triggered.connect(self.rotateImageClock_90)
 
         flipLR = QtGui.QAction(QtGui.QIcon('open.png'), 'Flip Vertical', self)
         flipLR.setShortcut('Ctrl+7')
@@ -467,6 +478,21 @@ class Viewer(QtGui.QMainWindow):
         invert.setShortcut('Ctrl+I')
         invert.setStatusTip('Invert')
         invert.triggered.connect(self.invert)
+
+        rgbToGray = QtGui.QAction(QtGui.QIcon('open.png'), 'RGB to Grayscale', self)
+        rgbToGray.setShortcut('Ctrl+G')
+        rgbToGray.setStatusTip('RGB to Gray')
+        rgbToGray.triggered.connect(self.rgb2grayscale)
+
+        otsu_thresh = QtGui.QAction(QtGui.QIcon('open.png'), 'Otsu Threshold', self)
+        otsu_thresh.setShortcut('Ctrl+T')
+        otsu_thresh.setStatusTip('otsu_thresh')
+        otsu_thresh.triggered.connect(self.otsu_thresh)
+
+        getOriginal = QtGui.QAction(QtGui.QIcon('open.png'), 'Reset to Original', self)
+        getOriginal.setShortcut('Ctrl+Z')
+        getOriginal.setStatusTip('get_original')
+        getOriginal.triggered.connect(self.get_original)
 
         quitApp = QtGui.QAction(QtGui.QIcon('save.png'), 'Quit Now', self)
         quitApp.setShortcut('Ctrl+Q')
@@ -489,11 +515,16 @@ class Viewer(QtGui.QMainWindow):
         fileMenu.addAction(saveFile)
 
         fileMenu1 = menubar.addMenu('&Transform Image')
+        fileMenu1.addAction(rotateCounter_90)
+        fileMenu1.addAction(rotateClock_90)
         fileMenu1.addAction(rotateCounter)
         fileMenu1.addAction(rotateClock)
         fileMenu1.addAction(flipLR)
         fileMenu1.addAction(flipUD)
         fileMenu1.addAction(invert)
+        fileMenu1.addAction(rgbToGray)
+        fileMenu1.addAction(otsu_thresh)
+        fileMenu1.addAction(getOriginal)
 
         fileMenu2 = menubar.addMenu("&Quit")
         fileMenu2.addAction(quitApp)
@@ -599,17 +630,31 @@ class Viewer(QtGui.QMainWindow):
             data = f.read()
             print(data)
 
-    def rotateImageCounter(self):
+    def rotateImageCounter_90(self):
         img = self.ImageView.getProcessedImage()
         global newimg
         newimg = np.rot90(img,k=3)
         self.ImageView.setImage(newimg)
         return
 
-    def rotateImageClock(self):
+    def rotateImageClock_90(self):
         img = self.ImageView.getProcessedImage()
         global newimg
         newimg = np.rot90(img,k=1)
+        self.ImageView.setImage(newimg)
+        return
+
+    def rotateImageCounter(self):
+        img = self.ImageView.getProcessedImage()
+        global newimg
+        newimg = interpolation.rotate(img,-1)
+        self.ImageView.setImage(newimg)
+        return
+
+    def rotateImageClock(self):
+        img = self.ImageView.getProcessedImage()
+        global newimg
+        newimg = interpolation.rotate(img,1)
         self.ImageView.setImage(newimg)
         return
 
@@ -634,6 +679,28 @@ class Viewer(QtGui.QMainWindow):
         self.ImageView.setImage(newimg)
         return
 
+    def rgb2grayscale(self):
+        img = self.ImageView.getProcessedImage()
+        global newimg
+        newimg = rgb2gray(img)
+        self.ImageView.setImage(newimg)
+        return
+
+    def otsu_thresh(self):
+        img = self.ImageView.getProcessedImage()
+        global newimg
+        newimg = rgb2gray(img)
+        newimg = threshold_otsu(img)
+        self.ImageView.setImage(newimg)
+        return
+
+    def get_original(self):
+        global newimg, original_image
+        newimg = original_image
+        newimg = np.rot90(newimg,k=1)
+        newimg = np.flipud(newimg)
+        self.ImageView.setImage(newimg)
+        return
 
     def startROIExaminer(self):
         try:
@@ -736,18 +803,18 @@ class Viewer(QtGui.QMainWindow):
                     other_pixel += 1
 
                 #count board pixels
-                elif ((image[x,y][r] > image[x,y][g]) 
-                        and (image[x,y][r] > image[x,y][b]) 
-                        and ((image[x,y][g]/image[x,y][b]) > green_blue_ratio_min) 
-                        and ((image[x,y][g]/image[x,y][b]) < green_blue_ratio_max) 
-                        and ((image[x,y][r]/image[x,y][g]) > red_green_ratio_min) 
+                elif ((image[x,y][r] > image[x,y][g])
+                        and (image[x,y][r] > image[x,y][b])
+                        and ((image[x,y][g]/image[x,y][b]) > green_blue_ratio_min)
+                        and ((image[x,y][g]/image[x,y][b]) < green_blue_ratio_max)
+                        and ((image[x,y][r]/image[x,y][g]) > red_green_ratio_min)
                         and ((image[x,y][r]/image[x,y][g]) < red_green_ratio_max)):
 
-                    if (image[x,y][r] > red_min 
-                        and image[x,y][r] < red_max 
-                        and image[x,y][g] > green_min 
-                        and image[x,y][g] < green_max 
-                        and image[x,y][b] > blue_min 
+                    if (image[x,y][r] > red_min
+                        and image[x,y][r] < red_max
+                        and image[x,y][g] > green_min
+                        and image[x,y][g] < green_max
+                        and image[x,y][b] > blue_min
                         and image[x,y][b] < blue_max):
 
                         image_board[x,y] = 0
