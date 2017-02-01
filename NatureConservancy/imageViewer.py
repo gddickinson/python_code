@@ -23,6 +23,7 @@ import re
 from skimage import io
 from skimage import util
 from skimage.color import rgb2gray
+from skimage.restoration import denoise_bilateral
 import copy
 from skimage.filters import threshold_otsu
 from skimage.segmentation import clear_border
@@ -484,10 +485,20 @@ class Viewer(QtGui.QMainWindow):
         rgbToGray.setStatusTip('RGB to Gray')
         rgbToGray.triggered.connect(self.rgb2grayscale)
 
-        otsu_thresh = QtGui.QAction(QtGui.QIcon('open.png'), 'Otsu Threshold', self)
-        otsu_thresh.setShortcut('Ctrl+T')
-        otsu_thresh.setStatusTip('otsu_thresh')
-        otsu_thresh.triggered.connect(self.otsu_thresh)
+        convertBW = QtGui.QAction(QtGui.QIcon('open.png'), 'RGB to B&W', self)
+        convertBW.setShortcut('Ctrl+B')
+        convertBW.setStatusTip('RGB to BW')
+        convertBW.triggered.connect(self.convertToBW)
+
+        denoiseBilateral = QtGui.QAction(QtGui.QIcon('open.png'), 'Denoise Bilateral', self)
+        denoiseBilateral.setShortcut('Ctrl+D')
+        denoiseBilateral.setStatusTip('denoise_bilateral')
+        denoiseBilateral.triggered.connect(self.denoise_bilateral_filter)
+
+        otsuThresh = QtGui.QAction(QtGui.QIcon('open.png'), 'Otsu Threshold', self)
+        otsuThresh.setShortcut('Ctrl+T')
+        otsuThresh.setStatusTip('otsu threshold')
+        otsuThresh.triggered.connect(self.otsu_threshold)
 
         getOriginal = QtGui.QAction(QtGui.QIcon('open.png'), 'Reset to Original', self)
         getOriginal.setShortcut('Ctrl+Z')
@@ -523,7 +534,9 @@ class Viewer(QtGui.QMainWindow):
         fileMenu1.addAction(flipUD)
         fileMenu1.addAction(invert)
         fileMenu1.addAction(rgbToGray)
-        fileMenu1.addAction(otsu_thresh)
+        fileMenu1.addAction(convertBW)
+        fileMenu1.addAction(denoiseBilateral)
+        fileMenu1.addAction(otsuThresh)
         fileMenu1.addAction(getOriginal)
 
         fileMenu2 = menubar.addMenu("&Quit")
@@ -686,13 +699,39 @@ class Viewer(QtGui.QMainWindow):
         self.ImageView.setImage(newimg)
         return
 
-    def otsu_thresh(self):
+    def convertToBW(self):
+        #convert by mean channel value
+        self.statusBar().showMessage('Working...')
         img = self.ImageView.getProcessedImage()
         global newimg
-        newimg = rgb2gray(img)
+        image_x, image_y = img.shape[0:2]
+        array = np.zeros_like(img)
+        for x in range (image_x):
+            for y in range (image_y):
+                array[x,y] = np.mean(img[x,y])
+        newimg = array
+        self.ImageView.setImage(newimg)
+        self.statusBar().showMessage('Finished conversion to B&W by channel average')
+        return
+
+    def denoise_bilateral_filter(self):
+        self.statusBar().showMessage('Working...')
+        img = self.ImageView.getProcessedImage()
+        global newimg
+        newimg = denoise_bilateral(img)
+        self.ImageView.setImage(newimg)
+        self.statusBar().showMessage('Finished Bilateral Filter')
+        return
+
+    def otsu_threshold(self):
+        self.statusBar().showMessage('Working...')
+        img = self.ImageView.getProcessedImage()
+        global newimg
         newimg = threshold_otsu(img)
         self.ImageView.setImage(newimg)
+        self.statusBar().showMessage('Finished Otsu Threshold')
         return
+
 
     def get_original(self):
         global newimg, original_image
