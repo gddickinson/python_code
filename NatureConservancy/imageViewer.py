@@ -25,12 +25,13 @@ from skimage import util
 from skimage.color import rgb2gray
 from skimage.restoration import denoise_bilateral
 import copy
-from skimage.filters import threshold_otsu
+from skimage.filters import threshold_otsu, gaussian
 from skimage.segmentation import clear_border
 from skimage.measure import label, regionprops
 from skimage.morphology import closing, square
 from skimage.color import label2rgb
 from scipy.ndimage import interpolation
+from skimage import img_as_ubyte
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
@@ -485,20 +486,30 @@ class Viewer(QtGui.QMainWindow):
         rgbToGray.setStatusTip('RGB to Gray')
         rgbToGray.triggered.connect(self.rgb2grayscale)
 
-        convertBW = QtGui.QAction(QtGui.QIcon('open.png'), 'RGB to B&W', self)
-        convertBW.setShortcut('Ctrl+B')
-        convertBW.setStatusTip('RGB to BW')
-        convertBW.triggered.connect(self.convertToBW)
+        getRedChannel = QtGui.QAction(QtGui.QIcon('open.png'), 'Get Red Channel', self)
+        getRedChannel.setShortcut('Ctrl+R')
+        getRedChannel.setStatusTip('Get Red')
+        getRedChannel.triggered.connect(self.get_red)
+
+        getGreenChannel = QtGui.QAction(QtGui.QIcon('open.png'), 'Get Green Channel', self)
+        getGreenChannel.setShortcut('Ctrl+G')
+        getGreenChannel.setStatusTip('Get Green')
+        getGreenChannel.triggered.connect(self.get_green)
+
+        getBlueChannel = QtGui.QAction(QtGui.QIcon('open.png'), 'Get Blue Channel', self)
+        getBlueChannel.setShortcut('Ctrl+B')
+        getBlueChannel.setStatusTip('Get Blue')
+        getBlueChannel.triggered.connect(self.get_blue)
 
         denoiseBilateral = QtGui.QAction(QtGui.QIcon('open.png'), 'Denoise Bilateral', self)
         denoiseBilateral.setShortcut('Ctrl+D')
         denoiseBilateral.setStatusTip('denoise_bilateral')
         denoiseBilateral.triggered.connect(self.denoise_bilateral_filter)
 
-        otsuThresh = QtGui.QAction(QtGui.QIcon('open.png'), 'Otsu Threshold', self)
-        otsuThresh.setShortcut('Ctrl+T')
-        otsuThresh.setStatusTip('otsu threshold')
-        otsuThresh.triggered.connect(self.otsu_threshold)
+        gaussFilter = QtGui.QAction(QtGui.QIcon('open.png'), 'Gaussian Filter', self)
+        gaussFilter.setShortcut('Ctrl+T')
+        gaussFilter.setStatusTip('Gaussian Filter')
+        gaussFilter.triggered.connect(self.gaussianFilter)
 
         getOriginal = QtGui.QAction(QtGui.QIcon('open.png'), 'Reset to Original', self)
         getOriginal.setShortcut('Ctrl+Z')
@@ -534,9 +545,11 @@ class Viewer(QtGui.QMainWindow):
         fileMenu1.addAction(flipUD)
         fileMenu1.addAction(invert)
         fileMenu1.addAction(rgbToGray)
-        fileMenu1.addAction(convertBW)
+        fileMenu1.addAction(getRedChannel)
+        fileMenu1.addAction(getGreenChannel)
+        fileMenu1.addAction(getBlueChannel)
         fileMenu1.addAction(denoiseBilateral)
-        fileMenu1.addAction(otsuThresh)
+        fileMenu1.addAction(gaussFilter)
         fileMenu1.addAction(getOriginal)
 
         fileMenu2 = menubar.addMenu("&Quit")
@@ -695,43 +708,70 @@ class Viewer(QtGui.QMainWindow):
     def rgb2grayscale(self):
         img = self.ImageView.getProcessedImage()
         global newimg
-        newimg = rgb2gray(img)
+        img = rgb2gray(img)
+        #reset datatype to unit8 for RGB 0-255
+        newimg = img_as_ubyte(img)
         self.ImageView.setImage(newimg)
         return
 
-    def convertToBW(self):
+    def get_red(self):
         #convert by mean channel value
         self.statusBar().showMessage('Working...')
-        img = self.ImageView.getProcessedImage()
-        global newimg
-        image_x, image_y = img.shape[0:2]
-        array = np.zeros_like(img)
-        for x in range (image_x):
-            for y in range (image_y):
-                array[x,y] = np.mean(img[x,y])
-        newimg = array
-        self.ImageView.setImage(newimg)
-        self.statusBar().showMessage('Finished conversion to B&W by channel average')
+        try:
+            img = self.ImageView.getProcessedImage()
+            global newimg     
+            newimg = img[:, :, 0]
+            self.ImageView.setImage(newimg)
+            self.statusBar().showMessage('Finished Extracting Red Channel')
+        except:
+            self.statusBar().showMessage('No Red Channel Detected')
+        return
+
+    def get_green(self):
+        #convert by mean channel value
+        self.statusBar().showMessage('Working...')
+        try:
+            img = self.ImageView.getProcessedImage()
+            global newimg     
+            newimg = img[:, :, 1]
+            self.ImageView.setImage(newimg)
+            self.statusBar().showMessage('Finished Extracting Green Channel')
+        except:
+            self.statusBar().showMessage('No Green Channel Detected')
+        return
+
+    def get_blue(self):
+        #convert by mean channel value
+        self.statusBar().showMessage('Working...')
+        try:
+            img = self.ImageView.getProcessedImage()
+            global newimg     
+            newimg = img[:, :, 2]
+            self.ImageView.setImage(newimg)
+            self.statusBar().showMessage('Finished Extracting Blue Channel')
+        except:
+            self.statusBar().showMessage('No Blue Channel Detected')
         return
 
     def denoise_bilateral_filter(self):
         self.statusBar().showMessage('Working...')
         img = self.ImageView.getProcessedImage()
         global newimg
-        newimg = denoise_bilateral(img)
+        img = denoise_bilateral(img, multichannel = True)
+        #reset datatype to unit8 for RGB 0-255
+        newimg = img_as_ubyte(img)
         self.ImageView.setImage(newimg)
         self.statusBar().showMessage('Finished Bilateral Filter')
         return
 
-    def otsu_threshold(self):
+    def gaussianFilter(self):
         self.statusBar().showMessage('Working...')
         img = self.ImageView.getProcessedImage()
         global newimg
-        newimg = threshold_otsu(img)
+        newimg = gaussian(img, sigma = 1)
         self.ImageView.setImage(newimg)
-        self.statusBar().showMessage('Finished Otsu Threshold')
+        self.statusBar().showMessage('Finished Gaussian Filter')
         return
-
 
     def get_original(self):
         global newimg, original_image
