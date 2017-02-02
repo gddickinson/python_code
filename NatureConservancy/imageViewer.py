@@ -24,6 +24,7 @@ from skimage import io
 from skimage import util
 from skimage.color import rgb2gray
 from skimage.restoration import denoise_bilateral
+from skimage.transform import resize
 import copy
 from skimage.filters import threshold_otsu, gaussian
 from skimage.segmentation import clear_border
@@ -616,7 +617,12 @@ class Viewer(QtGui.QMainWindow):
         cropImg.setShortcut('Ctrl+X')
         cropImg.setStatusTip('Crop')
         cropImg.triggered.connect(self.cropImage)       
-        
+
+        binImg = QtGui.QAction(QtGui.QIcon('open.png'), 'Re-size ', self)
+        binImg.setShortcut('Ctrl+L')
+        binImg.setStatusTip('Bin')
+        binImg.triggered.connect(self.binImage)  
+       
         getOriginal = QtGui.QAction(QtGui.QIcon('open.png'), 'Reset to Original', self)
         getOriginal.setShortcut('Ctrl+Z')
         getOriginal.setStatusTip('get_original')
@@ -662,9 +668,9 @@ class Viewer(QtGui.QMainWindow):
         fileMenu1.addAction(getBlueChannel)
         fileMenu1.addAction(denoiseBilateral)
         fileMenu1.addAction(gaussFilter)
+        fileMenu1.addAction(binImg)      
         fileMenu1.addAction(cropImg)
         fileMenu1.addAction(getOriginal)
-
 
         fileMenu2 = menubar.addMenu("&Quit")
         fileMenu2.addAction(quitApp)
@@ -897,6 +903,7 @@ class Viewer(QtGui.QMainWindow):
         img = self.ImageView.getProcessedImage()
         global newimg
         newimg = gaussian(img, sigma = 1)
+        newimg = img_as_ubyte(newimg)
         self.ImageView.setImage(newimg)
         self.statusBar().showMessage('Finished Gaussian Filter')
         return
@@ -914,11 +921,22 @@ class Viewer(QtGui.QMainWindow):
         image_y_end = image_y_origin + int(roi_size[1])
 
         crop = img[image_x_origin:image_x_end, image_y_origin:image_y_end]
-
         newimg = crop
         self.ImageView.setImage(newimg)
         self.statusBar().showMessage('Finished Cropping')
         return
+
+    def binImage(self):
+        self.statusBar().showMessage('Working...')
+        img = self.ImageView.getProcessedImage()
+        global newimg
+        x,y = img.shape[0:2]
+        newimg = resize(img,(int(x/2),int(y/2)),preserve_range=False)
+        newimg = img_as_ubyte(newimg)
+        self.ImageView.setImage(newimg)
+        self.statusBar().showMessage('Finished Binning')
+        return
+
 
     def get_original(self):
         global newimg, original_image
