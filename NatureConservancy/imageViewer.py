@@ -719,7 +719,8 @@ class Viewer(QtGui.QMainWindow):
         def rectROI(self):
             self.roiImg = []
             self.roi1 = pg.RectROI([40, 40], [40, 40], pen=(0,9))
-            self.roi1.addRotateHandle([1,0], [0.5, 0.5])
+            #no rotation needed yet
+            #self.roi1.addRotateHandle([1,0], [0.5, 0.5])
             self.roi1.sigRegionChanged.connect(updateROI)
             self.ImageView.addItem(self.roi1)
             return
@@ -768,7 +769,10 @@ class Viewer(QtGui.QMainWindow):
 
 
     def saveDialog(self):
-        fname = QtGui.QFileDialog.getSaveFileName(self, 'Save file', None, "PNG files (*.png);;TIFF-Files (*.tiff);;JPEG (*.jpg);;All Files (*)")
+        fname = (QtGui.QFileDialog.getSaveFileName
+                 (self, 'Save file', None,
+                  "RAW (*.raw);;EPS (*.eps);;PS (*.ps);;PNG (*.png);;TIFF (*.tiff);;JPEG (*.jpg);;PDF (*.pdf);;All Files (*)"))
+        
         t=time.time()
         self.statusBar().showMessage('Saving {}'.format(os.path.basename(fname)))
         
