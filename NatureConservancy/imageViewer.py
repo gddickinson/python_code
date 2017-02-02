@@ -290,6 +290,9 @@ class Form(QDialog):
 
         self.button1 = QPushButton("Run")
         self.onFlag = False
+        
+        self.button2 = QPushButton("Cluster")
+        self.clusterFlag = False
 
         self.buttonRed = QPushButton("RED")
         self.buttonGreen = QPushButton("GREEN")
@@ -303,6 +306,7 @@ class Form(QDialog):
         #layout.addWidget(self.dial, 0,0)
         #layout.addWidget(self.zerospinbox, 0,1)
         layout.addWidget(self.button1, 0, 0)
+        layout.addWidget(self.button2, 0, 2)
         layout.addWidget(self.buttonRed, 1, 0)
         layout.addWidget(self.sld1, 1, 1)
         layout.addWidget(self.sld2, 1, 2)
@@ -334,6 +338,7 @@ class Form(QDialog):
         self.setLayout(layout)
 
         self.connect(self.button1,SIGNAL("clicked()"),self.button_1)
+        self.connect(self.button2,SIGNAL("clicked()"),self.button_2)
 
         self.connect(self.buttonRed,SIGNAL("clicked()"),self.button_red)
         self.connect(self.buttonGreen,SIGNAL("clicked()"),self.button_green)
@@ -382,6 +387,14 @@ class Form(QDialog):
         else:
             self.onFlag = False
             self.button1.setText("Run")
+
+    def button_2(self):
+        if self.clusterFlag == False:
+            self.clusterFlag = True
+            self.button2.setText("Cluster")
+        else:
+            self.clusterFlag = False
+            self.button2.setText("Cluster")
 
 
     def button_red(self):
@@ -530,6 +543,12 @@ class Viewer(QtGui.QMainWindow):
 
         self.initUI()
 
+#    def mousePressEvent(self, QMouseEvent):
+#        print (QMouseEvent.pos())
+#
+#    def mouseReleaseEvent(self, QMouseEvent):
+#        cursor =QtGui.QCursor()
+#        print (cursor.pos())  
 
     def initUI(self):
 
@@ -537,6 +556,9 @@ class Viewer(QtGui.QMainWindow):
         self.resize(800,800)
         self.setCentralWidget(self.ImageView)
         self.statusBar()
+        self.setMouseTracking(True)
+
+        #self.cursor =QtGui.QCursor()
 
         openImage = QtGui.QAction(QtGui.QIcon('open.png'), 'Open image', self)
         openImage.setShortcut('Ctrl+O')
@@ -622,7 +644,12 @@ class Viewer(QtGui.QMainWindow):
         binImg.setShortcut('Ctrl+L')
         binImg.setStatusTip('Bin')
         binImg.triggered.connect(self.binImage)  
-       
+        
+        otsuThresh = QtGui.QAction(QtGui.QIcon('open.png'), 'Otsu Threshold', self)
+        otsuThresh.setShortcut('Ctrl+W')
+        otsuThresh.setStatusTip('OtsuThresh')
+        otsuThresh.triggered.connect(self.otsuThreshold)
+               
         getOriginal = QtGui.QAction(QtGui.QIcon('open.png'), 'Reset to Original', self)
         getOriginal.setShortcut('Ctrl+Z')
         getOriginal.setStatusTip('get_original')
@@ -668,6 +695,7 @@ class Viewer(QtGui.QMainWindow):
         fileMenu1.addAction(getBlueChannel)
         fileMenu1.addAction(denoiseBilateral)
         fileMenu1.addAction(gaussFilter)
+        #fileMenu1.addAction(otsuThresh)
         fileMenu1.addAction(binImg)      
         fileMenu1.addAction(cropImg)
         fileMenu1.addAction(getOriginal)
@@ -696,6 +724,7 @@ class Viewer(QtGui.QMainWindow):
         self.console = Form()
         #self.console.connect(self.console.button1,SIGNAL("clicked()"),self.testPrint)
         self.console.connect(self.console.button1,SIGNAL("clicked()"),self.detect_coverBoard)
+        self.console.connect(self.console.button2,SIGNAL("clicked()"),self.cluster_coverBoard)
         self.console.show()
 
     def initConsole_Canopy(self):
@@ -706,7 +735,7 @@ class Viewer(QtGui.QMainWindow):
 
 
     def testPrint(self):
-        print("test passed")
+        print("test passed") 
 
     def initROI(self):
 
@@ -732,6 +761,7 @@ class Viewer(QtGui.QMainWindow):
             return
 
         rectROI(self)
+
 
 
     def txt2dict(metadata):
@@ -937,6 +967,20 @@ class Viewer(QtGui.QMainWindow):
         self.statusBar().showMessage('Finished Binning')
         return
 
+    def otsuThreshold(self):
+        self.statusBar().showMessage('Working...')
+        img = self.ImageView.getProcessedImage()
+        global newimg
+        #threshold 
+        img = rgb2gray(img)
+        img = img.astype(np.uint8)
+        #img = np.invert(img)       
+        # apply threshold
+        thresh = threshold_otsu(img)
+        newimg = img >= thresh
+        self.ImageView.setImage(newimg)
+        self.statusBar().showMessage('Finished Otsu Threshold')
+        return
 
     def get_original(self):
         global newimg, original_image
@@ -1096,7 +1140,7 @@ class Viewer(QtGui.QMainWindow):
         #plot result
         image_board = np.rot90(image_board, k=1)
         image_board = np.flipud(image_board)
-        
+        self.imageBoard = copy.deepcopy(image_board)
         #using matplotlib
         plt.imshow(image_board)
         plt.show()
@@ -1105,8 +1149,59 @@ class Viewer(QtGui.QMainWindow):
 #        io.imshow(image_board)
 #        io.show()
 
-
-
+    def cluster_coverBoard(self):
+                
+        #threshold and find clusters
+        image = rgb2gray(self.imageBoard)
+        image = image.astype(np.uint8)
+        image = np.invert(image)
+        
+        # apply threshold
+        thresh = threshold_otsu(image)
+        # close holes
+        bw = closing(image > thresh, square(3))
+        
+        # remove artifacts connected to image border
+        cleared = clear_border(bw)
+        
+        # label image regions
+        label_image = label(cleared, background=0)
+        image_label_overlay = label2rgb(label_image, image=image)
+        
+        fig, ax = plt.subplots(figsize=(10, 6))
+        ax.imshow(image_label_overlay)
+        
+        total_area = 0
+        centeroid = (0,0)
+        largest_region_area = 0
+        
+        for region in regionprops(label_image):
+            # take regions with large enough areas
+            if region.area >= 50:
+                area = region.area
+                if area > largest_region_area:
+                    centeroid = region.centroid
+                    largest_region_area = area
+                    
+                # draw rectangle around segmented areas
+                minr, minc, maxr, maxc = region.bbox
+                rect = mpatches.Rectangle((minc, minr), maxc - minc, maxr - minr,
+                                          fill=False, edgecolor='red', linewidth=1)
+                
+                ax.add_patch(rect)
+                total_area += area
+            area = 0
+        
+        rect2 = mpatches.Circle((centeroid[1],centeroid[0]))
+        ax.add_patch(rect2)
+        
+        
+        ax.set_axis_off()
+        plt.tight_layout()
+        plt.show()
+        
+        print ("total # of pixels detected in board = ", total_area)
+     
 ################################################################################################
     def detect_canopy(self):
         print('start analysis')
