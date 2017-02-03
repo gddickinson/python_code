@@ -1007,15 +1007,18 @@ class Viewer(QtGui.QMainWindow):
     
             self.v1a.addItem(self.img)
             
-            self.mean_red = np.mean(self.imgROI[:,][0])
-            self.mean_green = np.mean(self.imgROI[:,][1])
-            self.mean_blue = np.mean(self.imgROI[:,][2])
+            self.roi_mean_red = np.mean(self.imgROI[:, :, 0])
+            self.roi_mean_green = np.mean(self.imgROI[:, :, 1])
+            self.roi_mean_blue = np.mean(self.imgROI[:, :, 2])
+            self.roi_numberPixels = np.size(self.imgROI[:, :, 0])
             
-            print("Mean Red: %d, Mean Green: %d, Mean Blue: %d" % (self.mean_red, self.mean_green, self.mean_blue))
+            self.statusBar().showMessage("Mean Red: %d, Mean Green: %d, Mean Blue: %d, Number of pixels: %d" % (self.roi_mean_red, self.roi_mean_green, self.roi_mean_blue, self.roi_numberPixels))
+            #print("Mean Red: %d, Mean Green: %d, Mean Blue: %d" % (self.roi_mean_red, self.roi_mean_green, self.roi_mean_blue))
             
 
         ## create GUI
         self.app = QtGui.QPixmap()
+        self.statusBar()
         self.w = pg.GraphicsWindow(size=(500,400), border=True)
         self.w.setWindowTitle('ROI Examiner')
         self.w1 = self.w.addLayout(row=0, col=0)
@@ -1023,6 +1026,7 @@ class Viewer(QtGui.QMainWindow):
         self.v1a = self.w1.addViewBox(row=0, col=0, lockAspect=True)
         self.img = pg.ImageItem(self.imgROI)
         self.v1a.addItem(self.img)
+        
         self.w.setMouseTracking(True)
 
 
