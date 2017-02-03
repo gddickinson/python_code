@@ -998,6 +998,22 @@ class Viewer(QtGui.QMainWindow):
             print('No image loaded')
             return
 
+        def updateWin():
+           
+            self.v1a.removeItem(self.img)
+            self.imgROI = self.roiImg
+            self.imgROI = np.fliplr(self.imgROI)
+            self.img = pg.ImageItem(self.imgROI)
+    
+            self.v1a.addItem(self.img)
+            
+            self.mean_red = np.mean(self.imgROI[:,][0])
+            self.mean_green = np.mean(self.imgROI[:,][1])
+            self.mean_blue = np.mean(self.imgROI[:,][2])
+            
+            print("Mean Red: %d, Mean Green: %d, Mean Blue: %d" % (self.mean_red, self.mean_green, self.mean_blue))
+            
+
         ## create GUI
         self.app = QtGui.QPixmap()
         self.w = pg.GraphicsWindow(size=(500,400), border=True)
@@ -1007,18 +1023,12 @@ class Viewer(QtGui.QMainWindow):
         self.v1a = self.w1.addViewBox(row=0, col=0, lockAspect=True)
         self.img = pg.ImageItem(self.imgROI)
         self.v1a.addItem(self.img)
+        self.w.setMouseTracking(True)
 
-        while True:
-            self.v1a.removeItem(self.img)
-            self.imgROI = self.roiImg
-            self.imgROI = np.fliplr(self.imgROI)
-            self.img = pg.ImageItem(self.imgROI)
 
-            self.v1a.addItem(self.img)
+        #link change in roi signal to update
+        self.roi1.sigRegionChanged.connect(updateWin)
 
-            if QtCore.QCoreApplication.instance() != None: #something is wrong here - change this
-                app.closeAllWindows() # this is giving an error - but removing if statement causes ROIexaminer to fail!!
-                break
 
         return
 
