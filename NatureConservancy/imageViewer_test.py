@@ -14,7 +14,10 @@ matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import numpy as np
-from pyqtgraph.Qt import QtCore, QtGui
+from qtpy import QtCore, QtGui, QtWidgets
+from qtpy.QtCore import *
+from qtpy.QtGui import *
+#from pyqtgraph.Qt import QtCore, QtGui
 import pyqtgraph as pg
 import tifffile
 import json
@@ -38,8 +41,8 @@ from skimage.color import label2rgb
 from scipy.ndimage import interpolation
 from skimage import img_as_ubyte
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+#from PyQt4.QtCore import *
+#from PyQt4.QtGui import *
 
 
 if sys.version_info[:2]<(2,5):
@@ -55,7 +58,7 @@ else:
 global roi_origin, roi_size, newimg, original_image
 
 
-class Form2(QDialog):
+class Form2(QtWidgets.QDialog):
     def __init__(self, parent = None):
         super(Form2, self).__init__(parent)
 
@@ -63,37 +66,37 @@ class Form2(QDialog):
         self.intensity_min = 100
         self.intensity_max = 250
 
-        self.SpinBox1=QDoubleSpinBox()
+        self.SpinBox1=QtWidgets.QDoubleSpinBox()
         self.SpinBox1.setRange(0,self.intensity_max)
         self.SpinBox1.setValue(self.intensity_min)
 
-        self.SpinBox2=QDoubleSpinBox()
+        self.SpinBox2=QtWidgets.QDoubleSpinBox()
         self.SpinBox2.setRange(self.intensity_min,255)
         self.SpinBox2.setValue(self.intensity_max)
 
    
-        self.sld1 = QtGui.QSlider(QtCore.Qt.Vertical, self)
+        self.sld1 = QtWidgets.QSlider(QtCore.Qt.Vertical, self)
         self.sld1.setRange(0,255)
-        self.sld1.setTickPosition(QSlider.TicksBelow)
+        self.sld1.setTickPosition(QtWidgets.QSlider.TicksBelow)
         self.sld1.setFocusPolicy(QtCore.Qt.NoFocus)
         self.sld1.setValue(self.intensity_min)
         self.sld1.setGeometry(30, 40, 100, 30)
 
-        self.sld2 = QtGui.QSlider(QtCore.Qt.Vertical, self)
+        self.sld2 = QtWidgets.QSlider(QtCore.Qt.Vertical, self)
         self.sld2.setRange(0,255)
-        self.sld2.setTickPosition(QSlider.TicksAbove)
+        self.sld2.setTickPosition(QtWidgets.QSlider.TicksAbove)
         self.sld2.setFocusPolicy(QtCore.Qt.NoFocus)
         self.sld2.setValue(self.intensity_max)
         self.sld2.setGeometry(30, 40, 100, 30)
 
 
-        self.button1 = QPushButton("Run")
+        self.button1 = QtWidgets.QPushButton("Run")
         self.onFlag = False
 
-        self.buttonReset = QPushButton("Reset")
+        self.buttonReset = QtWidgets.QPushButton("Reset")
 
 
-        layout = QGridLayout()
+        layout = QtWidgets.QGridLayout()
         layout.addWidget(self.button1, 0, 0)
         layout.addWidget(self.buttonReset, 1, 0)
         layout.addWidget(self.sld1, 1, 1)
@@ -156,7 +159,7 @@ class Form2(QDialog):
 
 ##############################################################################
 
-class Form(QDialog):
+class Form(QtWidgets.QDialog):
     def __init__(self, parent = None):
         super(Form, self).__init__(parent)
 
@@ -174,139 +177,139 @@ class Form(QDialog):
         self.red_green_ratio_min = 1.4
         self.red_green_ratio_max = 2.8
 
-        # self.filterBox=QComboBox()
+        # self.filterBox=QtGui.QComboBox()
         # self.filterBox.addItem("No Filter")
 
-        self.SpinBox1=QDoubleSpinBox()
+        self.SpinBox1=QtWidgets.QDoubleSpinBox()
         self.SpinBox1.setRange(0,self.red_max)
         self.SpinBox1.setValue(self.red_min)
 
-        self.SpinBox2=QDoubleSpinBox()
+        self.SpinBox2=QtWidgets.QDoubleSpinBox()
         self.SpinBox2.setRange(self.red_min,255)
         self.SpinBox2.setValue(self.red_max)
 
-        self.SpinBox3=QDoubleSpinBox()
+        self.SpinBox3=QtWidgets.QDoubleSpinBox()
         self.SpinBox3.setRange(0,self.green_max)
         self.SpinBox3.setValue(self.green_min)
 
-        self.SpinBox4=QDoubleSpinBox()
+        self.SpinBox4=QtWidgets.QDoubleSpinBox()
         self.SpinBox4.setRange(self.green_min,255)
         self.SpinBox4.setValue(self.green_max)
 
-        self.SpinBox5=QDoubleSpinBox()
+        self.SpinBox5=QtWidgets.QDoubleSpinBox()
         self.SpinBox5.setRange(0,self.blue_max)
         self.SpinBox5.setValue(self.blue_min)
 
-        self.SpinBox6=QDoubleSpinBox()
+        self.SpinBox6=QtWidgets.QDoubleSpinBox()
         self.SpinBox6.setRange(self.blue_min,255)
         self.SpinBox6.setValue(self.blue_max)
 
-        self.SpinBox7=QDoubleSpinBox()
+        self.SpinBox7=QtWidgets.QDoubleSpinBox()
         self.SpinBox7.setRange(0,self.green_blue_ratio_max)
         self.SpinBox7.setValue(self.green_blue_ratio_min)
 
-        self.SpinBox8=QDoubleSpinBox()
+        self.SpinBox8=QtWidgets.QDoubleSpinBox()
         self.SpinBox8.setRange(self.green_blue_ratio_min,255)
         self.SpinBox8.setValue(self.green_blue_ratio_max)
 
-        self.SpinBox9=QDoubleSpinBox()
+        self.SpinBox9=QtWidgets.QDoubleSpinBox()
         self.SpinBox9.setRange(0,self.red_green_ratio_max)
         self.SpinBox9.setValue(self.red_green_ratio_min)
 
-        self.SpinBox10=QDoubleSpinBox()
+        self.SpinBox10=QtWidgets.QDoubleSpinBox()
         self.SpinBox10.setRange(self.red_green_ratio_min,255)
         self.SpinBox10.setValue(self.red_green_ratio_max)
 
 
-        # self.filterLabel=QLabel("No Filter")
+        # self.filterLabel=QtGui.QLabel("No Filter")
         # self.filterFlag = 'No Filter'
 
-        self.sld1 = QtGui.QSlider(QtCore.Qt.Vertical, self)
+        self.sld1 = QtWidgets.QSlider(QtCore.Qt.Vertical, self)
         self.sld1.setRange(0,255)
-        self.sld1.setTickPosition(QSlider.TicksBelow)
+        self.sld1.setTickPosition(QtWidgets.QSlider.TicksBelow)
         self.sld1.setFocusPolicy(QtCore.Qt.NoFocus)
         self.sld1.setValue(self.red_min)
         self.sld1.setGeometry(30, 40, 100, 30)
 
-        self.sld2 = QtGui.QSlider(QtCore.Qt.Vertical, self)
+        self.sld2 = QtWidgets.QSlider(QtCore.Qt.Vertical, self)
         self.sld2.setRange(0,255)
-        self.sld2.setTickPosition(QSlider.TicksAbove)
+        self.sld2.setTickPosition(QtWidgets.QSlider.TicksAbove)
         self.sld2.setFocusPolicy(QtCore.Qt.NoFocus)
         self.sld2.setValue(self.red_max)
         self.sld2.setGeometry(30, 40, 100, 30)
 
-        self.sld3 = QtGui.QSlider(QtCore.Qt.Vertical, self)
+        self.sld3 = QtWidgets.QSlider(QtCore.Qt.Vertical, self)
         self.sld3.setRange(0,255)
-        self.sld3.setTickPosition(QSlider.TicksBelow)
+        self.sld3.setTickPosition(QtWidgets.QSlider.TicksBelow)
         self.sld3.setFocusPolicy(QtCore.Qt.NoFocus)
         self.sld3.setValue(self.green_min)
         self.sld3.setGeometry(30, 40, 100, 30)
 
-        self.sld4 = QtGui.QSlider(QtCore.Qt.Vertical, self)
+        self.sld4 = QtWidgets.QSlider(QtCore.Qt.Vertical, self)
         self.sld4.setRange(0,255)
-        self.sld4.setTickPosition(QSlider.TicksAbove)
+        self.sld4.setTickPosition(QtWidgets.QSlider.TicksAbove)
         self.sld4.setFocusPolicy(QtCore.Qt.NoFocus)
         self.sld4.setValue(self.green_max)
         self.sld4.setGeometry(30, 40, 100, 30)
 
-        self.sld5 = QtGui.QSlider(QtCore.Qt.Vertical, self)
+        self.sld5 = QtWidgets.QSlider(QtCore.Qt.Vertical, self)
         self.sld5.setRange(0,255)
-        self.sld5.setTickPosition(QSlider.TicksBelow)
+        self.sld5.setTickPosition(QtWidgets.QSlider.TicksBelow)
         self.sld5.setFocusPolicy(QtCore.Qt.NoFocus)
         self.sld5.setValue(self.blue_min)
         self.sld5.setGeometry(30, 40, 100, 30)
 
-        self.sld6 = QtGui.QSlider(QtCore.Qt.Vertical, self)
+        self.sld6 = QtWidgets.QSlider(QtCore.Qt.Vertical, self)
         self.sld6.setRange(0,255)
-        self.sld6.setTickPosition(QSlider.TicksAbove)
+        self.sld6.setTickPosition(QtWidgets.QSlider.TicksAbove)
         self.sld6.setFocusPolicy(QtCore.Qt.NoFocus)
         self.sld6.setValue(self.blue_max)
         self.sld6.setGeometry(30, 40, 100, 30)
 
-        self.sld7 = QtGui.QSlider(QtCore.Qt.Vertical, self)
+        self.sld7 = QtWidgets.QSlider(QtCore.Qt.Vertical, self)
         self.sld7.setRange(0,255)
-        self.sld7.setTickPosition(QSlider.TicksBelow)
+        self.sld7.setTickPosition(QtWidgets.QSlider.TicksBelow)
         self.sld7.setFocusPolicy(QtCore.Qt.NoFocus)
         self.sld7.setValue(self.green_blue_ratio_min)
         self.sld7.setGeometry(30, 40, 100, 30)
 
-        self.sld8 = QtGui.QSlider(QtCore.Qt.Vertical, self)
+        self.sld8 = QtWidgets.QSlider(QtCore.Qt.Vertical, self)
         self.sld8.setRange(0,255)
-        self.sld8.setTickPosition(QSlider.TicksAbove)
+        self.sld8.setTickPosition(QtWidgets.QSlider.TicksAbove)
         self.sld8.setFocusPolicy(QtCore.Qt.NoFocus)
         self.sld8.setValue(self.green_blue_ratio_max)
         self.sld8.setGeometry(30, 40, 100, 30)
 
-        self.sld9 = QtGui.QSlider(QtCore.Qt.Vertical, self)
+        self.sld9 = QtWidgets.QSlider(QtCore.Qt.Vertical, self)
         self.sld9.setRange(0,255)
-        self.sld9.setTickPosition(QSlider.TicksBelow)
+        self.sld9.setTickPosition(QtWidgets.QSlider.TicksBelow)
         self.sld9.setFocusPolicy(QtCore.Qt.NoFocus)
         self.sld9.setValue(self.red_green_ratio_min)
         self.sld9.setGeometry(30, 40, 100, 30)
 
-        self.sld10 = QtGui.QSlider(QtCore.Qt.Vertical, self)
+        self.sld10 = QtWidgets.QSlider(QtCore.Qt.Vertical, self)
         self.sld10.setRange(0,255)
-        self.sld10.setTickPosition(QSlider.TicksAbove)
+        self.sld10.setTickPosition(QtWidgets.QSlider.TicksAbove)
         self.sld10.setFocusPolicy(QtCore.Qt.NoFocus)
         self.sld10.setValue(self.red_green_ratio_max)
         self.sld10.setGeometry(30, 40, 100, 30)
 
 
-        self.button1 = QPushButton("Run")
+        self.button1 = QtWidgets.QPushButton("Run")
         self.onFlag = False
         
-        self.button2 = QPushButton("Cluster")
+        self.button2 = QtWidgets.QPushButton("Cluster")
         self.clusterFlag = False
 
-        self.buttonRed = QPushButton("RED")
-        self.buttonGreen = QPushButton("GREEN")
-        self.buttonBlue = QPushButton("BLUE")
+        self.buttonRed = QtWidgets.QPushButton("RED")
+        self.buttonGreen = QtWidgets.QPushButton("GREEN")
+        self.buttonBlue = QtWidgets.QPushButton("BLUE")
 
-        self.buttonGreenBlueRatio = QPushButton("GREEN/BLUE")
-        self.buttonRedGreenRatio = QPushButton("RED/GREEN")
+        self.buttonGreenBlueRatio = QtWidgets.QPushButton("GREEN/BLUE")
+        self.buttonRedGreenRatio = QtWidgets.QPushButton("RED/GREEN")
 
 
-        layout = QGridLayout()
+        layout = QtWidgets.QGridLayout()
         #layout.addWidget(self.dial, 0,0)
         #layout.addWidget(self.zerospinbox, 0,1)
         layout.addWidget(self.button1, 0, 0)
@@ -540,17 +543,17 @@ class Form(QDialog):
 
 
 #############################################################################
-class Viewer(QtGui.QMainWindow):
+class Viewer(QtWidgets.QMainWindow):
 
     def __init__(self):
         super(Viewer, self).__init__()
 
         self.initUI()
 
-#    def mousePressEvent(self, QMouseEvent):
+#    def mousePressEvent(self, QtGui.QMouseEvent):
 #        print (QMouseEvent.pos())
 #
-#    def mouseReleaseEvent(self, QMouseEvent):
+#    def mouseReleaseEvent(self, QtGui.QMouseEvent):
 #        cursor =QtGui.QCursor()
 #        print (cursor.pos())  
 
@@ -564,117 +567,117 @@ class Viewer(QtGui.QMainWindow):
 
         #self.cursor =QtGui.QCursor()
 
-        openImage = QtGui.QAction(QtGui.QIcon('open.png'), 'Open image', self)
+        openImage = QtWidgets.QAction(QtGui.QIcon('open.png'), 'Open image', self)
         openImage.setShortcut('Ctrl+O')
         openImage.setStatusTip('Open new Image')
         openImage.triggered.connect(self.openDialog)
 
-        saveFile = QtGui.QAction(QtGui.QIcon('save.png'), 'Save', self)
+        saveFile = QtWidgets.QAction(QtGui.QIcon('save.png'), 'Save', self)
         saveFile.setShortcut('Ctrl+S')
         saveFile.setStatusTip('Save File')
         saveFile.triggered.connect(self.saveDialog)
 
-        rotateCounter = QtGui.QAction(QtGui.QIcon('open.png'), 'Rotate Counterclock', self)
+        rotateCounter = QtWidgets.QAction(QtGui.QIcon('open.png'), 'Rotate Counterclock', self)
         rotateCounter.setShortcut('Ctrl+<')
         rotateCounter.setStatusTip('Rotate Counterclock')
         rotateCounter.triggered.connect(self.rotateImageCounter)
 
-        rotateClock = QtGui.QAction(QtGui.QIcon('open.png'), 'Rotate Clock', self)
+        rotateClock = QtWidgets.QAction(QtGui.QIcon('open.png'), 'Rotate Clock', self)
         rotateClock.setShortcut('Ctrl+>')
         rotateClock.setStatusTip('Rotate Clock')
         rotateClock.triggered.connect(self.rotateImageClock)
 
-        rotateCounter_90 = QtGui.QAction(QtGui.QIcon('open.png'), 'Rotate Counterclock 90', self)
+        rotateCounter_90 = QtWidgets.QAction(QtGui.QIcon('open.png'), 'Rotate Counterclock 90', self)
         rotateCounter_90.setShortcut('Ctrl+9')
         rotateCounter_90.setStatusTip('Rotate Counterclock 90')
         rotateCounter_90.triggered.connect(self.rotateImageCounter_90)
 
-        rotateClock_90 = QtGui.QAction(QtGui.QIcon('open.png'), 'Rotate Clock 90', self)
+        rotateClock_90 = QtWidgets.QAction(QtGui.QIcon('open.png'), 'Rotate Clock 90', self)
         rotateClock_90.setShortcut('Ctrl+0')
         rotateClock_90.setStatusTip('Rotate Clock 90')
         rotateClock_90.triggered.connect(self.rotateImageClock_90)
 
-        flipLR = QtGui.QAction(QtGui.QIcon('open.png'), 'Flip Vertical', self)
+        flipLR = QtWidgets.QAction(QtGui.QIcon('open.png'), 'Flip Vertical', self)
         flipLR.setShortcut('Ctrl+7')
         flipLR.setStatusTip('Flip vertical')
         flipLR.triggered.connect(self.flipImageLR)
 
-        flipUD = QtGui.QAction(QtGui.QIcon('open.png'), 'Flip Horizontal', self)
+        flipUD = QtWidgets.QAction(QtGui.QIcon('open.png'), 'Flip Horizontal', self)
         flipUD.setShortcut('Ctrl+8')
         flipUD.setStatusTip('Flip horizontal')
         flipUD.triggered.connect(self.flipImageUD)
 
-        invert = QtGui.QAction(QtGui.QIcon('open.png'), 'Invert', self)
+        invert = QtWidgets.QAction(QtGui.QIcon('open.png'), 'Invert', self)
         invert.setShortcut('Ctrl+I')
         invert.setStatusTip('Invert')
         invert.triggered.connect(self.invert)
 
-        rgbToGray = QtGui.QAction(QtGui.QIcon('open.png'), 'RGB to Grayscale', self)
+        rgbToGray = QtWidgets.QAction(QtGui.QIcon('open.png'), 'RGB to Grayscale', self)
         rgbToGray.setShortcut('Ctrl+G')
         rgbToGray.setStatusTip('RGB to Gray')
         rgbToGray.triggered.connect(self.rgb2grayscale)
 
-        getRedChannel = QtGui.QAction(QtGui.QIcon('open.png'), 'Get Red Channel', self)
+        getRedChannel = QtWidgets.QAction(QtGui.QIcon('open.png'), 'Get Red Channel', self)
         getRedChannel.setShortcut('Ctrl+R')
         getRedChannel.setStatusTip('Get Red')
         getRedChannel.triggered.connect(self.get_red)
 
-        getGreenChannel = QtGui.QAction(QtGui.QIcon('open.png'), 'Get Green Channel', self)
+        getGreenChannel = QtWidgets.QAction(QtGui.QIcon('open.png'), 'Get Green Channel', self)
         getGreenChannel.setShortcut('Ctrl+G')
         getGreenChannel.setStatusTip('Get Green')
         getGreenChannel.triggered.connect(self.get_green)
 
-        getBlueChannel = QtGui.QAction(QtGui.QIcon('open.png'), 'Get Blue Channel', self)
+        getBlueChannel = QtWidgets.QAction(QtGui.QIcon('open.png'), 'Get Blue Channel', self)
         getBlueChannel.setShortcut('Ctrl+B')
         getBlueChannel.setStatusTip('Get Blue')
         getBlueChannel.triggered.connect(self.get_blue)
 
-        denoiseBilateral = QtGui.QAction(QtGui.QIcon('open.png'), 'Denoise Bilateral', self)
+        denoiseBilateral = QtWidgets.QAction(QtGui.QIcon('open.png'), 'Denoise Bilateral', self)
         denoiseBilateral.setShortcut('Ctrl+D')
         denoiseBilateral.setStatusTip('denoise_bilateral')
         denoiseBilateral.triggered.connect(self.denoise_bilateral_filter)
 
-        gaussFilter = QtGui.QAction(QtGui.QIcon('open.png'), 'Gaussian Filter', self)
+        gaussFilter = QtWidgets.QAction(QtGui.QIcon('open.png'), 'Gaussian Filter', self)
         gaussFilter.setShortcut('Ctrl+T')
         gaussFilter.setStatusTip('Gaussian Filter')
         gaussFilter.triggered.connect(self.gaussianFilter)
         
-        cropImg = QtGui.QAction(QtGui.QIcon('open.png'), 'Crop', self)
+        cropImg = QtWidgets.QAction(QtGui.QIcon('open.png'), 'Crop', self)
         cropImg.setShortcut('Ctrl+X')
         cropImg.setStatusTip('Crop')
         cropImg.triggered.connect(self.cropImage)       
 
-        binImg = QtGui.QAction(QtGui.QIcon('open.png'), 'Re-size ', self)
+        binImg = QtWidgets.QAction(QtGui.QIcon('open.png'), 'Re-size ', self)
         binImg.setShortcut('Ctrl+L')
         binImg.setStatusTip('Bin')
         binImg.triggered.connect(self.binImage)  
         
-        otsuThresh = QtGui.QAction(QtGui.QIcon('open.png'), 'Otsu Threshold', self)
+        otsuThresh = QtWidgets.QAction(QtGui.QIcon('open.png'), 'Otsu Threshold', self)
         otsuThresh.setShortcut('Ctrl+W')
         otsuThresh.setStatusTip('OtsuThresh')
         otsuThresh.triggered.connect(self.otsuThreshold)
                
-        getOriginal = QtGui.QAction(QtGui.QIcon('open.png'), 'Reset to Original', self)
+        getOriginal = QtWidgets.QAction(QtGui.QIcon('open.png'), 'Reset to Original', self)
         getOriginal.setShortcut('Ctrl+Z')
         getOriginal.setStatusTip('get_original')
         getOriginal.triggered.connect(self.get_original)
 
-        quitApp = QtGui.QAction(QtGui.QIcon('save.png'), 'Quit Now', self)
+        quitApp = QtWidgets.QAction(QtGui.QIcon('save.png'), 'Quit Now', self)
         quitApp.setShortcut('Ctrl+Q')
         quitApp.setStatusTip('Quit')
         quitApp.triggered.connect(self.quitDialog)
 
-        activateExaminer = QtGui.QAction(QtGui.QIcon('save.png'), 'ROI Examiner', self)
+        activateExaminer = QtWidgets.QAction(QtGui.QIcon('save.png'), 'ROI Examiner', self)
         activateExaminer.setShortcut('Ctrl+E')
         activateExaminer.setStatusTip('Start Examiner')
         activateExaminer.triggered.connect(self.startROIExaminer)
 
-        activateConsole = QtGui.QAction(QtGui.QIcon('save.png'), 'ROI Console', self)
+        activateConsole = QtWidgets.QAction(QtGui.QIcon('save.png'), 'ROI Console', self)
         activateConsole.setShortcut('Ctrl+R')
         activateConsole.setStatusTip('Start Console')
         activateConsole.triggered.connect(self.initConsole_CoverBoard)
         
-        activateConsoleCanopy = QtGui.QAction(QtGui.QIcon('save.png'), 'Canopy Console', self)
+        activateConsoleCanopy = QtWidgets.QAction(QtGui.QIcon('save.png'), 'Canopy Console', self)
         activateConsoleCanopy.setShortcut('Ctrl+R')
         activateConsoleCanopy.setStatusTip('Start Console')
         activateConsoleCanopy.triggered.connect(self.initConsole_Canopy)
@@ -797,7 +800,7 @@ class Viewer(QtGui.QMainWindow):
 
 
     def openDialog(self):
-        filename = QtGui.QFileDialog.getOpenFileName(self, 'Open Image file',
+        filename = QtWidgets.QFileDialog.getOpenFileName(self, 'Open Image file',
                 '/home')
         filename=str(filename)
         if filename=='':
@@ -809,7 +812,7 @@ class Viewer(QtGui.QMainWindow):
 
 
     def saveDialog(self):
-        fname = (QtGui.QFileDialog.getSaveFileName
+        fname = (QtWidgets.QFileDialog.getSaveFileName
                  (self, 'Save file', None,
                   "RAW (*.raw);;EPS (*.eps);;PS (*.ps);;PNG (*.png);;TIFF (*.tiff);;JPEG (*.jpg);;PDF (*.pdf);;All Files (*)"))
         
@@ -1346,7 +1349,7 @@ class Viewer(QtGui.QMainWindow):
         if QtCore.QCoreApplication.instance() != None:
             app = QtCore.QCoreApplication.instance()
         else:
-            app = QtGui.QApplication(sys.argv)
+            app = QtWidgets.QApplication(sys.argv)
         sys.exit(app.exec_())
         return
 
@@ -1357,11 +1360,11 @@ class Viewer(QtGui.QMainWindow):
          #       If we close a QtGui.QWidget, a QtGui.QCloseEvent is generated.
          #       To modify the widget behaviour we need to reimplement the closeEvent() event handler.
          #==============================================================================
-        reply = QtGui.QMessageBox.question(self, 'Message',
-            "Are you sure you wish to quit?", QtGui.QMessageBox.Yes |
-            QtGui.QMessageBox.No, QtGui.QMessageBox.No)
+        reply = QtWidgets.QMessageBox.question(self, 'Message',
+            "Are you sure you wish to quit?", QtWidgets.QMessageBox.Yes |
+            QtWidgets.QMessageBox.No, QtWidgets.QMessageBox.No)
 
-        if reply == QtGui.QMessageBox.Yes:
+        if reply == QtWidgets.QMessageBox.Yes:
             event.accept()
             try:
                 self.console.close()
@@ -1379,7 +1382,7 @@ def main():
     if QtCore.QCoreApplication.instance() != None:
         app = QtCore.QCoreApplication.instance()
     else:
-        app = QtGui.QApplication(sys.argv)
+        app = QtWidgets.QApplication(sys.argv)
     ex = Viewer()
     sys.exit(app.exec_())
 
