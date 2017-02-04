@@ -10,7 +10,7 @@ import time
 tic=time.time()
 import os, sys
 import matplotlib
-matplotlib.use('TkAgg')
+matplotlib.use('Qt4Agg')
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import numpy as np
@@ -1162,13 +1162,22 @@ class Viewer(QtWidgets.QMainWindow):
         image_board = np.rot90(image_board, k=1)
         image_board = np.flipud(image_board)
         self.imageBoard = copy.deepcopy(image_board)
-        #using matplotlib
-        plt.imshow(image_board)
-        plt.show()
+
+#        #using matplotlib
+#        plt.imshow(image_board)
+#        plt.show()
 
 #        ###using skimage - it searches for suitable backend package###
 #        io.imshow(image_board)
 #        io.show()
+
+        #using pyqtgraph.image
+        image_board = np.rot90(image_board, k=1)
+        image_board = np.flipud(image_board)
+        
+        resultCoverBoard = pg.image(image_board)
+
+
 
     def cluster_coverBoard(self):
                 
@@ -1220,6 +1229,9 @@ class Viewer(QtWidgets.QMainWindow):
         ax.set_axis_off()
         plt.tight_layout()
         plt.show()
+
+        
+
         
         print ("total # of pixels detected in board = ", total_area)
      
@@ -1324,14 +1336,19 @@ class Viewer(QtWidgets.QMainWindow):
         print ("total pixels counted = ", sky_pixel + canopy_pixel + equivalent_pixel)
 
         #plot result
-        image_sky = np.rot90(image_sky, k=1)
-        image_sky = np.flipud(image_sky)
-        
-        image_canopy = np.rot90(image_canopy, k=1)
-        image_canopy = np.flipud(image_canopy)      
-                
-        plt.imshow(image_sky)
-        plt.show()
+    
+
+#        #matplotlib
+#        image_sky = np.rot90(image_sky, k=1)
+#        image_sky = np.flipud(image_sky)
+#        
+#        image_canopy = np.rot90(image_canopy, k=1)
+#        image_canopy = np.flipud(image_canopy)       
+#        plt.imshow(image_sky)
+#        plt.show()
+
+        #using pyqtgraph.image       
+        resultSky = pg.image(image_sky)
 
         return
 
