@@ -57,14 +57,80 @@ else:
 
 global roi_origin, roi_size, newimg, original_image
 
+class Form3(QtWidgets.QDialog):
+    def __init__(self, parent = None):
+        super(Form3, self).__init__(parent)
+
+        self.button1 = QtWidgets.QPushButton("Get Sky")
+        self.button2 = QtWidgets.QPushButton("Get Canopy")
+        self.button3 = QtWidgets.QPushButton("Undo last")
+        self.button4 = QtWidgets.QPushButton("Done")        
+        self.buttonReset = QtWidgets.QPushButton("Reset All")
+
+        layout = QtWidgets.QGridLayout()
+        layout.addWidget(self.button1, 0, 0)
+        layout.addWidget(self.button2, 0, 1)
+        layout.addWidget(self.button3, 0, 2)
+        layout.addWidget(self.button4, 0, 3)
+        layout.addWidget(self.buttonReset, 0, 4)
+
+        self.setLayout(layout)
+
+        self.connect(self.button1,SIGNAL("clicked()"),self.button_1)
+        self.connect(self.button2,SIGNAL("clicked()"),self.button_2)
+        self.connect(self.button3,SIGNAL("clicked()"),self.button_3)
+        self.connect(self.button4,SIGNAL("clicked()"),self.button_4)
+        self.connect(self.buttonReset,SIGNAL("clicked()"),self.button_reset)
+
+    def button_1(self):
+        if self.onFlag == False:
+            self.onFlag = True
+            self.button1.setText("Get Sky")
+        else:
+            self.onFlag = False
+            self.button1.setText("Get Sky")
+
+    def button_2(self):
+        if self.onFlag == False:
+            self.onFlag = True
+            self.button1.setText("Get Canopy")
+        else:
+            self.onFlag = False
+            self.button1.setText("Get Canopy")
+
+    def button_3(self):
+        if self.onFlag == False:
+            self.onFlag = True
+            self.button1.setText("Undo last")
+        else:
+            self.onFlag = False
+            self.button1.setText("Undo last")
+
+    def button_4(self):
+        if self.onFlag == False:
+            self.onFlag = True
+            self.button1.setText("Done")
+        else:
+            self.onFlag = False
+            self.button1.setText("Done")
+            
+    def button_reset(self):       
+        if self.onFlag == False:
+            self.onFlag = True
+            self.button1.setText("Reset")
+        else:
+            self.onFlag = False
+            self.button1.setText("Reset") 
+            
+            
 
 class Form2(QtWidgets.QDialog):
     def __init__(self, parent = None):
         super(Form2, self).__init__(parent)
 
         #filter variables
-        self.intensity_min = 100
-        self.intensity_max = 250
+        self.intensity_min = 115
+        self.intensity_max = 210
 
         self.SpinBox1=QtWidgets.QDoubleSpinBox()
         self.SpinBox1.setRange(0,self.intensity_max)
@@ -93,20 +159,38 @@ class Form2(QtWidgets.QDialog):
         self.button1 = QtWidgets.QPushButton("Run")
         self.onFlag = False
 
+        self.button2 = QtWidgets.QPushButton("Get Cal Data")
+        self.calDataFlag = False
+
+        self.button3 = QtWidgets.QPushButton("Calibrate")
+        self.calFlag = False
+
+        self.button4 = QtWidgets.QPushButton("Batch Run")
+        self.batchFlag = False
+        
         self.buttonReset = QtWidgets.QPushButton("Reset")
 
 
         layout = QtWidgets.QGridLayout()
         layout.addWidget(self.button1, 0, 0)
+        layout.addWidget(self.button2, 0, 3)
+        layout.addWidget(self.button3, 0, 4)
         layout.addWidget(self.buttonReset, 1, 0)
         layout.addWidget(self.sld1, 1, 1)
         layout.addWidget(self.sld2, 1, 2)
         layout.addWidget(self.SpinBox1, 1, 3)
         layout.addWidget(self.SpinBox2, 1, 4)
+        layout.addWidget(self.button4, 2, 0)
+
 
         self.setLayout(layout)
 
         self.connect(self.button1,SIGNAL("clicked()"),self.button_1)
+        self.connect(self.button2,SIGNAL("clicked()"),self.button_2)
+        self.connect(self.button2,SIGNAL("clicked()"),self.initCalConsole)
+        self.connect(self.button3,SIGNAL("clicked()"),self.button_3)
+
+        self.connect(self.button4,SIGNAL("clicked()"),self.button_4)
         self.connect(self.buttonReset,SIGNAL("clicked()"),self.button_reset)
 
         self.connect(self.sld1,SIGNAL("valueChanged(int)"), self.slider_1)
@@ -123,6 +207,31 @@ class Form2(QtWidgets.QDialog):
         else:
             self.onFlag = False
             self.button1.setText("Run")
+
+    def button_2(self):
+        if self.calDataFlag == False:
+            self.calDataFlag = True
+            self.button2.setText("Get Cal Data")
+            
+        else:
+            self.calDataFlag = False
+            self.button2.setText("Get Cal Data")
+
+    def button_3(self):
+        if self.calFlag == False:
+            self.calFlag = True
+            self.button3.setText("Calibrate")
+        else:
+            self.calFlag = False
+            self.button3.setText("Calibrate")
+
+    def button_4(self):
+        if self.batchFlag == False:
+            self.batchFlag = True
+            self.button4.setText("Batch Run")
+        else:
+            self.batchFlag = False
+            self.button4.setText("Batch Run")
 
 
     def slider_1(self):
@@ -157,6 +266,12 @@ class Form2(QtWidgets.QDialog):
         self.filterLabel.setText(self.filterType)
         self.filterFlag = str(self.filterType)
 
+
+    def initCalConsole(self):
+        self.consoleCalibrate = Form3()
+        #self.consoleCalibrate.connect(self.consoleCalibrate.button1,SIGNAL("clicked()"),self.testPrint)
+       
+        self.consoleCalibrate.show()
 ##############################################################################
 
 class Form(QtWidgets.QDialog):
