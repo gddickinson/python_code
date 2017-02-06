@@ -4,8 +4,12 @@ Created on Sat Oct 10 12:14:34 2015
 
 @author: george
 """
-from __future__ import (absolute_import, division,print_function, unicode_literals)
-from future.builtins import (bytes, dict, int, list, object, range, str, ascii, chr, hex, input, next, oct, open, pow, round, super, filter, map, zip)
+############# Import packages ################################################
+from __future__ import (absolute_import, division,
+                        print_function, unicode_literals)
+from future.builtins import (bytes, dict, int, list, object, range, str,
+                             ascii, chr, hex, input, next, oct, open,
+                             pow, round, super, filter, map, zip)
 import time
 tic=time.time()
 import os, sys
@@ -53,9 +57,13 @@ if sys.version_info[:2]<(2,5):
 else:
     from functools import partial
 
-#global variables
+########### define global variables ##########################################
 
-global roi_origin, roi_size, newimg, original_image, sky_array, canopy_array, sky_mean, sky_n, sky_sd, canopy_mean, canopy_n, canopy_sd, roi_mean_red, roi_mean_green, roi_mean_blue, roi_mean_intensity
+global ROI_flag, roi_origin, roi_size, newimg, original_image, sky_array, canopy_array, sky_mean, sky_n, sky_sd, canopy_mean, canopy_n, canopy_sd, roi_mean_red, roi_mean_green, roi_mean_blue, roi_mean_intensity
+
+##############################################################################
+########### define classes for GUI ###########################################
+##############################################################################
 
 class Form3(QtWidgets.QDialog):
     def __init__(self, parent = None):
@@ -762,14 +770,15 @@ class Form(QtWidgets.QDialog):
         self.filterFlag = str(self.filterType)
 
 
-#############################################################################
+############ Main Viewing Window ##############################################
 class Viewer(QtWidgets.QMainWindow):
 
     def __init__(self):
         super(Viewer, self).__init__()
 
         self.initUI()
-
+        global ROI_flag
+        ROI_flag = False
 #    def mousePressEvent(self, QtGui.QMouseEvent):
 #        print (QMouseEvent.pos())
 #
@@ -945,7 +954,7 @@ class Viewer(QtWidgets.QMainWindow):
 
         self.setWindowTitle('ImageView')
 
-        self.initROI()
+        #self.initROI()
         self.show()
 
     def initConsole_CoverBoard(self):
@@ -985,6 +994,7 @@ class Viewer(QtWidgets.QMainWindow):
             #no rotation needed yet
             #self.roi1.addRotateHandle([1,0], [0.5, 0.5])
             self.roi1.sigRegionChanged.connect(updateROI)
+            self.roi1.sigRegionChanged.connect(self.updateWin)
             self.ImageView.addItem(self.roi1)
             return
 
@@ -1011,12 +1021,17 @@ class Viewer(QtWidgets.QMainWindow):
     def open_image(self, filename):
         self.statusBar().showMessage('Loading {}'.format(os.path.basename(filename)))
         t=time.time()
-        global newimg, original_image
+        global newimg, original_image, ROI_flag
         newimg = io.imread(filename)
         original_image = copy.deepcopy(newimg)
         newimg = np.rot90(newimg,k=1)
         newimg = np.flipud(newimg)
         self.statusBar().showMessage('{} successfully loaded ({} s)'.format(os.path.basename(filename), time.time()-t))
+        
+        if ROI_flag == False:
+            self.initROI()
+            ROI_flag = True
+        
         return newimg
 
 
@@ -1218,6 +1233,33 @@ class Viewer(QtWidgets.QMainWindow):
         self.ImageView.setImage(newimg)
         return
 
+    def updateWin(self):
+            
+        global roi_mean_red, roi_mean_green, roi_mean_blue, roi_mean_intensity
+       
+        try:
+            self.v1a.removeItem(self.img)
+        except:
+            print('no examiner created yet')
+        self.imgROI = self.roiImg
+        self.imgROI = np.fliplr(self.imgROI)
+        self.img = pg.ImageItem(self.imgROI)
+
+        try:
+            self.v1a.addItem(self.img)
+        except:
+            pass
+
+        roi_mean_red = np.mean(self.imgROI[:, :, 0])
+        roi_mean_green = np.mean(self.imgROI[:, :, 1])
+        roi_mean_blue = np.mean(self.imgROI[:, :, 2])
+        roi_mean_intensity = np.mean(self.imgROI[:, :, :,])
+        self.roi_numberPixels = np.size(self.imgROI[:, :, 0])
+        
+        self.statusBar().showMessage("Mean Red: %d, Mean Green: %d, Mean Blue: %d, Mean Intensity: %d, Number of pixels: %d" % (roi_mean_red, roi_mean_green, roi_mean_blue, roi_mean_intensity, self.roi_numberPixels))
+        #print("Mean Red: %d, Mean Green: %d, Mean Blue: %d" % (self.roi_mean_red, self.roi_mean_green, self.roi_mean_blue))
+        return
+
     def startROIExaminer(self):
         try:
             #imgROI = self.ImageView.getProcessedImage()
@@ -1225,28 +1267,7 @@ class Viewer(QtWidgets.QMainWindow):
         except:
             print('No image loaded')
             return
-
-        def updateWin():
-            
-            global roi_mean_red, roi_mean_green, roi_mean_blue, roi_mean_intensity
-           
-            self.v1a.removeItem(self.img)
-            self.imgROI = self.roiImg
-            self.imgROI = np.fliplr(self.imgROI)
-            self.img = pg.ImageItem(self.imgROI)
-    
-            self.v1a.addItem(self.img)
-            
-            roi_mean_red = np.mean(self.imgROI[:, :, 0])
-            roi_mean_green = np.mean(self.imgROI[:, :, 1])
-            roi_mean_blue = np.mean(self.imgROI[:, :, 2])
-            roi_mean_intensity = np.mean(self.imgROI[:, :, :,])
-            self.roi_numberPixels = np.size(self.imgROI[:, :, 0])
-            
-            self.statusBar().showMessage("Mean Red: %d, Mean Green: %d, Mean Blue: %d, Mean Intensity: %d, Number of pixels: %d" % (roi_mean_red, roi_mean_green, roi_mean_blue, roi_mean_intensity, self.roi_numberPixels))
-            #print("Mean Red: %d, Mean Green: %d, Mean Blue: %d" % (self.roi_mean_red, self.roi_mean_green, self.roi_mean_blue))
-            
-
+        
         ## create GUI
         self.app = QtGui.QPixmap()
         self.statusBar()
@@ -1255,14 +1276,13 @@ class Viewer(QtWidgets.QMainWindow):
         self.w1 = self.w.addLayout(row=0, col=0)
 
         self.v1a = self.w1.addViewBox(row=0, col=0, lockAspect=True)
+        self.imgROI = np.fliplr(self.imgROI)
         self.img = pg.ImageItem(self.imgROI)
         self.v1a.addItem(self.img)
         
         self.w.setMouseTracking(True)
 
-
         #link change in roi signal to update
-        self.roi1.sigRegionChanged.connect(updateWin)
 
 
         return
@@ -1397,11 +1417,8 @@ class Viewer(QtWidgets.QMainWindow):
 
         #using pyqtgraph.image
         image_board = np.rot90(image_board, k=1)
-        image_board = np.flipud(image_board)
-        
+        image_board = np.flipud(image_board)        
         resultCoverBoard = pg.image(image_board)
-
-
 
     def cluster_coverBoard(self):
                 
@@ -1453,10 +1470,7 @@ class Viewer(QtWidgets.QMainWindow):
         ax.set_axis_off()
         plt.tight_layout()
         plt.show()
-
-        
-
-        
+                
         print ("total # of pixels detected in board = ", total_area)
      
 ################################################################################################
@@ -1520,28 +1534,31 @@ class Viewer(QtWidgets.QMainWindow):
             second_loop +=1
             for y in range (image_y):
                 #pixels with equivalent values
-                if image_bright_adjusted[x,y][b] == image_bright_adjusted[x,y][g]:
+                if (image_bright_adjusted[x,y][b] == image_bright_adjusted[x,y][g]):
                     image_sky[x,y] = 255
                     image_canopy[x,y] = 255
                     image_equivalent[x,y] = 0
                     equivalent_pixel += 1
         
                 #count red canopy pixels
-                elif image_bright_adjusted[x,y][r] > image_bright_adjusted[x,y][g] and image_bright_adjusted[x,y][r] > image_bright_adjusted[x,y][b]:
+                elif (image_bright_adjusted[x,y][r] > image_bright_adjusted[x,y][g] 
+                        and image_bright_adjusted[x,y][r] > image_bright_adjusted[x,y][b]):
                     image_canopy[x,y] = 0
                     image_sky[x,y] = 255
                     image_equivalent[x,y] = 255
                     canopy_pixel += 1
                     
                 #count green canopy pixels   
-                elif image_bright_adjusted[x,y][g] > image_bright_adjusted[x,y][r] and image_bright_adjusted[x,y][g] > image_bright_adjusted[x,y][b]:
+                elif (image_bright_adjusted[x,y][g] > image_bright_adjusted[x,y][r] 
+                        and image_bright_adjusted[x,y][g] > image_bright_adjusted[x,y][b]):
                     image_sky[x,y] = 255
                     image_canopy[x,y] = 0
                     image_equivalent[x,y] = 255
                     canopy_pixel += 1
         
                 #count blue sky pixels 
-                elif image_bright_adjusted[x,y][b] > image_bright_adjusted[x,y][r] and image_bright_adjusted[x,y][b] > image_bright_adjusted[x,y][g]:
+                elif (image_bright_adjusted[x,y][b] > image_bright_adjusted[x,y][r]
+                        and image_bright_adjusted[x,y][b] > image_bright_adjusted[x,y][g]):
                     image_canopy[x,y] = 255
                     image_equivalent[x,y] = 255
                     image_sky[x,y] = 0
@@ -1576,7 +1593,7 @@ class Viewer(QtWidgets.QMainWindow):
 
         return
 
-####################################################################################################
+###############################################################################
 
     def quitDialog(self):
         self.ImageView.close()
@@ -1593,7 +1610,6 @@ class Viewer(QtWidgets.QMainWindow):
             app = QtWidgets.QApplication(sys.argv)
         sys.exit(app.exec_())
         return
-
 
 
     def closeEvent(self, event):
@@ -1617,8 +1633,10 @@ class Viewer(QtWidgets.QMainWindow):
 
         else:
             event.ignore()
-
-
+            
+##############################################################################
+############ create main run loop for GUI ####################################
+##############################################################################
 def main():
     if QtCore.QCoreApplication.instance() != None:
         app = QtCore.QCoreApplication.instance()
