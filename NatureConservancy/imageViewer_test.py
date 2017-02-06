@@ -19,7 +19,7 @@ from qtpy.QtCore import *
 from qtpy.QtGui import *
 #from pyqtgraph.Qt import QtCore, QtGui
 import pyqtgraph as pg
-import tifffile
+#import tifffile
 import json
 import re
 
@@ -55,24 +55,53 @@ else:
 
 #global variables
 
-global roi_origin, roi_size, newimg, original_image
+global roi_origin, roi_size, newimg, original_image, sky_array, canopy_array, sky_mean, sky_n, sky_sd, canopy_mean, canopy_n, canopy_sd, roi_mean_red, roi_mean_green, roi_mean_blue, roi_mean_intensity
 
 class Form3(QtWidgets.QDialog):
     def __init__(self, parent = None):
         super(Form3, self).__init__(parent)
-
+        
+        global roi_origin, roi_size, sky_mean, sky_n, sky_sd, canopy_mean, canopy_n, canopy_sd, roi_mean_red, roi_mean_green, roi_mean_blue, roi_mean_intensity
+        
         self.button1 = QtWidgets.QPushButton("Get Sky")
         self.button2 = QtWidgets.QPushButton("Get Canopy")
         self.button3 = QtWidgets.QPushButton("Undo last")
         self.button4 = QtWidgets.QPushButton("Done")        
         self.buttonReset = QtWidgets.QPushButton("Reset All")
+        
+        self.buttonSkyReset = QtWidgets.QPushButton("Sky Reset")        
+        self.buttonCanopyReset = QtWidgets.QPushButton("Canopy Reset")
+                
+        self.sky_mean_label = QtWidgets.QLabel()
+        self.sky_n_label = QtWidgets.QLabel()
+        self.sky_sd_label = QtWidgets.QLabel()
+        self.canopy_mean_label = QtWidgets.QLabel()
+        self.canopy_n_label = QtWidgets.QLabel()
+        self.canopy_sd_label = QtWidgets.QLabel()
 
+        self.sky_mean_label.setText("Sky Mean = %d" % sky_mean) 
+        self.sky_n_label.setText("Sky Number = %d" % sky_n) 
+        self.sky_sd_label.setText("Sky SD = %d" % sky_sd)
+        self.canopy_mean_label.setText("Canopy Mean = %d" % canopy_mean) 
+        self.canopy_n_label.setText("Canopy n = %d" % canopy_n) 
+        self.canopy_sd_label.setText("Canopy SD = %d" % canopy_sd) 
+        
         layout = QtWidgets.QGridLayout()
         layout.addWidget(self.button1, 0, 0)
         layout.addWidget(self.button2, 0, 1)
         layout.addWidget(self.button3, 0, 2)
         layout.addWidget(self.button4, 0, 3)
         layout.addWidget(self.buttonReset, 0, 4)
+        
+        layout.addWidget(self.buttonSkyReset, 1, 0)
+        layout.addWidget(self.buttonCanopyReset, 1, 3)
+
+        layout.addWidget(self.sky_mean_label, 2, 0)
+        layout.addWidget(self.sky_n_label, 2, 1)
+        layout.addWidget(self.sky_sd_label, 2, 2)
+        layout.addWidget(self.canopy_mean_label, 3, 0)
+        layout.addWidget(self.canopy_n_label, 3, 1)
+        layout.addWidget(self.canopy_sd_label, 3, 2)
 
         self.setLayout(layout)
 
@@ -81,56 +110,118 @@ class Form3(QtWidgets.QDialog):
         self.connect(self.button3,SIGNAL("clicked()"),self.button_3)
         self.connect(self.button4,SIGNAL("clicked()"),self.button_4)
         self.connect(self.buttonReset,SIGNAL("clicked()"),self.button_reset)
+        self.connect(self.buttonSkyReset,SIGNAL("clicked()"),self.button_sky_reset)
+        self.connect(self.buttonCanopyReset,SIGNAL("clicked()"),self.button_canopy_reset)
+        
 
     def button_1(self):
-        if self.onFlag == False:
-            self.onFlag = True
-            self.button1.setText("Get Sky")
-        else:
-            self.onFlag = False
-            self.button1.setText("Get Sky")
+        global sky_array, roi_mean_intensity
+   
+        sky_array.append(roi_mean_intensity)
+        self.updateStats()
+        
 
     def button_2(self):
-        if self.onFlag == False:
-            self.onFlag = True
-            self.button1.setText("Get Canopy")
-        else:
-            self.onFlag = False
-            self.button1.setText("Get Canopy")
+        global canopy_array, roi_mean_intensity
+            
+        canopy_array.append(roi_mean_intensity)
+        self.updateStats()
 
     def button_3(self):
-        if self.onFlag == False:
-            self.onFlag = True
-            self.button1.setText("Undo last")
-        else:
-            self.onFlag = False
-            self.button1.setText("Undo last")
+        print('not implemented')
 
     def button_4(self):
-        if self.onFlag == False:
-            self.onFlag = True
-            self.button1.setText("Done")
-        else:
-            self.onFlag = False
-            self.button1.setText("Done")
+        print('not implemented')
             
     def button_reset(self):       
-        if self.onFlag == False:
-            self.onFlag = True
-            self.button1.setText("Reset")
-        else:
-            self.onFlag = False
-            self.button1.setText("Reset") 
+        global sky_array, canopy_array, sky_mean, sky_n, sky_sd, canopy_mean, canopy_n, canopy_sd
+        
+        sky_array = []
+        canopy_array = []
+        sky_n = len(sky_array)
+        canopy_n = len(canopy_array)
+        sky_mean = 0
+        canopy_mean = 0
+        sky_sd = 0
+        canopy_sd = 0
+        
+        self.sky_mean_label.setText("Sky Mean = %d" % sky_mean) 
+        self.sky_n_label.setText("Sky Number = %d" % sky_n) 
+        self.sky_sd_label.setText("Sky SD = %d" % sky_sd)
+        self.canopy_mean_label.setText("Canopy Mean = %d" % canopy_mean) 
+        self.canopy_n_label.setText("Canopy n = %d" % canopy_n) 
+        self.canopy_sd_label.setText("Canopy SD = %d" % canopy_sd) 
+        
+    def button_sky_reset(self):       
+        global sky_array, canopy_array, sky_mean, sky_n, sky_sd, canopy_mean, canopy_n, canopy_sd
+        
+        sky_array = []
+        sky_n = len(sky_array)
+        sky_mean = 0
+        sky_sd = 0
+        
+        self.sky_mean_label.setText("Sky Mean = %d" % sky_mean) 
+        self.sky_n_label.setText("Sky Number = %d" % sky_n) 
+        self.sky_sd_label.setText("Sky SD = %d" % sky_sd)
+
+
+    def button_canopy_reset(self):       
+        global sky_array, canopy_array, sky_mean, sky_n, sky_sd, canopy_mean, canopy_n, canopy_sd
+        
+        canopy_array = []
+        canopy_n = len(canopy_array)
+        canopy_mean = 0
+        canopy_sd = 0
+        
+        self.canopy_mean_label.setText("Canopy Mean = %d" % canopy_mean) 
+        self.canopy_n_label.setText("Canopy n = %d" % canopy_n) 
+        self.canopy_sd_label.setText("Canopy SD = %d" % canopy_sd) 
+
             
+    def updateStats(self):
+        global sky_array, canopy_array, sky_mean, sky_n, sky_sd, canopy_mean, canopy_n, canopy_sd
+        
+        sky_n = len(sky_array)
+        canopy_n = len(canopy_array)
+        
+        if sky_n > 0:
+            sky_mean = np.mean(sky_array)        
+            sky_sd = np.std(sky_array)
+
+        if canopy_n > 0:
+            canopy_mean = np.mean(canopy_array)        
+            canopy_sd = np.std(canopy_array)
             
+        self.sky_mean_label.setText("Sky Mean = %d" % sky_mean) 
+        self.sky_n_label.setText("Sky Number = %d" % sky_n) 
+        self.sky_sd_label.setText("Sky SD = %d" % sky_sd)
+        self.canopy_mean_label.setText("Canopy Mean = %d" % canopy_mean) 
+        self.canopy_n_label.setText("Canopy n = %d" % canopy_n) 
+        self.canopy_sd_label.setText("Canopy SD = %d" % canopy_sd) 
+
+
 
 class Form2(QtWidgets.QDialog):
     def __init__(self, parent = None):
         super(Form2, self).__init__(parent)
+        
+        global sky_array, canopy_array, sky_mean, sky_n, sky_sd, canopy_mean, canopy_n, canopy_sd
 
-        #filter variables
+        #initial filter variables - values chosen based on canopy images from Bob
         self.intensity_min = 115
         self.intensity_max = 210
+        
+        #calibration variables - get from calibration console
+        sky_array = []
+        canopy_array = []
+        sky_n = len(sky_array)
+        canopy_n = len(canopy_array)
+        sky_mean = 0
+        canopy_mean = 0
+        sky_sd = 0
+        canopy_sd = 0
+        
+        #################################################################
 
         self.SpinBox1=QtWidgets.QDoubleSpinBox()
         self.SpinBox1.setRange(0,self.intensity_max)
@@ -159,7 +250,7 @@ class Form2(QtWidgets.QDialog):
         self.button1 = QtWidgets.QPushButton("Run")
         self.onFlag = False
 
-        self.button2 = QtWidgets.QPushButton("Get Cal Data")
+        self.button2 = QtWidgets.QPushButton("Set Calibration")
         self.calDataFlag = False
 
         self.button3 = QtWidgets.QPushButton("Calibrate")
@@ -188,6 +279,7 @@ class Form2(QtWidgets.QDialog):
         self.connect(self.button1,SIGNAL("clicked()"),self.button_1)
         self.connect(self.button2,SIGNAL("clicked()"),self.button_2)
         self.connect(self.button2,SIGNAL("clicked()"),self.initCalConsole)
+        
         self.connect(self.button3,SIGNAL("clicked()"),self.button_3)
 
         self.connect(self.button4,SIGNAL("clicked()"),self.button_4)
@@ -211,19 +303,33 @@ class Form2(QtWidgets.QDialog):
     def button_2(self):
         if self.calDataFlag == False:
             self.calDataFlag = True
-            self.button2.setText("Get Cal Data")
+            self.button2.setText("Set Calibration")
             
         else:
             self.calDataFlag = False
-            self.button2.setText("Get Cal Data")
+            self.button2.setText("Set Calibration")
 
     def button_3(self):
+        global sky_array, canopy_array, sky_mean, sky_n, sky_sd, canopy_mean, canopy_n, canopy_sd
+        
         if self.calFlag == False:
             self.calFlag = True
             self.button3.setText("Calibrate")
         else:
             self.calFlag = False
             self.button3.setText("Calibrate")
+        
+        ##Need to think about how calibration set!!###
+        self.intensity_min = canopy_mean+canopy_sd
+        self.intensity_max = sky_mean-sky_sd
+        self.sld2.setValue(self.intensity_max)
+        self.sld1.setValue(self.intensity_min)
+        self.SpinBox2.setValue(self.intensity_max)
+        self.SpinBox2.setRange(self.intensity_min,255)
+        self.SpinBox1.setValue(self.intensity_min)
+        self.SpinBox1.setRange(0,self.intensity_max)            
+            
+        
 
     def button_4(self):
         if self.batchFlag == False:
@@ -270,7 +376,6 @@ class Form2(QtWidgets.QDialog):
     def initCalConsole(self):
         self.consoleCalibrate = Form3()
         #self.consoleCalibrate.connect(self.consoleCalibrate.button1,SIGNAL("clicked()"),self.testPrint)
-       
         self.consoleCalibrate.show()
 ##############################################################################
 
@@ -796,6 +901,7 @@ class Viewer(QtWidgets.QMainWindow):
         activateConsoleCanopy.setShortcut('Ctrl+R')
         activateConsoleCanopy.setStatusTip('Start Console')
         activateConsoleCanopy.triggered.connect(self.initConsole_Canopy)
+        activateConsoleCanopy.triggered.connect(self.startROIExaminer)
         
 
         menubar = self.menuBar()
@@ -1121,6 +1227,8 @@ class Viewer(QtWidgets.QMainWindow):
             return
 
         def updateWin():
+            
+            global roi_mean_red, roi_mean_green, roi_mean_blue, roi_mean_intensity
            
             self.v1a.removeItem(self.img)
             self.imgROI = self.roiImg
@@ -1129,12 +1237,13 @@ class Viewer(QtWidgets.QMainWindow):
     
             self.v1a.addItem(self.img)
             
-            self.roi_mean_red = np.mean(self.imgROI[:, :, 0])
-            self.roi_mean_green = np.mean(self.imgROI[:, :, 1])
-            self.roi_mean_blue = np.mean(self.imgROI[:, :, 2])
+            roi_mean_red = np.mean(self.imgROI[:, :, 0])
+            roi_mean_green = np.mean(self.imgROI[:, :, 1])
+            roi_mean_blue = np.mean(self.imgROI[:, :, 2])
+            roi_mean_intensity = np.mean(self.imgROI[:, :, :,])
             self.roi_numberPixels = np.size(self.imgROI[:, :, 0])
             
-            self.statusBar().showMessage("Mean Red: %d, Mean Green: %d, Mean Blue: %d, Number of pixels: %d" % (self.roi_mean_red, self.roi_mean_green, self.roi_mean_blue, self.roi_numberPixels))
+            self.statusBar().showMessage("Mean Red: %d, Mean Green: %d, Mean Blue: %d, Mean Intensity: %d, Number of pixels: %d" % (roi_mean_red, roi_mean_green, roi_mean_blue, roi_mean_intensity, self.roi_numberPixels))
             #print("Mean Red: %d, Mean Green: %d, Mean Blue: %d" % (self.roi_mean_red, self.roi_mean_green, self.roi_mean_blue))
             
 
