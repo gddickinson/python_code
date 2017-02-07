@@ -1716,18 +1716,27 @@ class Viewer(QtWidgets.QMainWindow):
             openName = path + "/" + filename
             saveName = path + "/result_" + filename
             print("Working on... " + openName)
-            imageFile = io.imread(openName)
-            image_sky, image_canopy, sky_pixel, canopy_pixel, equivalent_pixel, total_pixels  = detection(imageFile, dark_threshold, light_threshold)
-#            print ("sky: %.2f" % (sky_pixel/(total_pixels)*100), "%")
-#            print ("canopy: %.2f" % (canopy_pixel/(total_pixels)*100), "%")
-#            print ("unassigned: %.2f" % (equivalent_pixel/(total_pixels)*100), "%")
-#            print ("total pixels counted = ", sky_pixel + canopy_pixel + equivalent_pixel)
-            plt.imsave(saveName, image_sky)
-            result.append([str(openName),str(sky_pixel),str(canopy_pixel),str(equivalent_pixel), str(total_pixels)])
-            print("Finshed with... " + openName)
+            try:
+                imageFile = io.imread(openName)
+                image_sky, image_canopy, sky_pixel, canopy_pixel, equivalent_pixel, total_pixels  = detection(imageFile, dark_threshold, light_threshold)
+    #            print ("sky: %.2f" % (sky_pixel/(total_pixels)*100), "%")
+    #            print ("canopy: %.2f" % (canopy_pixel/(total_pixels)*100), "%")
+    #            print ("unassigned: %.2f" % (equivalent_pixel/(total_pixels)*100), "%")
+    #            print ("total pixels counted = ", sky_pixel + canopy_pixel + equivalent_pixel)
+                plt.imsave(saveName, image_sky)
+                result.append([str(openName),str(sky_pixel),str(canopy_pixel),str(equivalent_pixel), str(total_pixels)])
+                print("Finshed with... " + openName)
+            except:
+                print("Non-image file detected")
         
         print("Batch run complete!")
+#        result = np.array(result)
         print(result)
+#        resultSummaryName = path + "/results.txt"
+#        np.savetxt(resultSummaryName, result, delimiter=" ", fmt="%s")
+#        print("Result File Saved")
+        
+        return
 
 
 ###############################################################################
