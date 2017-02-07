@@ -65,11 +65,13 @@ global ROI_flag, roi_origin, roi_size, newimg, original_image, sky_array, canopy
 ########### define classes for GUI ###########################################
 ##############################################################################
 
-class Form3(QtWidgets.QDialog):
+class Console_Cal(QtWidgets.QDialog):
     def __init__(self, parent = None):
-        super(Form3, self).__init__(parent)
+        super(Console_Cal, self).__init__(parent)
         
         global roi_origin, roi_size, sky_mean, sky_n, sky_sd, canopy_mean, canopy_n, canopy_sd, roi_mean_red, roi_mean_green, roi_mean_blue, roi_mean_intensity
+        
+        ########## set up widgets ####################################
         
         self.button1 = QtWidgets.QPushButton("Get Sky")
         self.button2 = QtWidgets.QPushButton("Get Canopy")
@@ -121,14 +123,13 @@ class Form3(QtWidgets.QDialog):
         self.connect(self.buttonSkyReset,SIGNAL("clicked()"),self.button_sky_reset)
         self.connect(self.buttonCanopyReset,SIGNAL("clicked()"),self.button_canopy_reset)
         
-
+    ################# define functions called by widgets #####################
     def button_1(self):
         global sky_array, roi_mean_intensity
    
         sky_array.append(roi_mean_intensity)
         self.updateStats()
         
-
     def button_2(self):
         global canopy_array, roi_mean_intensity
             
@@ -172,7 +173,6 @@ class Form3(QtWidgets.QDialog):
         self.sky_n_label.setText("Sky Number = %d" % sky_n) 
         self.sky_sd_label.setText("Sky SD = %d" % sky_sd)
 
-
     def button_canopy_reset(self):       
         global sky_array, canopy_array, sky_mean, sky_n, sky_sd, canopy_mean, canopy_n, canopy_sd
         
@@ -184,7 +184,6 @@ class Form3(QtWidgets.QDialog):
         self.canopy_mean_label.setText("Canopy Mean = %d" % canopy_mean) 
         self.canopy_n_label.setText("Canopy n = %d" % canopy_n) 
         self.canopy_sd_label.setText("Canopy SD = %d" % canopy_sd) 
-
             
     def updateStats(self):
         global sky_array, canopy_array, sky_mean, sky_n, sky_sd, canopy_mean, canopy_n, canopy_sd
@@ -208,10 +207,9 @@ class Form3(QtWidgets.QDialog):
         self.canopy_sd_label.setText("Canopy SD = %d" % canopy_sd) 
 
 
-
-class Form2(QtWidgets.QDialog):
+class Console_Canopy(QtWidgets.QDialog):
     def __init__(self, parent = None):
-        super(Form2, self).__init__(parent)
+        super(Console_Canopy, self).__init__(parent)
         
         global sky_array, canopy_array, sky_mean, sky_n, sky_sd, canopy_mean, canopy_n, canopy_sd
 
@@ -229,7 +227,7 @@ class Form2(QtWidgets.QDialog):
         sky_sd = 0
         canopy_sd = 0
         
-        #################################################################
+        ########### set up widgets #########################
 
         self.SpinBox1=QtWidgets.QDoubleSpinBox()
         self.SpinBox1.setRange(0,self.intensity_max)
@@ -296,7 +294,7 @@ class Form2(QtWidgets.QDialog):
         self.connect(self.button2,SIGNAL("clicked()"),self.initCalConsole)        
         self.connect(self.button3,SIGNAL("clicked()"),self.button_3)
         self.connect(self.button4,SIGNAL("clicked()"),self.button_4)        
-        self.connect(self.button5,SIGNAL("clicked()"),self.button_5)
+        #self.connect(self.button5,SIGNAL("clicked()"),self.button_5)
         self.connect(self.buttonReset,SIGNAL("clicked()"),self.button_reset)
 
         self.connect(self.sld1,SIGNAL("valueChanged(int)"), self.slider_1)
@@ -305,7 +303,7 @@ class Form2(QtWidgets.QDialog):
         self.connect(self.sld2,SIGNAL("valueChanged(int)"), self.slider_2)
         self.connect(self.sld2,SIGNAL("valueChanged(int)"),self.SpinBox2.setValue)
 
-
+    ################# define functions called by widgets #####################
     def button_1(self):
         if self.onFlag == False:
             self.onFlag = True
@@ -333,7 +331,8 @@ class Form2(QtWidgets.QDialog):
             self.calFlag = False
             self.button3.setText("Calibrate")
         
-        ##Need to think about how calibration set!!###
+        ## Need to think about how calibration parameters calculated!! ###
+        ## For the moment using mean intensity +/- 1stdev #######
         self.intensity_min = canopy_mean+canopy_sd
         self.intensity_max = sky_mean-sky_sd
         self.sld2.setValue(self.intensity_max)
@@ -364,6 +363,7 @@ class Form2(QtWidgets.QDialog):
     def runBatch(self):
         print("Folder = ", self.pathname)
         return
+
 
     def slider_1(self):
         if self.sld1.value() < self.intensity_max:
@@ -399,14 +399,15 @@ class Form2(QtWidgets.QDialog):
 
 
     def initCalConsole(self):
-        self.consoleCalibrate = Form3()
+        self.consoleCalibrate = Console_Cal()
         #self.consoleCalibrate.connect(self.consoleCalibrate.button1,SIGNAL("clicked()"),self.testPrint)
         self.consoleCalibrate.show()
+
 ##############################################################################
 
-class Form(QtWidgets.QDialog):
+class Console_Coverboard(QtWidgets.QDialog):
     def __init__(self, parent = None):
-        super(Form, self).__init__(parent)
+        super(Console_Coverboard, self).__init__(parent)
 
         #filter variables
         self.red_min = 115
@@ -425,6 +426,8 @@ class Form(QtWidgets.QDialog):
         # self.filterBox=QtGui.QComboBox()
         # self.filterBox.addItem("No Filter")
 
+
+        ########### Set uo widgets ####################################
         self.SpinBox1=QtWidgets.QDoubleSpinBox()
         self.SpinBox1.setRange(0,self.red_max)
         self.SpinBox1.setValue(self.red_min)
@@ -464,7 +467,6 @@ class Form(QtWidgets.QDialog):
         self.SpinBox10=QtWidgets.QDoubleSpinBox()
         self.SpinBox10.setRange(self.red_green_ratio_min,255)
         self.SpinBox10.setValue(self.red_green_ratio_max)
-
 
         # self.filterLabel=QtGui.QLabel("No Filter")
         # self.filterFlag = 'No Filter'
@@ -539,7 +541,6 @@ class Form(QtWidgets.QDialog):
         self.sld10.setValue(self.red_green_ratio_max)
         self.sld10.setGeometry(30, 40, 100, 30)
 
-
         self.button1 = QtWidgets.QPushButton("Run")
         self.onFlag = False
         
@@ -552,7 +553,6 @@ class Form(QtWidgets.QDialog):
 
         self.buttonGreenBlueRatio = QtWidgets.QPushButton("GREEN/BLUE")
         self.buttonRedGreenRatio = QtWidgets.QPushButton("RED/GREEN")
-
 
         layout = QtWidgets.QGridLayout()
         #layout.addWidget(self.dial, 0,0)
@@ -599,7 +599,6 @@ class Form(QtWidgets.QDialog):
         self.connect(self.buttonGreenBlueRatio,SIGNAL("clicked()"),self.button_green_blue_ratio)
         self.connect(self.buttonRedGreenRatio,SIGNAL("clicked()"),self.button_red_green_ratio)
 
-
         self.connect(self.sld1,SIGNAL("valueChanged(int)"), self.slider_1)
         self.connect(self.sld1,SIGNAL("valueChanged(int)"),self.SpinBox1.setValue)
 
@@ -631,7 +630,6 @@ class Form(QtWidgets.QDialog):
         self.connect(self.sld10,SIGNAL("valueChanged(int)"),self.SpinBox10.setValue)
 
 
-
     def button_1(self):
         if self.onFlag == False:
             self.onFlag = True
@@ -648,7 +646,6 @@ class Form(QtWidgets.QDialog):
             self.clusterFlag = False
             self.button2.setText("Cluster")
 
-
     def button_red(self):
         self.red_min = 115
         self.red_max = 210
@@ -658,7 +655,6 @@ class Form(QtWidgets.QDialog):
         self.SpinBox2.setRange(self.red_min,255)
         self.SpinBox1.setValue(self.red_min)
         self.SpinBox1.setRange(0,self.red_max)
-
 
     def button_green(self):
         self.green_min = 40
@@ -975,16 +971,17 @@ class Viewer(QtWidgets.QMainWindow):
         self.show()
 
     def initConsole_CoverBoard(self):
-        self.console = Form()
+        self.console = Console_Coverboard()
         #self.console.connect(self.console.button1,SIGNAL("clicked()"),self.testPrint)
         self.console.connect(self.console.button1,SIGNAL("clicked()"),self.detect_coverBoard)
         self.console.connect(self.console.button2,SIGNAL("clicked()"),self.cluster_coverBoard)
         self.console.show()
 
     def initConsole_Canopy(self):
-        self.consoleCanopy = Form2()
+        self.consoleCanopy = Console_Canopy()
         #self.consoleCanopy.connect(self.consoleCanopy.button1,SIGNAL("clicked()"),self.testPrint)
         self.consoleCanopy.connect(self.consoleCanopy.button1,SIGNAL("clicked()"),self.detect_canopy)
+        self.consoleCanopy.connect(self.consoleCanopy.button5,SIGNAL("clicked()"),self.batch_canopy)
         self.consoleCanopy.show()
 
 
@@ -1610,6 +1607,117 @@ class Viewer(QtWidgets.QMainWindow):
 
         return
 
+    def batch_canopy(self):
+        path = self.consoleCanopy.pathname
+        files = os.listdir(path)
+        dark_threshold = self.consoleCanopy.intensity_min
+        light_threshold = self.consoleCanopy.intensity_max
+
+        def detection(imgData, dark_threshold, light_threshold):
+            image = imgData
+                       
+            #set up arrays
+            image_bright_adjusted = copy.deepcopy(image)
+            image_sky = copy.deepcopy(image)
+            image_canopy = copy.deepcopy(image)
+            image_equivalent = copy.deepcopy(image)
+    
+            #set image size variables
+            image_x, image_y = image.shape[0:2]
+            
+            #image array index
+            r = 0
+            g = 1
+            b = 2
+            
+            # colour settings   
+            red = [255,0,0]
+            green = [0,255,0]
+            blue = [0,0,255]
+            black = [0,0,0]
+            white = [255,255,255]    
+            
+            #pixel count variables  
+            sky_pixel = 0
+            canopy_pixel = 0
+            equivalent_pixel = 0
+            
+            #progress counters
+            first_loop = 0
+            second_loop = 0
+            total_pixels = image_x*image_y
+                   
+            #loop through all pixels in image and assign brightest pixels to sky and darkest pixels to canopy (by setting colour)
+            for x in range (image_x):
+                print("1st loop % complete = ", round((first_loop/image_x)*100,1))
+                first_loop +=1
+                for y in range (image_y):
+                    #remove pixels from sky and add to canopy if below darkness threshold
+                    if np.mean(image[x,y]) < dark_threshold:
+                        image_bright_adjusted[x,y] = green
+                    #make white pixels blue to ensure they are counted
+                    if np.mean(image[x,y]) > light_threshold:
+                        image_bright_adjusted[x,y] = blue
+            
+            
+            #loop through all pixels in image and set pixel to sky or canopy based on colour - count pixels   
+            for x in range (image_x):
+                print("2nd loop % complete = ", round((second_loop/image_x)*100,1))
+                second_loop +=1
+                for y in range (image_y):
+                    #pixels with equivalent values
+                    if (image_bright_adjusted[x,y][b] == image_bright_adjusted[x,y][g]):
+                        image_sky[x,y] = 255
+                        image_canopy[x,y] = 255
+                        image_equivalent[x,y] = 0
+                        equivalent_pixel += 1
+            
+                    #count red canopy pixels
+                    elif (image_bright_adjusted[x,y][r] > image_bright_adjusted[x,y][g] 
+                            and image_bright_adjusted[x,y][r] > image_bright_adjusted[x,y][b]):
+                        image_canopy[x,y] = 0
+                        image_sky[x,y] = 255
+                        image_equivalent[x,y] = 255
+                        canopy_pixel += 1
+                        
+                    #count green canopy pixels   
+                    elif (image_bright_adjusted[x,y][g] > image_bright_adjusted[x,y][r] 
+                            and image_bright_adjusted[x,y][g] > image_bright_adjusted[x,y][b]):
+                        image_sky[x,y] = 255
+                        image_canopy[x,y] = 0
+                        image_equivalent[x,y] = 255
+                        canopy_pixel += 1
+            
+                    #count blue sky pixels 
+                    elif (image_bright_adjusted[x,y][b] > image_bright_adjusted[x,y][r]
+                            and image_bright_adjusted[x,y][b] > image_bright_adjusted[x,y][g]):
+                        image_canopy[x,y] = 255
+                        image_equivalent[x,y] = 255
+                        image_sky[x,y] = 0
+                        sky_pixel += 1
+                    
+                    else:
+                        image_sky[x,y] = 255
+                        image_canopy[x,y] = 255
+                        image_equivalent[x,y] = 0
+                        equivalent_pixel += 1
+
+            return image_sky, image_canopy, sky_pixel, canopy_pixel, equivalent_pixel, total_pixels            
+
+        
+        for filename in files:
+            openName = path + "/" + filename
+            saveName = path + "/result_" + filename
+            imageFile = io.imread(openName)
+            image_sky, image_canopy, sky_pixel, canopy_pixel, equivalent_pixel, total_pixels  = detection(imageFile, dark_threshold, light_threshold)
+            print ("sky: %.2f" % (sky_pixel/(total_pixels)*100), "%")
+            print ("canopy: %.2f" % (canopy_pixel/(total_pixels)*100), "%")
+            print ("unassigned: %.2f" % (equivalent_pixel/(total_pixels)*100), "%")
+            print ("total pixels counted = ", sky_pixel + canopy_pixel + equivalent_pixel)
+            plt.imsave(saveName, image_sky)
+            
+
+
 ###############################################################################
 
     def quitDialog(self):
@@ -1650,6 +1758,8 @@ class Viewer(QtWidgets.QMainWindow):
 
         else:
             event.ignore()
+
+
             
 ##############################################################################
 ############ create main run loop for GUI ####################################
