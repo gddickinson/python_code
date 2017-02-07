@@ -254,7 +254,10 @@ class Form2(QtWidgets.QDialog):
         self.sld2.setValue(self.intensity_max)
         self.sld2.setGeometry(30, 40, 100, 30)
 
-
+        self.path_label = QtWidgets.QLabel()
+        self.pathname = "***None set***"
+        self.path_label.setText("Batch folder = %s" % (self.pathname)) 
+        
         self.button1 = QtWidgets.QPushButton("Run")
         self.onFlag = False
 
@@ -264,8 +267,10 @@ class Form2(QtWidgets.QDialog):
         self.button3 = QtWidgets.QPushButton("Calibrate")
         self.calFlag = False
 
-        self.button4 = QtWidgets.QPushButton("Batch Run")
+        self.button4 = QtWidgets.QPushButton("Get Batch Folder")
         self.batchFlag = False
+
+        self.button5 = QtWidgets.QPushButton("Batch Run")
         
         self.buttonReset = QtWidgets.QPushButton("Reset")
 
@@ -280,17 +285,18 @@ class Form2(QtWidgets.QDialog):
         layout.addWidget(self.SpinBox1, 1, 3)
         layout.addWidget(self.SpinBox2, 1, 4)
         layout.addWidget(self.button4, 2, 0)
+        layout.addWidget(self.button5, 2, 3)   
+        layout.addWidget(self.path_label, 3,0)
 
 
         self.setLayout(layout)
 
         self.connect(self.button1,SIGNAL("clicked()"),self.button_1)
         self.connect(self.button2,SIGNAL("clicked()"),self.button_2)
-        self.connect(self.button2,SIGNAL("clicked()"),self.initCalConsole)
-        
+        self.connect(self.button2,SIGNAL("clicked()"),self.initCalConsole)        
         self.connect(self.button3,SIGNAL("clicked()"),self.button_3)
-
-        self.connect(self.button4,SIGNAL("clicked()"),self.button_4)
+        self.connect(self.button4,SIGNAL("clicked()"),self.button_4)        
+        self.connect(self.button5,SIGNAL("clicked()"),self.button_5)
         self.connect(self.buttonReset,SIGNAL("clicked()"),self.button_reset)
 
         self.connect(self.sld1,SIGNAL("valueChanged(int)"), self.slider_1)
@@ -338,15 +344,26 @@ class Form2(QtWidgets.QDialog):
         self.SpinBox1.setRange(0,self.intensity_max)            
             
         
-
     def button_4(self):
-        if self.batchFlag == False:
-            self.batchFlag = True
-            self.button4.setText("Batch Run")
-        else:
-            self.batchFlag = False
-            self.button4.setText("Batch Run")
+        pathname = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select a folder',
+                os.path.expanduser("~"), QtWidgets.QFileDialog.ShowDirsOnly)
+        
+        self.pathname = str(pathname)
+        #print(pathname)
+#        if pathname == '':
+#            return False
+#        else:
+#            self.runBatch(pathname)
+#            return
+        self.path_label.setText("Batch folder = %s" % (self.pathname)) 
+ 
 
+    def button_5(self):
+        self.runBatch()
+
+    def runBatch(self):
+        print("Folder = ", self.pathname)
+        return
 
     def slider_1(self):
         if self.sld1.value() < self.intensity_max:
