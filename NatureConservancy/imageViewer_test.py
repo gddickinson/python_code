@@ -1612,6 +1612,8 @@ class Viewer(QtWidgets.QMainWindow):
         files = os.listdir(path)
         dark_threshold = self.consoleCanopy.intensity_min
         light_threshold = self.consoleCanopy.intensity_max
+        
+        result = []
 
         def detection(imgData, dark_threshold, light_threshold):
             image = imgData
@@ -1643,14 +1645,15 @@ class Viewer(QtWidgets.QMainWindow):
             equivalent_pixel = 0
             
             #progress counters
-            first_loop = 0
-            second_loop = 0
+            #first_loop = 0
+            #second_loop = 0
             total_pixels = image_x*image_y
-                   
+
+            print("loop 1 start")         
             #loop through all pixels in image and assign brightest pixels to sky and darkest pixels to canopy (by setting colour)
             for x in range (image_x):
-                print("1st loop % complete = ", round((first_loop/image_x)*100,1))
-                first_loop +=1
+                #print("1st loop % complete = ", round((first_loop/image_x)*100,1))
+                #first_loop +=1
                 for y in range (image_y):
                     #remove pixels from sky and add to canopy if below darkness threshold
                     if np.mean(image[x,y]) < dark_threshold:
@@ -1658,12 +1661,14 @@ class Viewer(QtWidgets.QMainWindow):
                     #make white pixels blue to ensure they are counted
                     if np.mean(image[x,y]) > light_threshold:
                         image_bright_adjusted[x,y] = blue
-            
-            
+
+            print("loop 1 done")
+            print("loop 2 start")            
+
             #loop through all pixels in image and set pixel to sky or canopy based on colour - count pixels   
             for x in range (image_x):
-                print("2nd loop % complete = ", round((second_loop/image_x)*100,1))
-                second_loop +=1
+                #print("2nd loop % complete = ", round((second_loop/image_x)*100,1))
+                #second_loop +=1
                 for y in range (image_y):
                     #pixels with equivalent values
                     if (image_bright_adjusted[x,y][b] == image_bright_adjusted[x,y][g]):
@@ -1702,20 +1707,27 @@ class Viewer(QtWidgets.QMainWindow):
                         image_equivalent[x,y] = 0
                         equivalent_pixel += 1
 
+            print("loop 2 done")
+
             return image_sky, image_canopy, sky_pixel, canopy_pixel, equivalent_pixel, total_pixels            
 
         
         for filename in files:
             openName = path + "/" + filename
             saveName = path + "/result_" + filename
+            print("Working on... " + openName)
             imageFile = io.imread(openName)
             image_sky, image_canopy, sky_pixel, canopy_pixel, equivalent_pixel, total_pixels  = detection(imageFile, dark_threshold, light_threshold)
-            print ("sky: %.2f" % (sky_pixel/(total_pixels)*100), "%")
-            print ("canopy: %.2f" % (canopy_pixel/(total_pixels)*100), "%")
-            print ("unassigned: %.2f" % (equivalent_pixel/(total_pixels)*100), "%")
-            print ("total pixels counted = ", sky_pixel + canopy_pixel + equivalent_pixel)
+#            print ("sky: %.2f" % (sky_pixel/(total_pixels)*100), "%")
+#            print ("canopy: %.2f" % (canopy_pixel/(total_pixels)*100), "%")
+#            print ("unassigned: %.2f" % (equivalent_pixel/(total_pixels)*100), "%")
+#            print ("total pixels counted = ", sky_pixel + canopy_pixel + equivalent_pixel)
             plt.imsave(saveName, image_sky)
-            
+            result.append([str(openName),str(sky_pixel),str(canopy_pixel),str(equivalent_pixel), str(total_pixels)])
+            print("Finshed with... " + openName)
+        
+        print("Batch run complete!")
+        print(result)
 
 
 ###############################################################################
