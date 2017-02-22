@@ -65,6 +65,138 @@ global ROI_flag, roi_origin, roi_size, newimg, original_image, sky_array, canopy
 ########### define classes for GUI ###########################################
 ##############################################################################
 
+class Console_Analysis(QtWidgets.QDialog):
+    def __init__(self, parent = None):
+        super(Console_Analysis, self).__init__(parent)
+        
+        global newimg
+        
+        self.image = newimg
+        self.randomPoints = []
+        self.numberPoints = 50
+        self.x, self.y = self.image.shape[0:2]
+        self.randomPlot = False
+        self.randomPlotWithPoints = copy.deepcopy(self.image)
+        
+        self.randomPlot = pg.image(self.randomPlotWithPoints)
+        
+        self.displayPoints = True
+        self.displayPointsEdge = False
+        
+        
+        ########## set up widgets ####################################
+        
+        self.button1 = QtWidgets.QPushButton("Generate Points")
+        self.button2 = QtWidgets.QPushButton("Hide Points")
+        self.button3 = QtWidgets.QPushButton("Show Edge")
+        
+        self.SpinBox1=QtWidgets.QSpinBox()
+        self.SpinBox1.setRange(0,10000)
+        self.SpinBox1.setValue(self.numberPoints)
+                
+        self.number_points = QtWidgets.QLabel()
+        self.number_points.setText("Number of Points = %d" % len(self.randomPoints)) 
+        
+        layout = QtWidgets.QGridLayout()
+        layout.addWidget(self.button1, 0, 0)
+        layout.addWidget(self.button2, 0, 1)
+        layout.addWidget(self.button3, 0, 2)
+        layout.addWidget(self.number_points, 1, 0)
+        layout.addWidget(self.SpinBox1, 1, 1)     
+
+        self.setLayout(layout)
+
+        self.connect(self.button1,SIGNAL("clicked()"),self.button_1)
+        self.connect(self.button2,SIGNAL("clicked()"),self.button_2)
+        self.connect(self.button3,SIGNAL("clicked()"),self.button_3)
+        self.connect(self.SpinBox1,SIGNAL("valueChanged(int)"),self.spinBox1_update)
+
+        
+    ################# define functions called by widgets #####################
+    def button_1(self):
+        self.randomPoints = []
+        self.randomPlotWithPoints = copy.deepcopy(self.image)
+        self.randomPlotWithPointsAndEdge = copy.deepcopy(self.image)
+        
+        for i in range(0,self.numberPoints):
+            new_x = np.random.randint(0,high = self.x)
+            new_y = np.random.randint(0,high = self.y)
+            self.randomPoints.append((new_x,new_y))
+            self.randomPlotWithPoints[new_x,new_y] = 0
+            self.randomPlotWithPointsAndEdge[new_x,new_y] = 0                         
+                                     
+
+            try:
+                self.randomPlotWithPointsAndEdge[new_x-1,new_y-1] = 255
+            except:
+                pass
+            try:
+                self.randomPlotWithPointsAndEdge[new_x-1,new_y] = 255
+            except:
+                pass
+            try:                            
+                self.randomPlotWithPointsAndEdge[new_x-1,new_y+1] = 255
+            except:
+                pass
+            try:                             
+                self.randomPlotWithPointsAndEdge[new_x,new_y-1] = 255
+            except:
+                pass
+            try:                            
+                self.randomPlotWithPointsAndEdge[new_x,new_y+1] = 255
+            except:
+                pass
+            try:                            
+                self.randomPlotWithPointsAndEdge[new_x+1,new_y-1] = 255
+            except:
+                pass
+            try:                           
+                self.randomPlotWithPointsAndEdge[new_x+1,new_y] = 255
+            except:
+                pass
+            try:                            
+                self.randomPlotWithPointsAndEdge[new_x+1,new_y+1] = 255
+            except:
+                pass                               
+                
+                
+        self.number_points.setText("Number of Points = %d" % len(self.randomPoints)) 
+        
+
+        self.randomPlot.setImage(self.randomPlotWithPoints)
+        #print(self.randomPoints)
+        
+    def button_2(self):
+        if self.displayPoints == True:
+            self.randomPlot.setImage(self.image, autoRange = False)
+            self.displayPoints = False
+            self.button2.setText("Show Points")
+            self.displayPointsEdge = False
+            self.button3.setText("Show Edge")
+        else:    
+            self.randomPlot.setImage(self.randomPlotWithPoints, autoRange = False)
+            self.displayPoints = True
+            self.button2.setText("Hide Points")
+            
+
+    def button_3(self):
+        if self.displayPointsEdge == True:
+            self.randomPlot.setImage(self.randomPlotWithPoints, autoRange = False)
+            self.displayPointsEdge = False
+            self.button3.setText("Show Edge")
+        else:    
+            self.randomPlot.setImage(self.randomPlotWithPointsAndEdge, autoRange = False)
+            self.displayPointsEdge = True
+            self.button3.setText("Hide Edge")
+
+    
+    def spinBox1_update (self):
+        self.numberPoints = self.SpinBox1.value()
+
+
+
+##############################################################################
+
 class Console_Cal(QtWidgets.QDialog):
     def __init__(self, parent = None):
         super(Console_Cal, self).__init__(parent)
@@ -920,10 +1052,15 @@ class Viewer(QtWidgets.QMainWindow):
         activateConsole.triggered.connect(self.initConsole_CoverBoard)
         
         activateConsoleCanopy = QtWidgets.QAction(QtGui.QIcon('save.png'), 'Canopy Console', self)
-        activateConsoleCanopy.setShortcut('Ctrl+R')
+        activateConsoleCanopy.setShortcut('Ctrl+N')
         activateConsoleCanopy.setStatusTip('Start Console')
         activateConsoleCanopy.triggered.connect(self.initConsole_Canopy)
         activateConsoleCanopy.triggered.connect(self.startROIExaminer)
+        
+        activateAnalysisConsole = QtWidgets.QAction(QtGui.QIcon('save.png'), 'Analysis Console', self)
+        activateAnalysisConsole.setShortcut('Ctrl+A')
+        activateAnalysisConsole.setStatusTip('Start Analysis')
+        activateAnalysisConsole.triggered.connect(self.initConsole_Analysis)
         
 
         menubar = self.menuBar()
@@ -959,6 +1096,9 @@ class Viewer(QtWidgets.QMainWindow):
         
         fileMenu4 = menubar.addMenu('&Canopy Detection')       
         fileMenu4.addAction(activateConsoleCanopy)
+        
+        fileMenu5 = menubar.addMenu('&Random Point Analysis')       
+        fileMenu5.addAction(activateAnalysisConsole)        
 
 #        fileMenu3 = menubar.addMenu('&Analysis')
 #        fileMenu3.addAction(analysis1)
@@ -983,6 +1123,12 @@ class Viewer(QtWidgets.QMainWindow):
         self.consoleCanopy.connect(self.consoleCanopy.button1,SIGNAL("clicked()"),self.detect_canopy)
         self.consoleCanopy.connect(self.consoleCanopy.button5,SIGNAL("clicked()"),self.batch_canopy)
         self.consoleCanopy.show()
+
+
+    def initConsole_Analysis(self):
+        self.AnalysisCanopy = Console_Analysis()
+        #self.consoleCanopy.connect(self.consoleCanopy.button1,SIGNAL("clicked()"),self.testPrint)
+        self.AnalysisCanopy.show()
 
 
     def testPrint(self):
@@ -1746,8 +1892,9 @@ class Viewer(QtWidgets.QMainWindow):
         try:
             self.console.close()
             self.consoleCanopy.close()
+            self.AnalysisCanopy.close()
         except:
-            print("console close error")
+            print("console close error_1")
         
         plt.close()
         if QtCore.QCoreApplication.instance() != None:
@@ -1772,8 +1919,10 @@ class Viewer(QtWidgets.QMainWindow):
             try:
                 self.console.close()
                 self.consoleCanopy.close()
+                self.AnalysisCanopy.close()
+                
             except:
-                print("console close error")
+                print("console close error_2")
             
             plt.close()
 
