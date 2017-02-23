@@ -74,6 +74,9 @@ class Console_Analysis(QtWidgets.QDialog):
         self.image = newimg
         self.randomPoints = []
         self.numberPoints = 50
+        self.activePoint = 0
+        self.currentX = None
+        self.currentY = None
         self.x, self.y = self.image.shape[0:2]
         self.randomPlot = False
         self.randomPlotWithPoints = copy.deepcopy(self.image)
@@ -89,6 +92,9 @@ class Console_Analysis(QtWidgets.QDialog):
         self.button1 = QtWidgets.QPushButton("Generate Points")
         self.button2 = QtWidgets.QPushButton("Hide Points")
         self.button3 = QtWidgets.QPushButton("Show Edge")
+        self.button4 = QtWidgets.QPushButton("Go to current point")
+        self.button5 = QtWidgets.QPushButton("Go forward a point")
+        self.button6 = QtWidgets.QPushButton("Go back a point")
         
         self.SpinBox1=QtWidgets.QSpinBox()
         self.SpinBox1.setRange(0,10000)
@@ -97,19 +103,49 @@ class Console_Analysis(QtWidgets.QDialog):
         self.number_points = QtWidgets.QLabel()
         self.number_points.setText("Number of Points = %d" % len(self.randomPoints)) 
         
+        self.active_point = QtWidgets.QLabel()
+        self.active_point.setText("Current Point = %d" % self.activePoint) 
+        
+        self.active_x = QtWidgets.QLabel()
+        self.active_x.setText("X = %d" % self.activePoint)    
+        
+        self.active_y = QtWidgets.QLabel()
+        self.active_y.setText("Y = %d" % self.activePoint)        
+        
+        
+        self.SpinBox2=QtWidgets.QSpinBox()
+        self.SpinBox2.setRange(0,self.numberPoints)
+        self.SpinBox2.setValue(self.activePoint)
+        
+            
         layout = QtWidgets.QGridLayout()
         layout.addWidget(self.button1, 0, 0)
         layout.addWidget(self.button2, 0, 1)
         layout.addWidget(self.button3, 0, 2)
+        
         layout.addWidget(self.number_points, 1, 0)
-        layout.addWidget(self.SpinBox1, 1, 1)     
+        layout.addWidget(self.SpinBox1, 1, 1)
+        
+        layout.addWidget(self.active_point, 2, 0)
+        layout.addWidget(self.SpinBox2, 2, 1)
+        layout.addWidget(self.active_x, 2, 2)
+        layout.addWidget(self.active_y, 2, 3)
+        
+        layout.addWidget(self.button4, 3, 0)
+        layout.addWidget(self.button5, 3, 1)
+        layout.addWidget(self.button6, 3, 2)
 
         self.setLayout(layout)
 
-        self.connect(self.button1,SIGNAL("clicked()"),self.button_1)
+        self.connect(self.button1,SIGNAL("clicked()"),self.button_1)                
         self.connect(self.button2,SIGNAL("clicked()"),self.button_2)
         self.connect(self.button3,SIGNAL("clicked()"),self.button_3)
+        self.connect(self.button4,SIGNAL("clicked()"),self.button_4)
+        self.connect(self.button5,SIGNAL("clicked()"),self.button_5)
+        self.connect(self.button6,SIGNAL("clicked()"),self.button_6)
+        
         self.connect(self.SpinBox1,SIGNAL("valueChanged(int)"),self.spinBox1_update)
+        self.connect(self.SpinBox2,SIGNAL("valueChanged(int)"),self.spinBox2_update)
 
         
     ################# define functions called by widgets #####################
@@ -161,10 +197,14 @@ class Console_Analysis(QtWidgets.QDialog):
                 
                 
         self.number_points.setText("Number of Points = %d" % len(self.randomPoints)) 
-        
+        self.activePoint = 0
+        self.active_point.setText("Current Point = %d" % self.activePoint) 
+        self.currentX, self.currentY = self.randomPoints[self.activePoint] 
+        self.active_x.setText("X = %d" % self.currentX)
+        self.active_y.setText("Y = %d" % self.currentY) 
 
         self.randomPlot.setImage(self.randomPlotWithPoints)
-        #print(self.randomPoints)
+        print(self.randomPlot.axes)
         
     def button_2(self):
         if self.displayPoints == True:
@@ -188,12 +228,52 @@ class Console_Analysis(QtWidgets.QDialog):
             self.randomPlot.setImage(self.randomPlotWithPointsAndEdge, autoRange = False)
             self.displayPointsEdge = True
             self.button3.setText("Hide Edge")
+            
+    def button_4(self):
+        if self.currentX >= self.x/2:
+            newXpos = -self.currentX
+        else:
+            newXpos = self.currentX
+            
+        if self.currentY >= self.y/2:
+            newYpos = +self.currentY
+        else:
+            newYpos = -self.currentY        
+
+       
+        self.randomPlot.setImage(self.randomPlotWithPointsAndEdge, autoRange = False, pos=(newXpos,newYpos))
+
+    def button_5(self):
+        if self.activePoint +1 <= self.numberPoints:
+            self.activePoint += 1
+            self.active_point.setText("Current Point = %d" % self.activePoint) 
+            self.currentX, self.currentY = self.randomPoints[self.activePoint] 
+            self.active_x.setText("X = %d" % self.currentX)
+            self.active_y.setText("Y = %d" % self.currentY)
+            self.SpinBox2.setValue(self.activePoint)
+            
+            self.randomPlot.setImage(self.randomPlotWithPointsAndEdge, autoRange = False, pos=(newXpos,newYpos))
+        
+    def button_6(self):
+        if self.activePoint -1 >= 0:
+            self.activePoint -= 1
+            self.active_point.setText("Current Point = %d" % self.activePoint) 
+            self.currentX, self.currentY = self.randomPoints[self.activePoint] 
+            self.active_x.setText("X = %d" % self.currentX)
+            self.active_y.setText("Y = %d" % self.currentY)
+            self.SpinBox2.setValue(self.activePoint)
+            self.randomPlot.setImage(self.randomPlotWithPointsAndEdge, autoRange = False, pos=(self.currentX,self.currentY))        
 
     
     def spinBox1_update (self):
         self.numberPoints = self.SpinBox1.value()
 
-
+    def spinBox2_update (self):
+        self.activePoint = self.SpinBox2.value()
+        self.active_point.setText("Current Point = %d" % self.activePoint) 
+        self.currentX, self.currentY = self.randomPoints[self.activePoint] 
+        self.active_x.setText("X = %d" % self.currentX)
+        self.active_y.setText("Y = %d" % self.currentY)
 
 ##############################################################################
 
