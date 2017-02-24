@@ -81,10 +81,28 @@ class Console_Analysis(QtWidgets.QDialog):
         self.randomPlot = False
         self.randomPlotWithPoints = copy.deepcopy(self.image)
         
-        self.randomPlot = pg.image(self.randomPlotWithPoints)
+        self.randomPlot = pg.ImageView(view = pg.PlotItem())
+        self.randomPlot.setImage(self.randomPlotWithPoints)
+        self.randomPlot.show()
+        self.randomPlot.view.setTitle(title = 'Random Point Analysis')
         
         self.displayPoints = True
         self.displayPointsEdge = False
+        
+        self.edgeSize = 1
+        
+        self.analysisTypes = ['coverboard', 'sky-canopy']
+        
+        self.coverboard_selection = ['board', 'not-board', 'unknown']
+        self.skyCanopy_selection = ['sky', 'canopy', 'unknown']
+
+        self.current_selection_types = self.coverboard_selection
+        self.current_selection_flag = self.analysisTypes[0]
+        
+        self.currentPixelType = None
+        self.assignedPixelTypes = []
+        for i in range (self.numberPoints):
+            self.assignedPixelTypes.append('None')
         
         
         ########## set up widgets ####################################
@@ -92,9 +110,10 @@ class Console_Analysis(QtWidgets.QDialog):
         self.button1 = QtWidgets.QPushButton("Generate Points")
         self.button2 = QtWidgets.QPushButton("Hide Points")
         self.button3 = QtWidgets.QPushButton("Show Edge")
-        self.button4 = QtWidgets.QPushButton("Go to current point")
+        self.button4 = QtWidgets.QPushButton("Show current point")
         self.button5 = QtWidgets.QPushButton("Go forward a point")
         self.button6 = QtWidgets.QPushButton("Go back a point")
+        self.button9 = QtWidgets.QPushButton("Center on current point")
         
         self.SpinBox1=QtWidgets.QSpinBox()
         self.SpinBox1.setRange(0,10000)
@@ -110,14 +129,29 @@ class Console_Analysis(QtWidgets.QDialog):
         self.active_x.setText("X = %d" % self.activePoint)    
         
         self.active_y = QtWidgets.QLabel()
-        self.active_y.setText("Y = %d" % self.activePoint)        
+        self.active_y.setText("Y = %d" % self.activePoint)   
         
+        self.edge_size = QtWidgets.QLabel()
+        self.edge_size.setText("Edge Size = %d" % self.edgeSize)
         
         self.SpinBox2=QtWidgets.QSpinBox()
         self.SpinBox2.setRange(0,self.numberPoints)
         self.SpinBox2.setValue(self.activePoint)
         
-            
+        self.SpinBox3=QtWidgets.QSpinBox()
+        self.SpinBox3.setRange(1,100)
+        self.SpinBox3.setValue(self.edgeSize)     
+        
+        self.ComboBox1 = QtWidgets.QComboBox()
+        self.ComboBox1.addItems(self.analysisTypes)
+        
+        self.analysis_text = QtWidgets.QLabel()
+        self.analysis_text.setText("Current pixel = %s" % self.currentPixelType)
+        
+        self.button7 = QtWidgets.QPushButton(self.coverboard_selection[0])
+        self.button8 = QtWidgets.QPushButton(self.coverboard_selection[1])
+        
+                    
         layout = QtWidgets.QGridLayout()
         layout.addWidget(self.button1, 0, 0)
         layout.addWidget(self.button2, 0, 1)
@@ -131,9 +165,19 @@ class Console_Analysis(QtWidgets.QDialog):
         layout.addWidget(self.active_x, 2, 2)
         layout.addWidget(self.active_y, 2, 3)
         
-        layout.addWidget(self.button4, 3, 0)
-        layout.addWidget(self.button5, 3, 1)
-        layout.addWidget(self.button6, 3, 2)
+        layout.addWidget(self.edge_size, 3, 0)
+        layout.addWidget(self.SpinBox3, 3, 1)
+        
+        layout.addWidget(self.button4, 4, 0)
+        layout.addWidget(self.button5, 4, 1)
+        layout.addWidget(self.button6, 4, 2)
+        layout.addWidget(self.button9, 4, 3)        
+        
+        layout.addWidget(self.ComboBox1, 5,0)
+        
+        layout.addWidget(self.analysis_text, 6,0)
+        layout.addWidget(self.button7, 6, 1)
+        layout.addWidget(self.button8, 6, 2)        
 
         self.setLayout(layout)
 
@@ -144,8 +188,39 @@ class Console_Analysis(QtWidgets.QDialog):
         self.connect(self.button5,SIGNAL("clicked()"),self.button_5)
         self.connect(self.button6,SIGNAL("clicked()"),self.button_6)
         
+        self.connect(self.button7,SIGNAL("clicked()"),self.button_7)       
+        self.connect(self.button8,SIGNAL("clicked()"),self.button_8)        
+        
+        self.connect(self.button9,SIGNAL("clicked()"),self.button_9)       
+        
         self.connect(self.SpinBox1,SIGNAL("valueChanged(int)"),self.spinBox1_update)
         self.connect(self.SpinBox2,SIGNAL("valueChanged(int)"),self.spinBox2_update)
+        self.connect(self.SpinBox3,SIGNAL("valueChanged(int)"),self.spinBox3_update)
+        
+        self.connect(self.ComboBox1,SIGNAL("currentIndexChanged(QString)"),self.comboBox1_update)
+
+
+    #### Helper functions #######
+    def addEdge(self,img, x_val, y_val, listOfPositions, size = 1, edgeColour = 255, centerColour = 0):
+        
+        s = set(listOfPositions)
+                                        
+        for x in range(x_val-size,x_val+size+1):
+            for y in range(y_val-size,y_val+size+1):
+                           
+                try:
+                    if (x,y) in s:
+                        pass
+                    else:
+                        img[x,y] = edgeColour
+                except:
+                    pass
+
+   
+        img[x_val,y_val] = centerColour
+           
+        return img
+
 
         
     ################# define functions called by widgets #####################
@@ -158,42 +233,9 @@ class Console_Analysis(QtWidgets.QDialog):
             new_x = np.random.randint(0,high = self.x)
             new_y = np.random.randint(0,high = self.y)
             self.randomPoints.append((new_x,new_y))
-            self.randomPlotWithPoints[new_x,new_y] = 0
-            self.randomPlotWithPointsAndEdge[new_x,new_y] = 0                         
-                                     
-
-            try:
-                self.randomPlotWithPointsAndEdge[new_x-1,new_y-1] = 255
-            except:
-                pass
-            try:
-                self.randomPlotWithPointsAndEdge[new_x-1,new_y] = 255
-            except:
-                pass
-            try:                            
-                self.randomPlotWithPointsAndEdge[new_x-1,new_y+1] = 255
-            except:
-                pass
-            try:                             
-                self.randomPlotWithPointsAndEdge[new_x,new_y-1] = 255
-            except:
-                pass
-            try:                            
-                self.randomPlotWithPointsAndEdge[new_x,new_y+1] = 255
-            except:
-                pass
-            try:                            
-                self.randomPlotWithPointsAndEdge[new_x+1,new_y-1] = 255
-            except:
-                pass
-            try:                           
-                self.randomPlotWithPointsAndEdge[new_x+1,new_y] = 255
-            except:
-                pass
-            try:                            
-                self.randomPlotWithPointsAndEdge[new_x+1,new_y+1] = 255
-            except:
-                pass                               
+            self.randomPlotWithPoints[new_x,new_y] = 0                                     
+            self.randomPlotWithPointsAndEdge = self.addEdge(self.randomPlotWithPointsAndEdge, new_x, new_y, self.randomPoints, size = self.edgeSize)                         
+                          
                 
                 
         self.number_points.setText("Number of Points = %d" % len(self.randomPoints)) 
@@ -230,18 +272,11 @@ class Console_Analysis(QtWidgets.QDialog):
             self.button3.setText("Hide Edge")
             
     def button_4(self):
-        if self.currentX >= self.x/2:
-            newXpos = -self.currentX
-        else:
-            newXpos = self.currentX
-            
-        if self.currentY >= self.y/2:
-            newYpos = +self.currentY
-        else:
-            newYpos = -self.currentY        
+        self.randomPlotCurrentPointWithEdge = copy.deepcopy(self.image) 
+        self.randomPlotCurrentPointWithEdge = self.addEdge(self.randomPlotCurrentPointWithEdge, self.currentX, self.currentY, self.randomPoints, size = self.edgeSize)
+        self.randomPlot.setImage(self.randomPlotCurrentPointWithEdge, autoRange = False)
+        
 
-       
-        self.randomPlot.setImage(self.randomPlotWithPointsAndEdge, autoRange = False, pos=(newXpos,newYpos))
 
     def button_5(self):
         if self.activePoint +1 <= self.numberPoints:
@@ -250,9 +285,10 @@ class Console_Analysis(QtWidgets.QDialog):
             self.currentX, self.currentY = self.randomPoints[self.activePoint] 
             self.active_x.setText("X = %d" % self.currentX)
             self.active_y.setText("Y = %d" % self.currentY)
-            self.SpinBox2.setValue(self.activePoint)
-            
-            self.randomPlot.setImage(self.randomPlotWithPointsAndEdge, autoRange = False, pos=(newXpos,newYpos))
+            self.SpinBox2.setValue(self.activePoint)            
+            self.randomPlotCurrentPointWithEdge = copy.deepcopy(self.image) 
+            self.randomPlotCurrentPointWithEdge = self.addEdge(self.randomPlotCurrentPointWithEdge, self.currentX, self.currentY, self.randomPoints, size = self.edgeSize)
+            self.randomPlot.setImage(self.randomPlotCurrentPointWithEdge, autoRange = False)
         
     def button_6(self):
         if self.activePoint -1 >= 0:
@@ -262,19 +298,69 @@ class Console_Analysis(QtWidgets.QDialog):
             self.active_x.setText("X = %d" % self.currentX)
             self.active_y.setText("Y = %d" % self.currentY)
             self.SpinBox2.setValue(self.activePoint)
-            self.randomPlot.setImage(self.randomPlotWithPointsAndEdge, autoRange = False, pos=(self.currentX,self.currentY))        
+            self.randomPlotCurrentPointWithEdge = copy.deepcopy(self.image) 
+            self.randomPlotCurrentPointWithEdge = self.addEdge(self.randomPlotCurrentPointWithEdge, self.currentX, self.currentY, self.randomPoints, size = self.edgeSize)
+            self.randomPlot.setImage(self.randomPlotCurrentPointWithEdge, autoRange = False)      
+
+
+    def button_7(self):
+        self.currentPixelType = self.current_selection_types[0]
+        self.analysis_text.setText("Current pixel = %s" % self.currentPixelType)
+        self.assignedPixelTypes[self.activePoint] = self.currentPixelType
+
+    def button_8(self):
+        self.currentPixelType = self.current_selection_types[1]
+        self.analysis_text.setText("Current pixel = %s" % self.currentPixelType)
+        self.assignedPixelTypes[self.activePoint] = self.currentPixelType
+
+    def button_9(self):
+        self.randomPlot.view.setXRange(self.currentX, self.currentX)
+        self.randomPlot.view.setYRange(self.currentY, self.currentY)
 
     
     def spinBox1_update (self):
         self.numberPoints = self.SpinBox1.value()
 
     def spinBox2_update (self):
-        self.activePoint = self.SpinBox2.value()
-        self.active_point.setText("Current Point = %d" % self.activePoint) 
-        self.currentX, self.currentY = self.randomPoints[self.activePoint] 
-        self.active_x.setText("X = %d" % self.currentX)
-        self.active_y.setText("Y = %d" % self.currentY)
+        if self.randomPoints != []:
+            self.activePoint = self.SpinBox2.value()
+            self.active_point.setText("Current Point = %d" % self.activePoint) 
+            self.currentX, self.currentY = self.randomPoints[self.activePoint] 
+            self.active_x.setText("X = %d" % self.currentX)
+            self.active_y.setText("Y = %d" % self.currentY)
+        else:
+            self.SpinBox2.setValue(self.activePoint)
 
+    def spinBox3_update (self):
+        self.edgeSize = self.SpinBox3.value()
+        self.edge_size.setText("Edge Size = %d" % self.edgeSize)
+        self.randomPlotWithPointsAndEdge = copy.deepcopy(self.image) 
+        
+        for i in range(0,self.numberPoints):
+            new_x = self.randomPoints[i][0]
+            new_y = self.randomPoints[i][1]                                    
+            self.randomPlotWithPointsAndEdge = self.addEdge(self.randomPlotWithPointsAndEdge, new_x, new_y, self.randomPoints, size = self.edgeSize)
+
+        self.randomPlot.setImage(self.randomPlotWithPointsAndEdge, autoRange = False)
+
+
+    def comboBox1_update(self):
+        self.current_selection_flag = self.ComboBox1.currentText()
+        
+        self.currentPixelType = None
+        self.assignedPixelTypes = []
+        for i in range (self.numberPoints):
+            self.assignedPixelTypes.append('None')
+ 
+        if self.current_selection_flag == 'coverboard':
+            self.current_selection_types = self.coverboard_selection
+        
+        elif self.current_selection_flag == 'sky-canopy':
+            self.current_selection_types = self.skyCanopy_selection
+        
+        self.button7.setText(self.current_selection_types[0])
+        self.button8.setText(self.current_selection_types[1])
+        
 ##############################################################################
 
 class Console_Cal(QtWidgets.QDialog):
@@ -1142,7 +1228,6 @@ class Viewer(QtWidgets.QMainWindow):
         activateAnalysisConsole.setStatusTip('Start Analysis')
         activateAnalysisConsole.triggered.connect(self.initConsole_Analysis)
         
-
         menubar = self.menuBar()
         fileMenu = menubar.addMenu('&File')
         fileMenu.addAction(openImage)
@@ -1239,7 +1324,6 @@ class Viewer(QtWidgets.QMainWindow):
             return
 
         rectROI(self)
-
 
 
     def txt2dict(metadata):
@@ -1523,8 +1607,6 @@ class Viewer(QtWidgets.QMainWindow):
         self.w.setMouseTracking(True)
 
         #link change in roi signal to update
-
-
         return
 
 ####################################################################################################
