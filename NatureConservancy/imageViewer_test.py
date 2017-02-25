@@ -14,9 +14,11 @@ Created on Sat Oct 10 12:14:34 2015
 import time
 tic=time.time()
 import os, sys
+import platform
 
-os.environ["QT_API"] = "pyside" #for python2.7 - otherwise error: API 'QString' has already been set to version 1 --- due to PyQt4 conflict
-
+if (sys.version_info < (3, 0)):
+    # Python 3 code in this block
+    os.environ["QT_API"] = "pyside" #for python2.7 - otherwise error: API 'QString' has already been set to version 1 --- due to PyQt4 conflict
 
 import matplotlib
 matplotlib.use('Qt4Agg')
@@ -1367,7 +1369,12 @@ class Viewer(QtWidgets.QMainWindow):
     def openDialog(self):
         filename = QtWidgets.QFileDialog.getOpenFileName(self, 'Open Image file',
                 '/home', 'Images (*.png *.xpm *.jpg *.tif *.tiff *.pdf *.ps *.eps *.raw)')
-        filename=str(filename[0])
+
+        if platform.system() == "Windows":
+            filename=str(filename)
+        else:
+            filename=str(filename[0])
+
         if filename=='':
             return False
         else:
