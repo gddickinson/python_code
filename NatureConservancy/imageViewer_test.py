@@ -5,15 +5,19 @@ Created on Sat Oct 10 12:14:34 2015
 @author: george
 """
 ############# Import packages ################################################
-from __future__ import (absolute_import, division,
-                        print_function, unicode_literals)
-from future.builtins import (bytes, dict, int, list, object, range, str,
-                             ascii, chr, hex, input, next, oct, open,
-                             pow, round, super, filter, map, zip)
-from guidata import qt
+#from __future__ import (absolute_import, division,
+                        #print_function, unicode_literals)
+#from future.builtins import (bytes, dict, int, list, object, range, str,
+                             #ascii, chr, hex, input, next, oct, open,
+                             #pow, round, super, filter, map, zip)
+
 import time
 tic=time.time()
 import os, sys
+
+os.environ["QT_API"] = "pyside" #for python2.7 - otherwise error: API 'QString' has already been set to version 1 --- due to PyQt4 conflict
+
+
 import matplotlib
 matplotlib.use('Qt4Agg')
 import matplotlib.pyplot as plt
@@ -1362,8 +1366,8 @@ class Viewer(QtWidgets.QMainWindow):
 
     def openDialog(self):
         filename = QtWidgets.QFileDialog.getOpenFileName(self, 'Open Image file',
-                '/home')
-        filename=str(filename)
+                '/home', 'Images (*.png *.xpm *.jpg *.tif *.tiff *.pdf *.ps *.eps *.raw)')
+        filename=str(filename[0])
         if filename=='':
             return False
         else:
