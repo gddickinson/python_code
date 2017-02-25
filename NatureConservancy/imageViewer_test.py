@@ -10,6 +10,7 @@ from __future__ import (absolute_import, division,
 from future.builtins import (bytes, dict, int, list, object, range, str,
                              ascii, chr, hex, input, next, oct, open,
                              pow, round, super, filter, map, zip)
+from guidata import qt
 import time
 tic=time.time()
 import os, sys
