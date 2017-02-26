@@ -66,7 +66,7 @@ else:
 
 ########### define global variables ##########################################
 
-global ROI_flag, roi_origin, roi_size, newimg, original_image, sky_array, canopy_array, sky_mean, sky_n, sky_sd, canopy_mean, canopy_n, canopy_sd, roi_mean_red, roi_mean_green, roi_mean_blue, roi_mean_intensity
+global filename, ROI_flag, roi_origin, roi_size, newimg, original_image, sky_array, canopy_array, sky_mean, sky_n, sky_sd, canopy_mean, canopy_n, canopy_sd, roi_mean_red, roi_mean_green, roi_mean_blue, roi_mean_intensity
 
 ##############################################################################
 ########### define classes for GUI ###########################################
@@ -76,7 +76,7 @@ class Console_Analysis(QtWidgets.QDialog):
     def __init__(self, parent = None):
         super(Console_Analysis, self).__init__(parent)
         
-        global newimg
+        global newimg, filename
         
         self.image = newimg
         self.randomPoints = []
@@ -85,6 +85,7 @@ class Console_Analysis(QtWidgets.QDialog):
         self.currentX = None
         self.currentY = None
         self.x, self.y = self.image.shape[0:2]
+        self.totalPixels = self.x * self.y
         self.randomPlot = False
         self.randomPlotWithPoints = copy.deepcopy(self.image)
         
@@ -123,6 +124,8 @@ class Console_Analysis(QtWidgets.QDialog):
         self.percent_type1 = 0
         self.percent_type2 = 0
         
+        self.numberPointsAssigned = 0
+        
         ########## set up widgets ####################################
         
         self.button1 = QtWidgets.QPushButton("Generate Points")
@@ -134,11 +137,14 @@ class Console_Analysis(QtWidgets.QDialog):
         self.button9 = QtWidgets.QPushButton("Center on current point")
         
         self.SpinBox1=QtWidgets.QSpinBox()
-        self.SpinBox1.setRange(0,10000)
+        self.SpinBox1.setRange(0,self.totalPixels)
         self.SpinBox1.setValue(self.numberPoints)
                 
         self.number_points = QtWidgets.QLabel()
         self.number_points.setText("Number of Points = %d" % len(self.randomPoints)) 
+        
+        self.number_pixels = QtWidgets.QLabel()
+        self.number_pixels.setText("Total pixels = %d" % self.totalPixels) 
         
         self.active_point = QtWidgets.QLabel()
         self.active_point.setText("Current Point = %d" % self.activePoint) 
@@ -180,6 +186,13 @@ class Console_Analysis(QtWidgets.QDialog):
         self.percent1_text.setText("percent = %s" % self.percent_type1)
         self.percent2_text = QtWidgets.QLabel()
         self.percent2_text.setText("percent = %s" % self.percent_type2)
+
+        self.filename_text = QtWidgets.QLabel()
+        self.filename_text.setText("file: %s" % filename)
+        
+        self.numberAssigned_text = QtWidgets.QLabel()
+        self.numberAssigned_text.setText("number of points assigned = %s" % self.numberPointsAssigned)
+        
                     
         layout = QtWidgets.QGridLayout()
         layout.addWidget(self.button1, 0, 0)
@@ -188,6 +201,7 @@ class Console_Analysis(QtWidgets.QDialog):
         
         layout.addWidget(self.number_points, 1, 0)
         layout.addWidget(self.SpinBox1, 1, 1)
+        layout.addWidget(self.number_pixels, 1, 2)
         
         layout.addWidget(self.active_point, 2, 0)
         layout.addWidget(self.SpinBox2, 2, 1)
@@ -212,8 +226,10 @@ class Console_Analysis(QtWidgets.QDialog):
         layout.addWidget(self.pixelCount2, 7,2) 
 
         layout.addWidget(self.percent1_text, 8,1)
-        layout.addWidget(self.percent2_text, 8,2) 
-           
+        layout.addWidget(self.percent2_text, 8,2)
+        layout.addWidget(self.numberAssigned_text, 8,3)
+        
+        layout.addWidget(self.filename_text, 9,0,4,4)  
 
         self.setLayout(layout)
 
@@ -381,58 +397,60 @@ class Console_Analysis(QtWidgets.QDialog):
 
 
     def button_7(self):
-        self.currentPixelType = self.current_selection_types[0]
-        self.analysis_text.setText("Current pixel = %s" % self.currentPixelType)
-        self.assignedPixelTypes[self.activePoint] = self.currentPixelType
-        n1 = 0
-        n2 = 0
-        for each in self.assignedPixelTypes:
-            if each == self.current_selection_types[0]:
-                n1+=1
-            elif each == self.current_selection_types[1]:
-                n2+=1
-        if self.current_selection_flag == 'coverboard':
-            self.n_coverboard = n1
-            self.pixelCount1.setText("coverboard pixels = %s" % self.n_coverboard)
-            self.n_notCoverboard = n2
-            self.pixelCount2.setText("not coverboard pixels = %s" % self.n_notCoverboard)
+        if self.randomPoints != []:
+            self.currentPixelType = self.current_selection_types[0]
+            self.analysis_text.setText("Current pixel = %s" % self.currentPixelType)
+            self.assignedPixelTypes[self.activePoint] = self.currentPixelType
+            n1 = 0
+            n2 = 0
+            for each in self.assignedPixelTypes:
+                if each == self.current_selection_types[0]:
+                    n1+=1
+                elif each == self.current_selection_types[1]:
+                    n2+=1
+            if self.current_selection_flag == 'coverboard':
+                self.n_coverboard = n1
+                self.pixelCount1.setText("coverboard pixels = %s" % self.n_coverboard)
+                self.n_notCoverboard = n2
+                self.pixelCount2.setText("not coverboard pixels = %s" % self.n_notCoverboard)
+                
             
-        
-        elif self.current_selection_flag == 'sky-canopy':
-            self.n_sky = n1
-            self.current_selection_types = self.skyCanopy_selection
-            self.pixelCount1.setText("sky pixels = %s" % self.n_sky)
-            self.n_canopy = n2
-            self.current_selection_types = self.skyCanopy_selection
-            self.pixelCount2.setText("canopy pixels = %s" % self.n_canopy)            
+            elif self.current_selection_flag == 'sky-canopy':
+                self.n_sky = n1
+                self.current_selection_types = self.skyCanopy_selection
+                self.pixelCount1.setText("sky pixels = %s" % self.n_sky)
+                self.n_canopy = n2
+                self.current_selection_types = self.skyCanopy_selection
+                self.pixelCount2.setText("canopy pixels = %s" % self.n_canopy)            
             
 		
 
     def button_8(self):
-        self.currentPixelType = self.current_selection_types[1]
-        self.analysis_text.setText("Current pixel = %s" % self.currentPixelType)
-        self.assignedPixelTypes[self.activePoint] = self.currentPixelType
-        n1 = 0
-        n2 = 0
-        for each in self.assignedPixelTypes:
-            if each == self.current_selection_types[1]:
-                n1+=1
-            elif each == self.current_selection_types[0]:
-                n2+=1
-
-        if self.current_selection_flag == 'coverboard':
-            self.n_notCoverboard = n1
-            self.pixelCount2.setText("not coverboard pixels = %s" % self.n_notCoverboard)
-            self.n_coverboard = n2
-            self.pixelCount1.setText("coverboard pixels = %s" % self.n_coverboard)
-        
-        elif self.current_selection_flag == 'sky-canopy':
-            self.n_canopy = n1
-            self.current_selection_types = self.skyCanopy_selection
-            self.pixelCount2.setText("canopy pixels = %s" % self.n_canopy)
-            self.n_sky = n2
-            self.current_selection_types = self.skyCanopy_selection
-            self.pixelCount1.setText("sky pixels = %s" % self.n_sky)
+        if self.randomPoints != []:
+            self.currentPixelType = self.current_selection_types[1]
+            self.analysis_text.setText("Current pixel = %s" % self.currentPixelType)
+            self.assignedPixelTypes[self.activePoint] = self.currentPixelType
+            n1 = 0
+            n2 = 0
+            for each in self.assignedPixelTypes:
+                if each == self.current_selection_types[1]:
+                    n1+=1
+                elif each == self.current_selection_types[0]:
+                    n2+=1
+    
+            if self.current_selection_flag == 'coverboard':
+                self.n_notCoverboard = n1
+                self.pixelCount2.setText("not coverboard pixels = %s" % self.n_notCoverboard)
+                self.n_coverboard = n2
+                self.pixelCount1.setText("coverboard pixels = %s" % self.n_coverboard)
+            
+            elif self.current_selection_flag == 'sky-canopy':
+                self.n_canopy = n1
+                self.current_selection_types = self.skyCanopy_selection
+                self.pixelCount2.setText("canopy pixels = %s" % self.n_canopy)
+                self.n_sky = n2
+                self.current_selection_types = self.skyCanopy_selection
+                self.pixelCount1.setText("sky pixels = %s" % self.n_sky)
 
 
     def button_9(self):
@@ -502,6 +520,9 @@ class Console_Analysis(QtWidgets.QDialog):
         
         self.percent1_text.setText("percent = %s" % self.percent_type1)
         self.percent2_text.setText("percent = %s" % self.percent_type2)
+        
+        self.numberPointsAssigned = n1+n2
+        self.numberAssigned_text.setText("number of points assigned = %s" % self.numberPointsAssigned)
         
 ##############################################################################
 
@@ -651,7 +672,7 @@ class Console_Canopy(QtWidgets.QDialog):
     def __init__(self, parent = None):
         super(Console_Canopy, self).__init__(parent)
         
-        global sky_array, canopy_array, sky_mean, sky_n, sky_sd, canopy_mean, canopy_n, canopy_sd
+        global filename, sky_array, canopy_array, sky_mean, sky_n, sky_sd, canopy_mean, canopy_n, canopy_sd
 
         #initial filter variables - values chosen based on canopy images from Bob
         self.intensity_min = 115
@@ -711,6 +732,9 @@ class Console_Canopy(QtWidgets.QDialog):
         self.button5 = QtWidgets.QPushButton("Batch Run")
         
         self.buttonReset = QtWidgets.QPushButton("Reset")
+        
+        self.filename_text = QtWidgets.QLabel()
+        self.filename_text.setText("current file: %s" %filename)
 
 
         layout = QtWidgets.QGridLayout()
@@ -725,6 +749,8 @@ class Console_Canopy(QtWidgets.QDialog):
         layout.addWidget(self.button4, 2, 0)
         layout.addWidget(self.button5, 2, 3)   
         layout.addWidget(self.path_label, 3,0)
+        
+        layout.addWidget(self.filename_text, 4,0,4,4) 
 
 
         self.setLayout(layout)
@@ -993,6 +1019,9 @@ class Console_Coverboard(QtWidgets.QDialog):
 
         self.buttonGreenBlueRatio = QtWidgets.QPushButton("GREEN/BLUE")
         self.buttonRedGreenRatio = QtWidgets.QPushButton("RED/GREEN")
+        
+        self.filename_text = QtWidgets.QLabel()
+        self.filename_text.setText("file: %s" %filename)
 
         layout = QtWidgets.QGridLayout()
         #layout.addWidget(self.dial, 0,0)
@@ -1026,6 +1055,8 @@ class Console_Coverboard(QtWidgets.QDialog):
         layout.addWidget(self.sld10, 2, 7)
         layout.addWidget(self.SpinBox9, 2, 8)
         layout.addWidget(self.SpinBox10, 2, 9)
+        
+        layout.addWidget(self.filename_text, 4,0,5,5)
 
         self.setLayout(layout)
 
@@ -1502,6 +1533,7 @@ class Viewer(QtWidgets.QMainWindow):
 
 
     def openDialog(self):
+        global filename
         filename = QtWidgets.QFileDialog.getOpenFileName(self, 'Open Image file',
                 '/home', 'Images (*.png *.xpm *.jpg *.tif *.tiff *.pdf *.ps *.eps *.raw)')
 
