@@ -95,7 +95,9 @@ class Console_Analysis(QtWidgets.QDialog):
         
         self.displayPoints = True
         self.displayPointsEdge = False
-        
+        self.displaySinglePoint = False
+
+       
         self.edgeSize = 1
         
         self.analysisTypes = ['coverboard', 'sky-canopy']
@@ -117,6 +119,9 @@ class Console_Analysis(QtWidgets.QDialog):
         self.n_sky = 0
         self.n_canopy = 0
         
+
+        self.percent_type1 = 0
+        self.percent_type2 = 0
         
         ########## set up widgets ####################################
         
@@ -171,6 +176,10 @@ class Console_Analysis(QtWidgets.QDialog):
         self.pixelCount1.setText("coverboard pixels = %s" % self.n_coverboard)
         self.pixelCount2.setText("not coverboard pixels = %s" % self.n_notCoverboard)
 
+        self.percent1_text = QtWidgets.QLabel()
+        self.percent1_text.setText("percent = %s" % self.percent_type1)
+        self.percent2_text = QtWidgets.QLabel()
+        self.percent2_text.setText("percent = %s" % self.percent_type2)
                     
         layout = QtWidgets.QGridLayout()
         layout.addWidget(self.button1, 0, 0)
@@ -200,7 +209,11 @@ class Console_Analysis(QtWidgets.QDialog):
         layout.addWidget(self.button8, 6, 2)    
         
         layout.addWidget(self.pixelCount1, 7,1)
-        layout.addWidget(self.pixelCount2, 7,2)            
+        layout.addWidget(self.pixelCount2, 7,2) 
+
+        layout.addWidget(self.percent1_text, 8,1)
+        layout.addWidget(self.percent2_text, 8,2) 
+           
 
         self.setLayout(layout)
 
@@ -212,7 +225,10 @@ class Console_Analysis(QtWidgets.QDialog):
         self.connect(self.button6,SIGNAL("clicked()"),self.button_6)
         
         self.connect(self.button7,SIGNAL("clicked()"),self.button_7)       
-        self.connect(self.button8,SIGNAL("clicked()"),self.button_8)        
+        self.connect(self.button8,SIGNAL("clicked()"),self.button_8)    
+        
+        self.connect(self.button7,SIGNAL("clicked()"),self.stats)       
+        self.connect(self.button8,SIGNAL("clicked()"),self.stats)
         
         self.connect(self.button9,SIGNAL("clicked()"),self.button_9)       
         
@@ -267,9 +283,25 @@ class Console_Analysis(QtWidgets.QDialog):
         self.currentX, self.currentY = self.randomPoints[self.activePoint] 
         self.active_x.setText("X = %d" % self.currentX)
         self.active_y.setText("Y = %d" % self.currentY) 
+        
+        self.assignedPixelTypes = []
+        for i in range (self.numberPoints):
+            self.assignedPixelTypes.append('None')
+        
+        self.analysis_text.setText("Current pixel = %s" % self.assignedPixelTypes[self.activePoint])
 
         self.randomPlot.setImage(self.randomPlotWithPoints)
         print(self.randomPlot.axes)
+        self.button3.setText("Show Edge")
+        self.displayPointsEdge = False
+        
+        if self.current_selection_flag == 'coverboard':
+            self.pixelCount1.setText("coverboard pixels = %s" % 0)
+            self.pixelCount2.setText("not coverboard pixels = %s" % 0)
+                    
+        elif self.current_selection_flag == 'sky-canopy':
+            self.pixelCount1.setText("sky pixels = %s" % 0)
+            self.pixelCount2.setText("canopy pixels = %s" % 0) 
         
     def button_2(self):
         if self.displayPoints == True:
@@ -295,16 +327,37 @@ class Console_Analysis(QtWidgets.QDialog):
             self.button3.setText("Hide Edge")
             
     def button_4(self):
-        self.randomPlotCurrentPointWithEdge = copy.deepcopy(self.image) 
-        self.randomPlotCurrentPointWithEdge = self.addEdge(self.randomPlotCurrentPointWithEdge, self.currentX, self.currentY, self.randomPoints, size = self.edgeSize)
-        self.randomPlot.setImage(self.randomPlotCurrentPointWithEdge, autoRange = False)
-        
+        if self.displaySinglePoint == False:
+            
+            self.randomPlotCurrentPointWithEdge = copy.deepcopy(self.image) 
+            self.randomPlotCurrentPointWithEdge = self.addEdge(self.randomPlotCurrentPointWithEdge, self.currentX, self.currentY, self.randomPoints, size = self.edgeSize)
 
+            self.randomPlotCurrentPointNoEdge = copy.deepcopy(self.image) 
+            self.randomPlotCurrentPointNoEdge[self.currentX, self.currentY] = 0
+
+            if self.displayPointsEdge == True:
+                self.randomPlot.setImage(self.randomPlotCurrentPointWithEdge, autoRange = False)
+            else:
+                self.randomPlot.setImage(self.randomPlotCurrentPointNoEdge, autoRange = False)
+
+            self.button4.setText('Hide current point')
+            self.displaySinglePoint = True
+            self.displayPoints = False
+            self.button2.setText("Show Points")
+        
+        else:            
+            self.randomPlot.setImage(self.image, autoRange = False)
+            self.button4.setText('Show current point')
+            self.displaySinglePoint = False
+            self.displayPoints = False
+            self.button2.setText("Show Points")
+            
 
     def button_5(self):
         if self.activePoint +1 <= self.numberPoints:
             self.activePoint += 1
             self.active_point.setText("Current Point = %d" % self.activePoint) 
+            self.analysis_text.setText("Current pixel = %s" % self.assignedPixelTypes[self.activePoint])
             self.currentX, self.currentY = self.randomPoints[self.activePoint] 
             self.active_x.setText("X = %d" % self.currentX)
             self.active_y.setText("Y = %d" % self.currentY)
@@ -317,6 +370,7 @@ class Console_Analysis(QtWidgets.QDialog):
         if self.activePoint -1 >= 0:
             self.activePoint -= 1
             self.active_point.setText("Current Point = %d" % self.activePoint) 
+            self.analysis_text.setText("Current pixel = %s" % self.assignedPixelTypes[self.activePoint])
             self.currentX, self.currentY = self.randomPoints[self.activePoint] 
             self.active_x.setText("X = %d" % self.currentX)
             self.active_y.setText("Y = %d" % self.currentY)
@@ -330,27 +384,56 @@ class Console_Analysis(QtWidgets.QDialog):
         self.currentPixelType = self.current_selection_types[0]
         self.analysis_text.setText("Current pixel = %s" % self.currentPixelType)
         self.assignedPixelTypes[self.activePoint] = self.currentPixelType
-        n = 0
+        n1 = 0
+        n2 = 0
         for each in self.assignedPixelTypes:
-			if each == self.current_selection_types[0]:
-				n+=1
-			else:
-				pass
-				
-		if self.current_selection_flag == 'coverboard':
-			self.n_coverboard = n
-			self.pixelCount1.setText("coverboard pixels = %s" % self.n_coverboard)
+            if each == self.current_selection_types[0]:
+                n1+=1
+            elif each == self.current_selection_types[1]:
+                n2+=1
+        if self.current_selection_flag == 'coverboard':
+            self.n_coverboard = n1
+            self.pixelCount1.setText("coverboard pixels = %s" % self.n_coverboard)
+            self.n_notCoverboard = n2
+            self.pixelCount2.setText("not coverboard pixels = %s" % self.n_notCoverboard)
+            
         
-		elif self.current_selection_flag == 'sky-canopy':
-			self.n_coverboard = n
-			self.current_selection_types = self.skyCanopy_selection
-			self.pixelCount1.setText("sky pixels = %s" % self.n_sky)
+        elif self.current_selection_flag == 'sky-canopy':
+            self.n_sky = n1
+            self.current_selection_types = self.skyCanopy_selection
+            self.pixelCount1.setText("sky pixels = %s" % self.n_sky)
+            self.n_canopy = n2
+            self.current_selection_types = self.skyCanopy_selection
+            self.pixelCount2.setText("canopy pixels = %s" % self.n_canopy)            
+            
 		
 
     def button_8(self):
         self.currentPixelType = self.current_selection_types[1]
         self.analysis_text.setText("Current pixel = %s" % self.currentPixelType)
         self.assignedPixelTypes[self.activePoint] = self.currentPixelType
+        n1 = 0
+        n2 = 0
+        for each in self.assignedPixelTypes:
+            if each == self.current_selection_types[1]:
+                n1+=1
+            elif each == self.current_selection_types[0]:
+                n2+=1
+
+        if self.current_selection_flag == 'coverboard':
+            self.n_notCoverboard = n1
+            self.pixelCount2.setText("not coverboard pixels = %s" % self.n_notCoverboard)
+            self.n_coverboard = n2
+            self.pixelCount1.setText("coverboard pixels = %s" % self.n_coverboard)
+        
+        elif self.current_selection_flag == 'sky-canopy':
+            self.n_canopy = n1
+            self.current_selection_types = self.skyCanopy_selection
+            self.pixelCount2.setText("canopy pixels = %s" % self.n_canopy)
+            self.n_sky = n2
+            self.current_selection_types = self.skyCanopy_selection
+            self.pixelCount1.setText("sky pixels = %s" % self.n_sky)
+
 
     def button_9(self):
         self.randomPlot.view.setXRange(self.currentX, self.currentX)
@@ -392,17 +475,33 @@ class Console_Analysis(QtWidgets.QDialog):
             self.assignedPixelTypes.append('None')
  
         if self.current_selection_flag == 'coverboard':
-			self.current_selection_types = self.coverboard_selection
-			self.pixelCount1.setText("coverboard pixels = %s" % self.n_coverboard)
-			self.pixelCount2.setText("not coverboard pixels = %s" % self.n_notCoverboard)
+            self.current_selection_types = self.coverboard_selection
+            self.pixelCount1.setText("coverboard pixels = %s" % self.n_coverboard)
+            self.pixelCount2.setText("not coverboard pixels = %s" % self.n_notCoverboard)
         
         elif self.current_selection_flag == 'sky-canopy':
-			self.current_selection_types = self.skyCanopy_selection
-			self.pixelCount1.setText("sky pixels = %s" % self.n_sky)
-			self.pixelCount2.setText("canopy pixels = %s" % self.n_canopy)
+            self.current_selection_types = self.skyCanopy_selection
+            self.pixelCount1.setText("sky pixels = %s" % self.n_sky)
+            self.pixelCount2.setText("canopy pixels = %s" % self.n_canopy)
         
         self.button7.setText(self.current_selection_types[0])
         self.button8.setText(self.current_selection_types[1])
+        
+    def stats(self):
+        n1 = 0
+        n2 = 0
+        for each in self.assignedPixelTypes:
+            if each == self.current_selection_types[0]:
+                n1+=1
+            elif each == self.current_selection_types[1]:
+                n2+=1      
+                
+        
+        self.percent_type1 = n1/self.numberPoints *100
+        self.percent_type2 = n2/self.numberPoints *100
+        
+        self.percent1_text.setText("percent = %s" % self.percent_type1)
+        self.percent2_text.setText("percent = %s" % self.percent_type2)
         
 ##############################################################################
 
