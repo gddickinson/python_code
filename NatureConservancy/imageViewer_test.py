@@ -111,6 +111,12 @@ class Console_Analysis(QtWidgets.QDialog):
         for i in range (self.numberPoints):
             self.assignedPixelTypes.append('None')
         
+        self.n_coverboard = 0
+        self.n_notCoverboard = 0
+        
+        self.n_sky = 0
+        self.n_canopy = 0
+        
         
         ########## set up widgets ####################################
         
@@ -158,6 +164,13 @@ class Console_Analysis(QtWidgets.QDialog):
         self.button7 = QtWidgets.QPushButton(self.coverboard_selection[0])
         self.button8 = QtWidgets.QPushButton(self.coverboard_selection[1])
         
+        self.pixelCount1 = QtWidgets.QLabel()
+        self.pixelCount2 = QtWidgets.QLabel()
+       
+        
+        self.pixelCount1.setText("coverboard pixels = %s" % self.n_coverboard)
+        self.pixelCount2.setText("not coverboard pixels = %s" % self.n_notCoverboard)
+
                     
         layout = QtWidgets.QGridLayout()
         layout.addWidget(self.button1, 0, 0)
@@ -184,7 +197,10 @@ class Console_Analysis(QtWidgets.QDialog):
         
         layout.addWidget(self.analysis_text, 6,0)
         layout.addWidget(self.button7, 6, 1)
-        layout.addWidget(self.button8, 6, 2)        
+        layout.addWidget(self.button8, 6, 2)    
+        
+        layout.addWidget(self.pixelCount1, 7,1)
+        layout.addWidget(self.pixelCount2, 7,2)            
 
         self.setLayout(layout)
 
@@ -314,6 +330,22 @@ class Console_Analysis(QtWidgets.QDialog):
         self.currentPixelType = self.current_selection_types[0]
         self.analysis_text.setText("Current pixel = %s" % self.currentPixelType)
         self.assignedPixelTypes[self.activePoint] = self.currentPixelType
+        n = 0
+        for each in self.assignedPixelTypes:
+			if each == self.current_selection_types[0]:
+				n+=1
+			else:
+				pass
+				
+		if self.current_selection_flag == 'coverboard':
+			self.n_coverboard = n
+			self.pixelCount1.setText("coverboard pixels = %s" % self.n_coverboard)
+        
+		elif self.current_selection_flag == 'sky-canopy':
+			self.n_coverboard = n
+			self.current_selection_types = self.skyCanopy_selection
+			self.pixelCount1.setText("sky pixels = %s" % self.n_sky)
+		
 
     def button_8(self):
         self.currentPixelType = self.current_selection_types[1]
@@ -360,10 +392,14 @@ class Console_Analysis(QtWidgets.QDialog):
             self.assignedPixelTypes.append('None')
  
         if self.current_selection_flag == 'coverboard':
-            self.current_selection_types = self.coverboard_selection
+			self.current_selection_types = self.coverboard_selection
+			self.pixelCount1.setText("coverboard pixels = %s" % self.n_coverboard)
+			self.pixelCount2.setText("not coverboard pixels = %s" % self.n_notCoverboard)
         
         elif self.current_selection_flag == 'sky-canopy':
-            self.current_selection_types = self.skyCanopy_selection
+			self.current_selection_types = self.skyCanopy_selection
+			self.pixelCount1.setText("sky pixels = %s" % self.n_sky)
+			self.pixelCount2.setText("canopy pixels = %s" % self.n_canopy)
         
         self.button7.setText(self.current_selection_types[0])
         self.button8.setText(self.current_selection_types[1])
