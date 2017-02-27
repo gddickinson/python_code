@@ -16,9 +16,10 @@ tic=time.time()
 import os, sys
 import platform
 
-if (sys.version_info < (3, 0)):
-    # Python 3 code in this block
-    os.environ["QT_API"] = "pyside" #for python2.7 - otherwise error: API 'QString' has already been set to version 1 --- due to PyQt4 conflict
+if platform.system() != "Darwin":
+    if (sys.version_info < (3, 0)):
+        # Python 3 code in this block
+        os.environ["QT_API"] = "pyside" #for python2.7 - otherwise error: API 'QString' has already been set to version 1 --- due to PyQt4 conflict
 
 import matplotlib
 matplotlib.use('Qt4Agg')
@@ -63,6 +64,8 @@ if sys.version_info[:2]<(2,5):
         return callme
 else:
     from functools import partial
+
+
 
 ########### define global variables ##########################################
 
@@ -1537,7 +1540,10 @@ class Viewer(QtWidgets.QMainWindow):
         filename = QtWidgets.QFileDialog.getOpenFileName(self, 'Open Image file',
                 '/home', 'Images (*.png *.xpm *.jpg *.tif *.tiff *.pdf *.ps *.eps *.raw)')
 
+        print(filename)
         if platform.system() == "Windows":
+            filename=str(filename)
+        elif platform.system() == "Darwin":
             filename=str(filename)
         else:
             filename=str(filename[0])
@@ -2280,6 +2286,7 @@ def main():
         app = QtCore.QCoreApplication.instance()
     else:
         app = QtWidgets.QApplication(sys.argv)
+        app.setGraphicsSystem("raster") #spyder warning recommended this
     ex = Viewer()
     sys.exit(app.exec_())
 
