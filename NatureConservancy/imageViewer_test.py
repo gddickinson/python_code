@@ -1797,10 +1797,21 @@ class Viewer(QtWidgets.QMainWindow):
 ####################################################################################################
     def detect_coverBoard(self):
         print('start analysis')
-        #set up arrays
+        #import global variables
         global newimg, roi_origin, roi_size
+        
+        #set up array
         image = newimg
 
+        #image stats
+        mean_red, mean_green, mean_blue = np.mean(image, axis=(0, 1))
+        min_red, min_green, min_blue = np.min(image, axis=(0, 1))
+        max_red, max_green, max_blue = np.max(image, axis=(0, 1))
+        mean_intensity = np.mean(image)
+        min_intensity = np.min(image)
+        max_intensity = np.max(image)
+
+        #copy arrays
         image_original = copy.deepcopy(image)
         image_board = copy.deepcopy(image)
         image_other = copy.deepcopy(image)
@@ -1850,6 +1861,8 @@ class Viewer(QtWidgets.QMainWindow):
         green_blue_ratio_max = self.console.green_blue_ratio_max
         red_green_ratio_min = self.console.red_green_ratio_min
         red_green_ratio_max = self.console.red_green_ratio_max
+
+
 
         #loop through all pixels in image and set pixel to maximum channel value - count pixels in each channel
         for x in range (image_x_origin,image_x_end):
@@ -1908,6 +1921,8 @@ class Viewer(QtWidgets.QMainWindow):
         print("----------------------------------------------")
         print("Area of ROI detected as board = ", round((board_pixel/roi_area)*100, 1), " %")
         print("Area of ROI detected as other = ", round((other_pixel/roi_area)*100, 1), " %")
+        print("mean intensity = %d" % round(mean_intensity,2))
+        print("mean rgb = %d" % round(mean_red,2), round(mean_green,2), round( mean_blue,2))
 
         #plot result
         image_board = np.rot90(image_board, k=1)
@@ -1986,6 +2001,15 @@ class Viewer(QtWidgets.QMainWindow):
         #set up arrays
         global newimg, roi_origin, roi_size
         image = newimg
+
+        #image stats
+        mean_red, mean_green, mean_blue = np.mean(image, axis=(0, 1))
+        min_red, min_green, min_blue = np.min(image, axis=(0, 1))
+        max_red, max_green, max_blue = np.max(image, axis=(0, 1))
+        mean_intensity = np.mean(image)
+        min_intensity = np.min(image)
+        max_intensity = np.max(image)
+
        
         #set limits for thresholding by brightness
         dark_threshold = self.consoleCanopy.intensity_min
@@ -2082,6 +2106,9 @@ class Viewer(QtWidgets.QMainWindow):
         print ("canopy: %.2f" % (canopy_pixel/(total_pixels)*100), "%")
         print ("unassigned: %.2f" % (equivalent_pixel/(total_pixels)*100), "%")
         print ("total pixels counted = ", sky_pixel + canopy_pixel + equivalent_pixel)
+        print ("--------------------------------")
+        print("mean intensity = %d" % round(mean_intensity,2))
+        print("mean rgb = %d" % round(mean_red,2), round(mean_green,2), round( mean_blue,2))
 
         #plot result
     
