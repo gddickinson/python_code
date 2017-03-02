@@ -1804,6 +1804,10 @@ class Viewer(QtWidgets.QMainWindow):
         image = newimg
 
         #image stats
+        
+        mean_coverBoard_values = np.array(([0,0,0]))
+        mean_notBoard_values = np.array(([0,0,0]))
+        
         mean_red, mean_green, mean_blue = np.mean(image, axis=(0, 1))
         min_red, min_green, min_blue = np.min(image, axis=(0, 1))
         max_red, max_green, max_blue = np.max(image, axis=(0, 1))
@@ -1862,7 +1866,7 @@ class Viewer(QtWidgets.QMainWindow):
         red_green_ratio_min = self.console.red_green_ratio_min
         red_green_ratio_max = self.console.red_green_ratio_max
 
-
+    
 
         #loop through all pixels in image and set pixel to maximum channel value - count pixels in each channel
         for x in range (image_x_origin,image_x_end):
@@ -1872,6 +1876,7 @@ class Viewer(QtWidgets.QMainWindow):
                     image_other[x,y] = 0
                     image_board[x,y] = 255
                     other_pixel += 1
+                    mean_notBoard_values = mean_notBoard_values + image[x,y]
 
                 #count board pixels
                 elif ((image[x,y][r] > image[x,y][g])
@@ -1891,29 +1896,37 @@ class Viewer(QtWidgets.QMainWindow):
                         image_board[x,y] = 0
                         image_other[x,y] = 255
                         board_pixel += 1
+                        mean_coverBoard_values = mean_coverBoard_values + image[x,y]
 
                     else:
                         image_board[x,y] = 255
                         image_other[x,y] = 0
                         other_pixel += 1
+                        mean_notBoard_values = mean_notBoard_values + image[x,y]
 
                 #count green pixels
                 elif image[x,y][g] > image[x,y][r] and image[x,y][g] > image[x,y][b]:
                     image_other[x,y] = 0
                     image_board[x,y] = 255
                     other_pixel += 1
+                    mean_notBoard_values = mean_notBoard_values + image[x,y]
 
                 #count blue pixels
                 elif image[x,y][b] > image[x,y][r] and image[x,y][b] > image[x,y][g]:
                     image_board[x,y] = 255
                     image_other[x,y] = 0
                     other_pixel += 1
+                    mean_notBoard_values = mean_notBoard_values + image[x,y]
 
                 else:
                     image_other[x,y] = 0
                     image_board[x,y] = 255
                     other_pixel += 1
+                    mean_notBoard_values = mean_notBoard_values + image[x,y]
 
+
+        mean_notBoard_values = np.divide(mean_notBoard_values,other_pixel) 
+        mean_coverBoard_values = np.divide(mean_coverBoard_values,board_pixel)
 
         print("board_pixels = ", board_pixel)
         print("other_pixels = ", other_pixel)
@@ -1923,6 +1936,8 @@ class Viewer(QtWidgets.QMainWindow):
         print("Area of ROI detected as other = ", round((other_pixel/roi_area)*100, 1), " %")
         print("mean intensity = %d" % round(mean_intensity,2))
         print("mean rgb = %d" % round(mean_red,2), round(mean_green,2), round( mean_blue,2))
+        print("mean coverboard rgb = %d" % mean_coverBoard_values[0],mean_coverBoard_values[1],mean_coverBoard_values[2])
+        print("mean other rgb = %d" % mean_notBoard_values[0],mean_notBoard_values[1],mean_notBoard_values[2])
 
         #plot result
         image_board = np.rot90(image_board, k=1)
