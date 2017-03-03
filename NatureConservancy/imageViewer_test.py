@@ -69,7 +69,7 @@ else:
 
 ########### define global variables ##########################################
 
-global filename, ROI_flag, roi_origin, roi_size, newimg, original_image, sky_array, canopy_array, sky_mean, sky_n, sky_sd, canopy_mean, canopy_n, canopy_sd, roi_mean_red, roi_mean_green, roi_mean_blue, roi_mean_intensity
+global filename, ROI_flag, roi_origin, roi_size, newimg, original_image, sky_array, canopy_array, sky_mean, sky_n, sky_sd, canopy_mean, canopy_n, canopy_sd, roi_mean_red, roi_mean_green, roi_mean_blue, roi_mean_intensity, roi_min_intensity, roi_max_intensity, roi_min_red, roi_max_red, roi_min_green, roi_max_green, roi_min_blue, roi_max_blue 
 
 ##############################################################################
 ########### define classes for GUI ###########################################
@@ -1256,6 +1256,174 @@ class Console_Coverboard(QtWidgets.QDialog):
         self.filterLabel.setText(self.filterType)
         self.filterFlag = str(self.filterType)
 
+class Console_Coverboard_2(QtWidgets.QDialog):
+    
+    def __init__(self, parent = None):
+        super(Console_Coverboard_2, self).__init__(parent)
+        
+        global filename, roi_mean_red, roi_mean_green, roi_mean_blue, roi_mean_intensity, roi_min_intensity, roi_max_intensity, roi_min_red, roi_max_red, roi_min_green, roi_max_green, roi_min_blue, roi_max_blue
+
+        ### Variables ####
+        
+        self.board_min_red = False
+        self.board_max_red = False
+        self.board_mean_red = False
+
+        self.board_min_green = False
+        self.board_max_green = False
+        self.board_mean_green = False
+
+        self.board_min_blue = False
+        self.board_max_blue = False
+        self.board_mean_blue = False
+
+        self.board_min_intensity = False
+        self.board_max_intensity = False
+        self.board_mean_intensity = False
+
+        #### Widgets #####
+        self.buttonRun = QtWidgets.QPushButton("Run")
+        self.onFlag = False
+        
+        self.buttonSetAsBoard = QtWidgets.QPushButton("Get board values")
+        
+        self.stats_textRed = QtWidgets.QLabel()
+        self.stats_textRed.setText("Red: Min = %d, Max = %d, Mean = %d" % (self.board_min_red, self.board_max_red, self.board_mean_red))
+  
+        self.stats_textGreen = QtWidgets.QLabel()
+        self.stats_textGreen.setText("Green: Min = %d, Max = %d, Mean = %d" % (self.board_min_green, self.board_max_green, self.board_mean_green))
+
+        self.stats_textBlue = QtWidgets.QLabel()
+        self.stats_textBlue.setText("Blue: Min = %d, Max = %d, Mean = %d" % (self.board_min_blue, self.board_max_blue, self.board_mean_blue))
+
+        self.stats_textIntensity = QtWidgets.QLabel()
+        self.stats_textIntensity.setText("Intensity: Min = %d, Max = %d, Mean = %d" % (self.board_min_intensity, self.board_max_intensity, self.board_mean_intensity))
+
+        self.label1 = QtWidgets.QLabel()
+        self.label1.setText("---- Coverboard values set by user ----")
+        
+        self.filename_text = QtWidgets.QLabel()
+        self.filename_text.setText("file: %s" %filename)
+
+        layout = QtWidgets.QGridLayout()
+        #layout.addWidget(self.dial, 0,0)
+        #layout.addWidget(self.zerospinbox, 0,1)
+        layout.addWidget(self.buttonRun, 0, 2)
+        layout.addWidget(self.buttonSetAsBoard, 0, 0)
+        
+        layout.addWidget(self.label1, 1,0)
+        
+        layout.addWidget(self.stats_textRed, 2,0)
+        layout.addWidget(self.stats_textGreen, 3,0)
+        layout.addWidget(self.stats_textBlue, 4,0)
+        layout.addWidget(self.stats_textIntensity, 5,0)
+        
+        layout.addWidget(self.filename_text, 6,0,5,5)
+
+        self.setLayout(layout)
+
+        self.connect(self.buttonRun,SIGNAL("clicked()"),self.button_run)
+        self.connect(self.buttonSetAsBoard,SIGNAL("clicked()"),self.button_setAsBoard)
+
+
+
+    def button_run(self):
+        if self.onFlag == False:
+            self.onFlag = True
+            self.buttonRun.setText("Run")
+        else:
+            self.onFlag = False
+            self.buttonRun.setText("Run")
+
+    def button_setAsBoard(self):
+        
+        global filename, roi_mean_red, roi_mean_green, roi_mean_blue, roi_mean_intensity, roi_min_intensity, roi_max_intensity, roi_min_red, roi_max_red, roi_min_green, roi_max_green, roi_min_blue, roi_max_blue
+        
+        if self.board_min_red == False:
+            self.board_min_red = roi_min_red
+        else:
+            if roi_min_red <= self.board_min_red:
+                self.board_min_red = roi_min_red
+                
+        if self.board_max_red == False:
+            self.board_max_red = roi_max_red
+        else:
+            if roi_max_red >= self.board_max_red:
+                self.board_max_red = roi_max_red
+        
+        if self.board_mean_red == False:
+            self.board_mean_red = roi_mean_red
+        else:
+            self.board_mean_red = (self.board_mean_red + roi_mean_red)/2
+
+
+        if self.board_min_green == False:
+            self.board_min_green = roi_min_green
+        else:
+            if roi_min_green <= self.board_min_green:
+                self.board_min_green = roi_min_green
+                
+        if self.board_max_green == False:
+            self.board_max_green = roi_max_green
+        else:
+            if roi_max_green >= self.board_max_green:
+                self.board_max_green = roi_max_green
+        
+        if self.board_mean_green == False:
+            self.board_mean_green = roi_mean_green
+        else:
+            self.board_mean_green = (self.board_mean_green + roi_mean_green)/2
+
+
+        if self.board_min_blue == False:
+            self.board_min_blue = roi_min_blue
+        else:
+            if roi_min_blue <= self.board_min_blue:
+                self.board_min_blue = roi_min_blue
+                
+        if self.board_max_blue == False:
+            self.board_max_blue = roi_max_blue
+        else:
+            if roi_max_blue >= self.board_max_blue:
+                self.board_max_blue = roi_max_blue
+        
+        if self.board_mean_blue == False:
+            self.board_mean_blue = roi_mean_blue
+        else:
+            self.board_mean_blue = (self.board_mean_blue + roi_mean_blue)/2
+
+        if self.board_min_intensity == False:
+            self.board_min_intensity = roi_min_intensity
+        else:
+            if roi_min_intensity <= self.board_min_intensity:
+                self.board_min_intensity = roi_min_intensity
+                
+        if self.board_max_intensity == False:
+            self.board_max_intensity = roi_max_intensity
+        else:
+            if roi_max_intensity >= self.board_max_intensity:
+                self.board_max_intensity = roi_max_intensity
+        
+        if self.board_mean_intensity == False:
+            self.board_mean_intensity = roi_mean_intensity
+        else:
+            self.board_mean_intensity = (self.board_mean_intensity + roi_mean_intensity)/2
+        
+        global board_min_red, board_max_red, board_mean_red, board_min_green, board_max_green, board_mean_green, board_min_blue, board_max_blue, board_mean_blue, board_min_intensity, board_max_intensity, board_mean_intensity  
+        
+        board_min_red, board_max_red, board_mean_red = self.board_min_red, self.board_max_red, self.board_mean_red
+        board_min_green, board_max_green, board_mean_green = self.board_min_green, self.board_max_green, self.board_mean_green
+        board_min_blue, board_max_blue, board_mean_blue = self.board_min_blue, self.board_max_blue, self.board_mean_blue
+        board_min_intensity, board_max_intensity, board_mean_intensity = self.board_min_intensity, self.board_max_intensity, self.board_mean_intensity
+
+        self.stats_textRed.setText("Red: Min = %d, Max = %d, Mean = %d" % (self.board_min_red, self.board_max_red, self.board_mean_red))
+        self.stats_textGreen.setText("Green: Min = %d, Max = %d, Mean = %d" % (self.board_min_green, self.board_max_green, self.board_mean_green))
+        self.stats_textBlue.setText("Blue: Min = %d, Max = %d, Mean = %d" % (self.board_min_blue, self.board_max_blue, self.board_mean_blue))
+        self.stats_textIntensity.setText("Intensity: Min = %d, Max = %d, Mean = %d" % (self.board_min_intensity, self.board_max_intensity, self.board_mean_intensity))
+
+        return
+
+
 
 ############ Main Viewing Window ##############################################
 class Viewer(QtWidgets.QMainWindow):
@@ -1276,6 +1444,7 @@ class Viewer(QtWidgets.QMainWindow):
     def initUI(self):
 
         self.ImageView = pg.ImageView(view=pg.PlotItem())
+        self.ImageView.view.setTitle('No file loaded')
         self.resize(800,800)
         self.setCentralWidget(self.ImageView)
         self.statusBar()
@@ -1391,8 +1560,14 @@ class Viewer(QtWidgets.QMainWindow):
         activateConsole = QtWidgets.QAction(QtGui.QIcon('save.png'), 'ROI Console', self)
         activateConsole.setShortcut('Ctrl+R')
         activateConsole.setStatusTip('Start Console')
-        activateConsole.triggered.connect(self.initConsole_CoverBoard)
+        activateConsole.triggered.connect(self.initConsole_CoverBoard_1)
         
+        activateConsole2 = QtWidgets.QAction(QtGui.QIcon('save.png'), 'ROI Console_2', self)
+        activateConsole2.setShortcut('Ctrl+2')
+        activateConsole2.setStatusTip('Start Console2')
+        activateConsole2.triggered.connect(self.initConsole_CoverBoard_2)
+        activateConsole2.triggered.connect(self.startROIExaminer)
+                
         activateConsoleCanopy = QtWidgets.QAction(QtGui.QIcon('save.png'), 'Canopy Console', self)
         activateConsoleCanopy.setShortcut('Ctrl+N')
         activateConsoleCanopy.setStatusTip('Start Console')
@@ -1434,6 +1609,7 @@ class Viewer(QtWidgets.QMainWindow):
         fileMenu3 = menubar.addMenu('&ROI Examiner')
         fileMenu3.addAction(activateExaminer)
         fileMenu3.addAction(activateConsole)
+        fileMenu3.addAction(activateConsole2)
         
         fileMenu4 = menubar.addMenu('&Canopy Detection')       
         fileMenu4.addAction(activateConsoleCanopy)
@@ -1451,12 +1627,19 @@ class Viewer(QtWidgets.QMainWindow):
         #self.initROI()
         self.show()
 
-    def initConsole_CoverBoard(self):
+    def initConsole_CoverBoard_1(self):
         self.console = Console_Coverboard()
         #self.console.connect(self.console.button1,SIGNAL("clicked()"),self.testPrint)
         self.console.connect(self.console.button1,SIGNAL("clicked()"),self.detect_coverBoard)
         self.console.connect(self.console.button2,SIGNAL("clicked()"),self.cluster_coverBoard)
         self.console.show()
+
+    def initConsole_CoverBoard_2(self):
+        self.console2 = Console_Coverboard_2()
+        #self.console.connect(self.console.button1,SIGNAL("clicked()"),self.testPrint)
+        self.console2.connect(self.console2.buttonRun,SIGNAL("clicked()"),self.detect_coverBoard_2)
+        self.console2.show()
+
 
     def initConsole_Canopy(self):
         self.consoleCanopy = Console_Canopy()
@@ -1527,6 +1710,7 @@ class Viewer(QtWidgets.QMainWindow):
         newimg = np.rot90(newimg,k=1)
         newimg = np.flipud(newimg)
         self.statusBar().showMessage('{} successfully loaded ({} s)'.format(os.path.basename(filename), time.time()-t))
+        self.ImageView.view.setTitle(filename)
         
         if ROI_flag == False:
             self.initROI()
@@ -1744,7 +1928,7 @@ class Viewer(QtWidgets.QMainWindow):
 
     def updateWin(self):
             
-        global roi_mean_red, roi_mean_green, roi_mean_blue, roi_mean_intensity
+        global roi_mean_red, roi_mean_green, roi_mean_blue, roi_mean_intensity, roi_min_intensity, roi_max_intensity, roi_min_red, roi_max_red, roi_min_green, roi_max_green, roi_min_blue, roi_max_blue
        
         try:
             self.v1a.removeItem(self.img)
@@ -1763,6 +1947,18 @@ class Viewer(QtWidgets.QMainWindow):
         roi_mean_green = np.mean(self.imgROI[:, :, 1])
         roi_mean_blue = np.mean(self.imgROI[:, :, 2])
         roi_mean_intensity = np.mean(self.imgROI[:, :, :,])
+        
+        roi_min_red = np.min(self.imgROI[:, :, 0])
+        roi_min_green = np.min(self.imgROI[:, :, 1])
+        roi_min_blue = np.min(self.imgROI[:, :, 2])
+        roi_min_intensity = np.min(self.imgROI[:, :, :,])        
+        
+        roi_max_red = np.max(self.imgROI[:, :, 0])
+        roi_max_green = np.max(self.imgROI[:, :, 1])
+        roi_max_blue = np.max(self.imgROI[:, :, 2])
+        roi_max_intensity = np.max(self.imgROI[:, :, :,])         
+        
+        
         self.roi_numberPixels = np.size(self.imgROI[:, :, 0])
         
         self.statusBar().showMessage("Mean Red: %d, Mean Green: %d, Mean Blue: %d, Mean Intensity: %d, Number of pixels: %d" % (roi_mean_red, roi_mean_green, roi_mean_blue, roi_mean_intensity, self.roi_numberPixels))
@@ -1956,6 +2152,161 @@ class Viewer(QtWidgets.QMainWindow):
         image_board = np.rot90(image_board, k=1)
         image_board = np.flipud(image_board)        
         resultCoverBoard = pg.image(image_board)
+
+
+    def detect_coverBoard_2(self):
+        print('start analysis')
+        #import global variables
+        global newimg, roi_origin, roi_size, filename, roi_mean_red, roi_mean_green, roi_mean_blue, roi_mean_intensity, roi_min_intensity, roi_max_intensity, roi_min_red, roi_max_red, roi_min_green, roi_max_green, roi_min_blue, roi_max_blue
+        
+        #set up array
+        image = newimg
+
+        #image stats
+        
+        mean_coverBoard_values = np.array(([0,0,0]))
+        mean_notBoard_values = np.array(([0,0,0]))
+        
+        mean_red, mean_green, mean_blue = np.mean(image, axis=(0, 1))
+        min_red, min_green, min_blue = np.min(image, axis=(0, 1))
+        max_red, max_green, max_blue = np.max(image, axis=(0, 1))
+        mean_intensity = np.mean(image)
+        min_intensity = np.min(image)
+        max_intensity = np.max(image)
+
+        #copy arrays
+        image_original = copy.deepcopy(image)
+        image_board = copy.deepcopy(image)
+        image_other = copy.deepcopy(image)
+
+        #set image size variables
+        image_x_origin = int(roi_origin[0])
+        image_y_origin = int(roi_origin[1])
+
+        #print("origin ",image_x_origin,image_y_origin)
+
+        image_x_end = image_x_origin + int(roi_size[0])
+        image_y_end = image_y_origin + int(roi_size[1])
+
+        #area based on rectangular roi
+        roi_area = int(roi_size[0])*int(roi_size[1])
+
+        #print ("end ", image_x_end, image_y_end)
+        center_x = int(roi_size[0]/2)
+        center_y = int(roi_size[1]/2)
+
+        #image array index
+        r = 0
+        g = 1
+        b = 2
+
+#        # colour settings
+#        red = [255,0,0]
+#        green = [0,255,0]
+#        blue = [0,0,255]
+#        black = [0,0,0]
+#        white = [255,255,255]
+
+        #pixel countvariables
+        board_pixel = 0
+        other_pixel = 0
+
+        #filter variables
+        red_min = board_min_red
+        red_max = board_max_red
+        green_min = board_min_green
+        green_max = board_max_green
+        blue_min = board_min_blue
+        blue_max = board_max_blue
+
+        print('ok')
+
+        #loop through all pixels in image and set pixel to maximum channel value - count pixels in each channel
+        for x in range (image_x_origin,image_x_end):
+            for y in range (image_y_origin,image_y_end):
+                #pixels with equivalent values
+                if image[x,y][b] == image[x,y][g]:
+                    image_other[x,y] = 0
+                    image_board[x,y] = 255
+                    other_pixel += 1
+                    mean_notBoard_values = mean_notBoard_values + image[x,y]
+
+                #count board pixels
+                elif ((image[x,y][r] > image[x,y][g])
+                        and (image[x,y][r] > image[x,y][b])):
+
+                    if (image[x,y][r] > red_min
+                        and image[x,y][r] < red_max
+                        and image[x,y][g] > green_min
+                        and image[x,y][g] < green_max
+                        and image[x,y][b] > blue_min
+                        and image[x,y][b] < blue_max):
+
+                        image_board[x,y] = 0
+                        image_other[x,y] = 255
+                        board_pixel += 1
+                        mean_coverBoard_values = mean_coverBoard_values + image[x,y]
+
+                    else:
+                        image_board[x,y] = 255
+                        image_other[x,y] = 0
+                        other_pixel += 1
+                        mean_notBoard_values = mean_notBoard_values + image[x,y]
+
+                #count green pixels
+                elif image[x,y][g] > image[x,y][r] and image[x,y][g] > image[x,y][b]:
+                    image_other[x,y] = 0
+                    image_board[x,y] = 255
+                    other_pixel += 1
+                    mean_notBoard_values = mean_notBoard_values + image[x,y]
+
+                #count blue pixels
+                elif image[x,y][b] > image[x,y][r] and image[x,y][b] > image[x,y][g]:
+                    image_board[x,y] = 255
+                    image_other[x,y] = 0
+                    other_pixel += 1
+                    mean_notBoard_values = mean_notBoard_values + image[x,y]
+
+                else:
+                    image_other[x,y] = 0
+                    image_board[x,y] = 255
+                    other_pixel += 1
+                    mean_notBoard_values = mean_notBoard_values + image[x,y]
+
+
+        mean_notBoard_values = np.divide(mean_notBoard_values,other_pixel) 
+        mean_coverBoard_values = np.divide(mean_coverBoard_values,board_pixel)
+
+        print("board_pixels = ", board_pixel)
+        print("other_pixels = ", other_pixel)
+        print("ROI_pixels = ", roi_area)
+        print("----------------------------------------------")
+        print("Area of ROI detected as board = ", round((board_pixel/roi_area)*100, 1), " %")
+        print("Area of ROI detected as other = ", round((other_pixel/roi_area)*100, 1), " %")
+        print("mean intensity = %d" % round(mean_intensity,2))
+        print("mean rgb = %d" % round(mean_red,2), round(mean_green,2), round( mean_blue,2))
+        print("mean coverboard rgb = %d" % mean_coverBoard_values[0],mean_coverBoard_values[1],mean_coverBoard_values[2])
+        print("mean other rgb = %d" % mean_notBoard_values[0],mean_notBoard_values[1],mean_notBoard_values[2])
+
+        #plot result
+        image_board = np.rot90(image_board, k=1)
+        image_board = np.flipud(image_board)
+        self.imageBoard = copy.deepcopy(image_board)
+
+#        #using matplotlib
+#        plt.imshow(image_board)
+#        plt.show()
+
+#        ###using skimage - it searches for suitable backend package###
+#        io.imshow(image_board)
+#        io.show()
+
+        #using pyqtgraph.image
+        image_board = np.rot90(image_board, k=1)
+        image_board = np.flipud(image_board)        
+        resultCoverBoard = pg.image(image_board)
+
+
 
     def cluster_coverBoard(self):
                 
