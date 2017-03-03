@@ -11,7 +11,9 @@ import numpy as np
 from skimage.color import label2rgb, rgb2lab
 from skimage import io
 import copy
-import pyqtgraph as pg
+#import pyqtgraph as pg
+from matplotlib import pyplot as plt
+
 
 filename = r'C:\Users\George\Desktop\testImages\2039_crop.jpg'
 image = io.imread(filename)
@@ -104,6 +106,8 @@ for i in range(len(ans_final)):
         image_board[(x_pos[i]),(y_pos[i])] = 255
         
 #plot result
-image_board = np.rot90(image_board, k=1)
-image_board = np.flipud(image_board)
-resultCoverBoard = pg.image(image_board)
+#image_board = np.rot90(image_board, k=1)
+#image_board = np.flipud(image_board)
+#resultCoverBoard = pg.image(image_board)
+
+plt.imshow(image_board)

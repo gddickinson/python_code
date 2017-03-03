@@ -37,7 +37,7 @@ import re
 
 from skimage import io
 from skimage import util
-from skimage.color import rgb2gray
+from skimage.color import rgb2gray, rgb2hsv, rgb2lab, hsv2rgb, lab2rgb
 from skimage.restoration import denoise_bilateral
 from skimage.transform import resize
 import copy
@@ -53,6 +53,7 @@ from skimage.color import label2rgb, rgb2lab
 from scipy.ndimage import interpolation
 from skimage import img_as_ubyte
 
+import cv2
 #from PyQt4.QtCore import *
 #from PyQt4.QtGui import *
 
@@ -69,7 +70,7 @@ else:
 
 ########### define global variables ##########################################
 
-global filename, ROI_flag, roi_origin, roi_size, newimg, original_image, sky_array, canopy_array, sky_mean, sky_n, sky_sd, canopy_mean, canopy_n, canopy_sd, roi_mean_red, roi_mean_green, roi_mean_blue, roi_mean_intensity, roi_min_intensity, roi_max_intensity, roi_min_red, roi_max_red, roi_min_green, roi_max_green, roi_min_blue, roi_max_blue 
+global colourSpace, filename, ROI_flag, roi_origin, roi_size, newimg, original_image, sky_array, canopy_array, sky_mean, sky_n, sky_sd, canopy_mean, canopy_n, canopy_sd, roi_mean_red, roi_mean_green, roi_mean_blue, roi_mean_intensity, roi_min_intensity, roi_max_intensity, roi_min_red, roi_max_red, roi_min_green, roi_max_green, roi_min_blue, roi_max_blue 
 
 ##############################################################################
 ########### define classes for GUI ###########################################
@@ -79,7 +80,7 @@ class Console_Analysis(QtWidgets.QDialog):
     def __init__(self, parent = None):
         super(Console_Analysis, self).__init__(parent)
         
-        global newimg, filename
+        global newimg, filename, colourSpace
         
         self.image = newimg
         self.randomPoints = []
@@ -1502,6 +1503,16 @@ class Viewer(QtWidgets.QMainWindow):
         rgbToGray.setStatusTip('RGB to Gray')
         rgbToGray.triggered.connect(self.rgb2grayscale)
 
+        rgbTohsv = QtWidgets.QAction(QtGui.QIcon('open.png'), 'RGB to HSV', self)
+        rgbTohsv.setShortcut('Ctrl+2')
+        rgbTohsv.setStatusTip('RGB to HSV')
+        rgbTohsv.triggered.connect(self.rgb_to_hsv)
+
+        hsvTorgb = QtWidgets.QAction(QtGui.QIcon('open.png'), 'HSV to RGB', self)
+        hsvTorgb.setShortcut('Ctrl+3')
+        hsvTorgb.setStatusTip('HSV to RGB')
+        hsvTorgb.triggered.connect(self.hsv_to_rgb)
+
         getRedChannel = QtWidgets.QAction(QtGui.QIcon('open.png'), 'Get Red Channel', self)
         getRedChannel.setShortcut('Ctrl+R')
         getRedChannel.setStatusTip('Get Red')
@@ -1593,6 +1604,8 @@ class Viewer(QtWidgets.QMainWindow):
         fileMenu1.addAction(flipUD)
         fileMenu1.addAction(invert)
         fileMenu1.addAction(rgbToGray)
+        fileMenu1.addAction(rgbTohsv)        
+        fileMenu1.addAction(hsvTorgb)      
         fileMenu1.addAction(getRedChannel)
         fileMenu1.addAction(getGreenChannel)
         fileMenu1.addAction(getBlueChannel)
@@ -1726,7 +1739,10 @@ class Viewer(QtWidgets.QMainWindow):
 
         print(filename)
         if platform.system() == "Windows":
-            filename=str(filename)
+            if (sys.version_info < (3, 0)) and (os.environ["QT_API"] == 'pyside'):
+              filename=str(filename[0])            
+            else:
+                filename=str(filename)
         elif platform.system() == "Darwin":
             filename=str(filename)
         else:
@@ -1807,11 +1823,37 @@ class Viewer(QtWidgets.QMainWindow):
 
     def rgb2grayscale(self):
         img = self.ImageView.getProcessedImage()
-        global newimg
+        global newimg, colourSpace
         img = rgb2gray(img)
         #reset datatype to unit8 for RGB 0-255
         newimg = img_as_ubyte(img)
         self.ImageView.setImage(newimg)
+        colourSpace = 'bw'
+        return
+
+    def rgb_to_hsv(self):
+        img = self.ImageView.getProcessedImage()
+        global newimg, colourSpace
+        img = rgb2hsv(img)       
+        newimg = img
+        self.ImageView.setImage(newimg)
+        pos = np.array([0.0, 0.5, 1.0])  #absolute scale here relative to the expected data not important I believe
+        color = np.array([[255,0,0,255], [255,255,0,255], [0,255,0,255]], dtype=np.ubyte)
+        newmap = pg.ColorMap(pos,color)
+        print('ok to here')
+        self.ImageView.setColorMap(newmap)
+        print('all ok')
+        colourSpace = 'hsv'
+        return
+
+    def hsv_to_rgb(self):
+        img = self.ImageView.getProcessedImage()
+        global newimg, colourSpace
+        img = hsv2rgb(img)
+        newimg = img_as_ubyte(img)
+        newimg = img
+        self.ImageView.setImage(newimg)
+        colourSpace = 'rgb'
         return
 
     def get_red(self):
@@ -2308,139 +2350,13 @@ class Viewer(QtWidgets.QMainWindow):
 
     def detect_coverBoard_3(self):
         print('start analysis')
+        print('not implemented')
         #import global variables
         global newimg, roi_origin, roi_size, filename, roi_mean_red, roi_mean_green, roi_mean_blue, roi_mean_intensity, roi_min_intensity, roi_max_intensity, roi_min_red, roi_max_red, roi_min_green, roi_max_green, roi_min_blue, roi_max_blue
         
         #set up array
         image = newimg
 
-        #image stats
-        
-        mean_coverBoard_values = np.array(([0,0,0]))
-        mean_notBoard_values = np.array(([0,0,0]))
-        
-        mean_red, mean_green, mean_blue = np.mean(image, axis=(0, 1))
-        min_red, min_green, min_blue = np.min(image, axis=(0, 1))
-        max_red, max_green, max_blue = np.max(image, axis=(0, 1))
-        mean_intensity = np.mean(image)
-        min_intensity = np.min(image)
-        max_intensity = np.max(image)
-
-        #copy arrays
-        image_original = copy.deepcopy(image)
-        image_board = copy.deepcopy(image)
-        image_other = copy.deepcopy(image)
-
-        #set image size variables
-        image_x_origin = int(roi_origin[0])
-        image_y_origin = int(roi_origin[1])
-
-        #print("origin ",image_x_origin,image_y_origin)
-
-        image_x_end = image_x_origin + int(roi_size[0])
-        image_y_end = image_y_origin + int(roi_size[1])
-
-        #area based on rectangular roi
-        roi_area = int(roi_size[0])*int(roi_size[1])
-
-        #print ("end ", image_x_end, image_y_end)
-        center_x = int(roi_size[0]/2)
-        center_y = int(roi_size[1]/2)
-
-        #pixel countvariables
-        board_pixel = 0
-        other_pixel = 0
-
-        print('ok')
-
-        #convert rgb to lab color space
-        image = rgb2lab(image)
-        
-         #mean board colour from sampling image
-        sampleRGB = np.array(([board_mean_red, board_mean_green, board_mean_blue]))
-        sampleRGB = rgb2lab(sampleRGB)      
-        print(sampleRGB)
-
-        #loop through all pixels in image and set pixel to maximum channel value - count pixels in each channel
-        for x in range (image_x_origin,image_x_end):
-            for y in range (image_y_origin,image_y_end):
-                #pixels with equivalent values
-                if image[x,y][b] == image[x,y][g]:
-                    image_other[x,y] = 0
-                    image_board[x,y] = 255
-                    other_pixel += 1
-                    mean_notBoard_values = mean_notBoard_values + image[x,y]
-
-                #count board pixels
-                elif ((image[x,y][r] > image[x,y][g])
-                        and (image[x,y][r] > image[x,y][b])):
-
-                    if (image[x,y][r] > red_min
-                        and image[x,y][r] < red_max
-                        and image[x,y][g] > green_min
-                        and image[x,y][g] < green_max
-                        and image[x,y][b] > blue_min
-                        and image[x,y][b] < blue_max):
-
-                        image_board[x,y] = 0
-                        image_other[x,y] = 255
-                        board_pixel += 1
-                        mean_coverBoard_values = mean_coverBoard_values + image[x,y]
-
-                    else:
-                        image_board[x,y] = 255
-                        image_other[x,y] = 0
-                        other_pixel += 1
-                        mean_notBoard_values = mean_notBoard_values + image[x,y]
-
-                #count green pixels
-                elif image[x,y][g] > image[x,y][r] and image[x,y][g] > image[x,y][b]:
-                    image_other[x,y] = 0
-                    image_board[x,y] = 255
-                    other_pixel += 1
-                    mean_notBoard_values = mean_notBoard_values + image[x,y]
-
-                #count blue pixels
-                elif image[x,y][b] > image[x,y][r] and image[x,y][b] > image[x,y][g]:
-                    image_board[x,y] = 255
-                    image_other[x,y] = 0
-                    other_pixel += 1
-                    mean_notBoard_values = mean_notBoard_values + image[x,y]
-
-                else:
-                    image_other[x,y] = 0
-                    image_board[x,y] = 255
-                    other_pixel += 1
-                    mean_notBoard_values = mean_notBoard_values + image[x,y]
-
-
-        mean_notBoard_values = np.divide(mean_notBoard_values,other_pixel) 
-        mean_coverBoard_values = np.divide(mean_coverBoard_values,board_pixel)
-
-        print("board_pixels = ", board_pixel)
-        print("other_pixels = ", other_pixel)
-        print("ROI_pixels = ", roi_area)
-        print("----------------------------------------------")
-        print("Area of ROI detected as board = ", round((board_pixel/roi_area)*100, 1), " %")
-        print("Area of ROI detected as other = ", round((other_pixel/roi_area)*100, 1), " %")
-
-        #plot result
-        image_board = np.rot90(image_board, k=1)
-        image_board = np.flipud(image_board)
-        self.imageBoard = copy.deepcopy(image_board)
-
-#        #using matplotlib
-#        plt.imshow(image_board)
-#        plt.show()
-
-#        ###using skimage - it searches for suitable backend package###
-#        io.imshow(image_board)
-#        io.show()
-
-        #using pyqtgraph.image
-        image_board = np.rot90(image_board, k=1)
-        image_board = np.flipud(image_board)        
-        resultCoverBoard = pg.image(image_board)
 
 
     def cluster_coverBoard(self):
