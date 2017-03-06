@@ -70,7 +70,7 @@ else:
 
 ########### define global variables ##########################################
 
-global colourSpace, filename, ROI_flag, roi_origin, roi_size, newimg, original_image, sky_array, canopy_array, sky_mean, sky_n, sky_sd, canopy_mean, canopy_n, canopy_sd, roi_mean_red, roi_mean_green, roi_mean_blue, roi_mean_intensity, roi_min_intensity, roi_max_intensity, roi_min_red, roi_max_red, roi_min_green, roi_max_green, roi_min_blue, roi_max_blue 
+global roi_mean_hue, roi_mean_sat, roi_mean_val, roi_min_hue, roi_min_sat, roi_min_val, roi_max_hue, roi_max_sat, roi_max_val, colourSpace, filename, ROI_flag, roi_origin, roi_size, newimg, original_image, sky_array, canopy_array, sky_mean, sky_n, sky_sd, canopy_mean, canopy_n, canopy_sd, roi_mean_red, roi_mean_green, roi_mean_blue, roi_mean_intensity, roi_min_intensity, roi_max_intensity, roi_min_red, roi_max_red, roi_min_green, roi_max_green, roi_min_blue, roi_max_blue, board_min_red, board_max_red, board_mean_red, board_min_green, board_max_green, board_mean_green, board_min_blue, board_max_blue, board_mean_blue, board_min_intensity, board_max_intensity, board_mean_intensity, board_mean_hue, board_mean_sat, board_val, board_min_hue, board_min_sat, board_min_val, board_max_hue, board_max_sat, board_max_val 
 
 ##############################################################################
 ########### define classes for GUI ###########################################
@@ -1262,25 +1262,59 @@ class Console_Coverboard_2(QtWidgets.QDialog):
     def __init__(self, parent = None):
         super(Console_Coverboard_2, self).__init__(parent)
         
-        global filename, roi_mean_red, roi_mean_green, roi_mean_blue, roi_mean_intensity, roi_min_intensity, roi_max_intensity, roi_min_red, roi_max_red, roi_min_green, roi_max_green, roi_min_blue, roi_max_blue
+        global roi_mean_hue, roi_mean_sat, roi_mean_val, roi_min_hue, roi_min_sat, roi_min_val, roi_max_hue, roi_max_sat, roi_max_val, filename, roi_mean_red, roi_mean_green, roi_mean_blue, roi_mean_intensity, roi_min_intensity, roi_max_intensity, roi_min_red, roi_max_red, roi_min_green, roi_max_green, roi_min_blue, roi_max_blue, board_min_red, board_max_red, board_mean_red, board_min_green, board_max_green, board_mean_green, board_min_blue, board_max_blue, board_mean_blue, board_min_intensity, board_max_intensity, board_mean_intensity, board_mean_hue, board_mean_sat, board_val, board_min_hue, board_min_sat, board_min_val, board_max_hue, board_max_sat, board_max_val 
+
 
         ### Variables ####
         
-        self.board_min_red = False
-        self.board_max_red = False
-        self.board_mean_red = False
+        board_min_red = 0
+        board_max_red = 0
+        board_mean_red = 0
 
-        self.board_min_green = False
-        self.board_max_green = False
-        self.board_mean_green = False
+        board_min_green = 0
+        board_max_green = 0
+        board_mean_green = 0
 
-        self.board_min_blue = False
-        self.board_max_blue = False
-        self.board_mean_blue = False
+        board_min_blue = 0
+        board_max_blue = 0
+        board_mean_blue = 0
 
-        self.board_min_intensity = False
-        self.board_max_intensity = False
-        self.board_mean_intensity = False
+        board_min_hue = 0
+        board_max_hue = 0
+        board_mean_hue = 0
+
+        board_min_sat = 0
+        board_max_sat = 0
+        board_mean_sat = 0
+
+        board_min_val = 0
+        board_max_val = 0
+        board_mean_val = 0
+
+        board_min_intensity = 0
+        board_max_intensity = 0
+        board_mean_intensity = 0
+        
+        self.rgbValues_red_min = []
+        self.rgbValues_red_max = []
+        self.rgbValues_red_mean = []
+        self.rgbValues_green_min = []
+        self.rgbValues_green_max = []
+        self.rgbValues_green_mean = []
+        self.rgbValues_blue_min = []
+        self.rgbValues_blue_max = []
+        self.rgbValues_blue_mean = []
+
+        self.hsvValues_h_min = []
+        self.hsvValues_h_max = []
+        self.hsvValues_h_mean = []
+        self.hsvValues_s_min = []
+        self.hsvValues_s_max = []
+        self.hsvValues_s_mean = []
+        self.hsvValues_v_min = []
+        self.hsvValues_v_max = []
+        self.hsvValues_v_mean = []
+        
 
         #### Widgets #####
         self.buttonRun = QtWidgets.QPushButton("Run")
@@ -1289,16 +1323,25 @@ class Console_Coverboard_2(QtWidgets.QDialog):
         self.buttonSetAsBoard = QtWidgets.QPushButton("Get board values")
         
         self.stats_textRed = QtWidgets.QLabel()
-        self.stats_textRed.setText("Red: Min = %d, Max = %d, Mean = %d" % (self.board_min_red, self.board_max_red, self.board_mean_red))
+        self.stats_textRed.setText("Red: Min = %d, Max = %d, Mean = %d" % (board_min_red, board_max_red, board_mean_red))
   
         self.stats_textGreen = QtWidgets.QLabel()
-        self.stats_textGreen.setText("Green: Min = %d, Max = %d, Mean = %d" % (self.board_min_green, self.board_max_green, self.board_mean_green))
+        self.stats_textGreen.setText("Green: Min = %d, Max = %d, Mean = %d" % (board_min_green, board_max_green, board_mean_green))
 
         self.stats_textBlue = QtWidgets.QLabel()
-        self.stats_textBlue.setText("Blue: Min = %d, Max = %d, Mean = %d" % (self.board_min_blue, self.board_max_blue, self.board_mean_blue))
+        self.stats_textBlue.setText("Blue: Min = %d, Max = %d, Mean = %d" % (board_min_blue, board_max_blue, board_mean_blue))
+
+        self.stats_textHue = QtWidgets.QLabel()
+        self.stats_textHue.setText("Hue: Min = %d, Max = %d, Mean = %d" % (board_min_hue,board_max_hue, board_mean_hue))
+  
+        self.stats_textSat = QtWidgets.QLabel()
+        self.stats_textSat.setText("Saturation: Min = %d, Max = %d, Mean = %d" % (board_min_sat, board_max_sat, board_mean_sat))
+
+        self.stats_textVal = QtWidgets.QLabel()
+        self.stats_textVal.setText("Value: Min = %d, Max = %d, Mean = %d" % (board_min_val, board_max_val, board_mean_val))
 
         self.stats_textIntensity = QtWidgets.QLabel()
-        self.stats_textIntensity.setText("Intensity: Min = %d, Max = %d, Mean = %d" % (self.board_min_intensity, self.board_max_intensity, self.board_mean_intensity))
+        self.stats_textIntensity.setText("Intensity: Min = %d, Max = %d, Mean = %d" % (board_min_intensity, board_max_intensity, board_mean_intensity))
 
         self.label1 = QtWidgets.QLabel()
         self.label1.setText("---- Coverboard values set by user ----")
@@ -1317,6 +1360,11 @@ class Console_Coverboard_2(QtWidgets.QDialog):
         layout.addWidget(self.stats_textRed, 2,0)
         layout.addWidget(self.stats_textGreen, 3,0)
         layout.addWidget(self.stats_textBlue, 4,0)
+
+        layout.addWidget(self.stats_textHue, 2,1)
+        layout.addWidget(self.stats_textSat, 3,1)
+        layout.addWidget(self.stats_textVal, 4,1)        
+        
         layout.addWidget(self.stats_textIntensity, 5,0)
         
         layout.addWidget(self.filename_text, 6,0,5,5)
@@ -1338,89 +1386,64 @@ class Console_Coverboard_2(QtWidgets.QDialog):
 
     def button_setAsBoard(self):
         
-        global filename, roi_mean_red, roi_mean_green, roi_mean_blue, roi_mean_intensity, roi_min_intensity, roi_max_intensity, roi_min_red, roi_max_red, roi_min_green, roi_max_green, roi_min_blue, roi_max_blue
-        
-        if self.board_min_red == False:
-            self.board_min_red = roi_min_red
-        else:
-            if roi_min_red <= self.board_min_red:
-                self.board_min_red = roi_min_red
-                
-        if self.board_max_red == False:
-            self.board_max_red = roi_max_red
-        else:
-            if roi_max_red >= self.board_max_red:
-                self.board_max_red = roi_max_red
-        
-        if self.board_mean_red == False:
-            self.board_mean_red = roi_mean_red
-        else:
-            self.board_mean_red = (self.board_mean_red + roi_mean_red)/2
+        global roi_mean_hue, roi_mean_sat, roi_mean_val, roi_min_hue, roi_min_sat, roi_min_val, roi_max_hue, roi_max_sat, roi_max_val, filename, roi_mean_red, roi_mean_green, roi_mean_blue, roi_mean_intensity, roi_min_intensity, roi_max_intensity, roi_min_red, roi_max_red, roi_min_green, roi_max_green, roi_min_blue, roi_max_blue, board_min_red, board_max_red, board_mean_red, board_min_green, board_max_green, board_mean_green, board_min_blue, board_max_blue, board_mean_blue, board_min_intensity, board_max_intensity, board_mean_intensity, board_mean_hue, board_mean_sat, board_val, board_min_hue, board_min_sat, board_min_val, board_max_hue, board_max_sat, board_max_val 
 
 
-        if self.board_min_green == False:
-            self.board_min_green = roi_min_green
-        else:
-            if roi_min_green <= self.board_min_green:
-                self.board_min_green = roi_min_green
-                
-        if self.board_max_green == False:
-            self.board_max_green = roi_max_green
-        else:
-            if roi_max_green >= self.board_max_green:
-                self.board_max_green = roi_max_green
+        self.rgbValues_red_min.append(roi_min_red)
+        self.rgbValues_green_min.append(roi_min_green)
+        self.rgbValues_blue_min.append(roi_min_blue)
         
-        if self.board_mean_green == False:
-            self.board_mean_green = roi_mean_green
-        else:
-            self.board_mean_green = (self.board_mean_green + roi_mean_green)/2
+        self.rgbValues_red_max.append(roi_max_red)
+        self.rgbValues_green_max.append(roi_max_green)
+        self.rgbValues_blue_max.append(roi_max_blue)
 
+        self.rgbValues_red_mean.append(roi_mean_red)
+        self.rgbValues_green_mean.append(roi_mean_green)
+        self.rgbValues_blue_mean.append(roi_mean_blue)          
+             
+        self.hsvValues_h_min.append(roi_min_hue)
+        self.hsvValues_s_min.append(roi_min_sat)
+        self.hsvValues_v_min.append(roi_min_val)
+        
+        self.hsvValues_h_max.append(roi_max_hue)
+        self.hsvValues_s_max.append(roi_max_sat)
+        self.hsvValues_v_max.append(roi_max_val)
 
-        if self.board_min_blue == False:
-            self.board_min_blue = roi_min_blue
-        else:
-            if roi_min_blue <= self.board_min_blue:
-                self.board_min_blue = roi_min_blue
-                
-        if self.board_max_blue == False:
-            self.board_max_blue = roi_max_blue
-        else:
-            if roi_max_blue >= self.board_max_blue:
-                self.board_max_blue = roi_max_blue
+        self.hsvValues_h_mean.append(roi_mean_hue)
+        self.hsvValues_s_mean.append(roi_mean_sat)
+        self.hsvValues_v_mean.append(roi_mean_val)    
         
-        if self.board_mean_blue == False:
-            self.board_mean_blue = roi_mean_blue
-        else:
-            self.board_mean_blue = (self.board_mean_blue + roi_mean_blue)/2
+        board_min_red = np.min(self.rgbValues_red_min)
+        board_max_red = np.max(self.rgbValues_red_max)
+        board_mean_red = np.mean(self.rgbValues_red_mean)
+        
+        board_min_green = np.min(self.rgbValues_green_min)
+        board_max_green = np.max(self.rgbValues_green_max)
+        board_mean_green = np.mean(self.rgbValues_green_mean)
+        
+        board_min_blue = np.min(self.rgbValues_blue_min)
+        board_max_blue = np.max(self.rgbValues_blue_max)
+        board_mean_blue = np.mean(self.rgbValues_blue_mean)
 
-        if self.board_min_intensity == False:
-            self.board_min_intensity = roi_min_intensity
-        else:
-            if roi_min_intensity <= self.board_min_intensity:
-                self.board_min_intensity = roi_min_intensity
-                
-        if self.board_max_intensity == False:
-            self.board_max_intensity = roi_max_intensity
-        else:
-            if roi_max_intensity >= self.board_max_intensity:
-                self.board_max_intensity = roi_max_intensity
+        board_min_hue = np.min(self.hsvValues_h_min)
+        board_max_hue = np.max(self.hsvValues_h_max)
+        board_mean_hue = np.mean(self.hsvValues_h_mean)
         
-        if self.board_mean_intensity == False:
-            self.board_mean_intensity = roi_mean_intensity
-        else:
-            self.board_mean_intensity = (self.board_mean_intensity + roi_mean_intensity)/2
+        board_min_sat = np.min(self.hsvValues_s_min)
+        board_max_sat = np.max(self.hsvValues_s_max)
+        board_mean_sat = np.mean(self.hsvValues_s_mean)
         
-        global board_min_red, board_max_red, board_mean_red, board_min_green, board_max_green, board_mean_green, board_min_blue, board_max_blue, board_mean_blue, board_min_intensity, board_max_intensity, board_mean_intensity  
-        
-        board_min_red, board_max_red, board_mean_red = self.board_min_red, self.board_max_red, self.board_mean_red
-        board_min_green, board_max_green, board_mean_green = self.board_min_green, self.board_max_green, self.board_mean_green
-        board_min_blue, board_max_blue, board_mean_blue = self.board_min_blue, self.board_max_blue, self.board_mean_blue
-        board_min_intensity, board_max_intensity, board_mean_intensity = self.board_min_intensity, self.board_max_intensity, self.board_mean_intensity
+        board_min_val = np.min(self.hsvValues_v_min)
+        board_max_val = np.max(self.hsvValues_v_max)
+        board_mean_val = np.mean(self.hsvValues_v_mean)
 
-        self.stats_textRed.setText("Red: Min = %d, Max = %d, Mean = %d" % (self.board_min_red, self.board_max_red, self.board_mean_red))
-        self.stats_textGreen.setText("Green: Min = %d, Max = %d, Mean = %d" % (self.board_min_green, self.board_max_green, self.board_mean_green))
-        self.stats_textBlue.setText("Blue: Min = %d, Max = %d, Mean = %d" % (self.board_min_blue, self.board_max_blue, self.board_mean_blue))
-        self.stats_textIntensity.setText("Intensity: Min = %d, Max = %d, Mean = %d" % (self.board_min_intensity, self.board_max_intensity, self.board_mean_intensity))
+        self.stats_textRed.setText("Red: Min = %d, Max = %d, Mean = %d" % (board_min_red, board_max_red, board_mean_red))
+        self.stats_textGreen.setText("Green: Min = %d, Max = %d, Mean = %d" % (board_min_green, board_max_green, board_mean_green))
+        self.stats_textBlue.setText("Blue: Min = %d, Max = %d, Mean = %d" % (board_min_blue, board_max_blue, board_mean_blue))
+        self.stats_textIntensity.setText("Intensity: Min = %d, Max = %d, Mean = %d" % (board_min_intensity, board_max_intensity, board_mean_intensity))
+        self.stats_textHue.setText("Hue: Min = %d, Max = %d, Mean = %d" % (board_min_hue,board_max_hue, board_mean_hue))
+        self.stats_textSat.setText("Saturation: Min = %d, Max = %d, Mean = %d" % (board_min_sat, board_max_sat, board_mean_sat))
+        self.stats_textVal.setText("Vale: Min = %d, Max = %d, Mean = %d" % (board_min_val, board_max_val, board_mean_val))
 
         return
 
@@ -1502,16 +1525,6 @@ class Viewer(QtWidgets.QMainWindow):
         rgbToGray.setShortcut('Ctrl+G')
         rgbToGray.setStatusTip('RGB to Gray')
         rgbToGray.triggered.connect(self.rgb2grayscale)
-
-        rgbTohsv = QtWidgets.QAction(QtGui.QIcon('open.png'), 'RGB to HSV', self)
-        rgbTohsv.setShortcut('Ctrl+2')
-        rgbTohsv.setStatusTip('RGB to HSV')
-        rgbTohsv.triggered.connect(self.rgb_to_hsv)
-
-        hsvTorgb = QtWidgets.QAction(QtGui.QIcon('open.png'), 'HSV to RGB', self)
-        hsvTorgb.setShortcut('Ctrl+3')
-        hsvTorgb.setStatusTip('HSV to RGB')
-        hsvTorgb.triggered.connect(self.hsv_to_rgb)
 
         getRedChannel = QtWidgets.QAction(QtGui.QIcon('open.png'), 'Get Red Channel', self)
         getRedChannel.setShortcut('Ctrl+R')
@@ -1603,9 +1616,7 @@ class Viewer(QtWidgets.QMainWindow):
         fileMenu1.addAction(flipLR)
         fileMenu1.addAction(flipUD)
         fileMenu1.addAction(invert)
-        fileMenu1.addAction(rgbToGray)
-        fileMenu1.addAction(rgbTohsv)        
-        fileMenu1.addAction(hsvTorgb)      
+        fileMenu1.addAction(rgbToGray)      
         fileMenu1.addAction(getRedChannel)
         fileMenu1.addAction(getGreenChannel)
         fileMenu1.addAction(getBlueChannel)
@@ -1717,13 +1728,14 @@ class Viewer(QtWidgets.QMainWindow):
     def open_image(self, filename):
         self.statusBar().showMessage('Loading {}'.format(os.path.basename(filename)))
         t=time.time()
-        global newimg, original_image, ROI_flag
+        global newimg, original_image, ROI_flag, colourSpace
         newimg = io.imread(filename)
         original_image = copy.deepcopy(newimg)
         newimg = np.rot90(newimg,k=1)
         newimg = np.flipud(newimg)
         self.statusBar().showMessage('{} successfully loaded ({} s)'.format(os.path.basename(filename), time.time()-t))
         self.ImageView.view.setTitle(filename)
+        colourSpace = 'rgb'
         
         if ROI_flag == False:
             self.initROI()
@@ -1829,31 +1841,6 @@ class Viewer(QtWidgets.QMainWindow):
         newimg = img_as_ubyte(img)
         self.ImageView.setImage(newimg)
         colourSpace = 'bw'
-        return
-
-    def rgb_to_hsv(self):
-        img = self.ImageView.getProcessedImage()
-        global newimg, colourSpace
-        img = rgb2hsv(img)       
-        newimg = img
-        self.ImageView.setImage(newimg)
-        pos = np.array([0.0, 0.5, 1.0])  #absolute scale here relative to the expected data not important I believe
-        color = np.array([[255,0,0,255], [255,255,0,255], [0,255,0,255]], dtype=np.ubyte)
-        newmap = pg.ColorMap(pos,color)
-        print('ok to here')
-        self.ImageView.setColorMap(newmap)
-        print('all ok')
-        colourSpace = 'hsv'
-        return
-
-    def hsv_to_rgb(self):
-        img = self.ImageView.getProcessedImage()
-        global newimg, colourSpace
-        img = hsv2rgb(img)
-        newimg = img_as_ubyte(img)
-        newimg = img
-        self.ImageView.setImage(newimg)
-        colourSpace = 'rgb'
         return
 
     def get_red(self):
@@ -1970,7 +1957,7 @@ class Viewer(QtWidgets.QMainWindow):
 
     def updateWin(self):
             
-        global roi_mean_red, roi_mean_green, roi_mean_blue, roi_mean_intensity, roi_min_intensity, roi_max_intensity, roi_min_red, roi_max_red, roi_min_green, roi_max_green, roi_min_blue, roi_max_blue
+        global roi_mean_hue, roi_mean_sat, roi_mean_val, roi_min_hue, roi_min_sat, roi_min_val, roi_max_hue, roi_max_sat, roi_max_val, roi_mean_red, roi_mean_green, roi_mean_blue, roi_mean_intensity, roi_min_intensity, roi_max_intensity, roi_min_red, roi_max_red, roi_min_green, roi_max_green, roi_min_blue, roi_max_blue
        
         try:
             self.v1a.removeItem(self.img)
@@ -2001,11 +1988,27 @@ class Viewer(QtWidgets.QMainWindow):
         roi_max_intensity = np.max(self.imgROI[:, :, :,])         
         
         
+        self.hsvImgROI = rgb2hsv(self.imgROI)
+        
+        roi_mean_hue = np.mean(self.hsvImgROI[:, :, 0])
+        roi_mean_sat = np.mean(self.hsvImgROI[:, :, 1])
+        roi_mean_val = np.mean(self.hsvImgROI[:, :, 2])
+        
+        roi_min_hue = np.min(self.hsvImgROI[:, :, 0])
+        roi_min_sat = np.min(self.hsvImgROI[:, :, 1])
+        roi_min_val = np.min(self.hsvImgROI[:, :, 2])       
+        
+        roi_max_hue = np.max(self.hsvImgROI[:, :, 0])
+        roi_max_sat = np.max(self.hsvImgROI[:, :, 1])
+        roi_max_val = np.max(self.hsvImgROI[:, :, 2])
+                
         self.roi_numberPixels = np.size(self.imgROI[:, :, 0])
         
-        self.statusBar().showMessage("Mean Red: %d, Mean Green: %d, Mean Blue: %d, Mean Intensity: %d, Number of pixels: %d" % (roi_mean_red, roi_mean_green, roi_mean_blue, roi_mean_intensity, self.roi_numberPixels))
+        self.statusBar().showMessage("Mean R: %d, Mean G: %d, Mean B: %d --- Mean H: %.2f, Mean S: %.2f, Mean V: %.2f --- Mean Intensity: %d, Pixels: %d" % (round(roi_mean_red,2), round(roi_mean_green,2), round(roi_mean_blue,2), round(roi_mean_hue,2), round(roi_mean_sat,2), round(roi_mean_val,2), round(roi_mean_intensity,2), self.roi_numberPixels))
         #print("Mean Red: %d, Mean Green: %d, Mean Blue: %d" % (self.roi_mean_red, self.roi_mean_green, self.roi_mean_blue))
         return
+
+
 
     def startROIExaminer(self):
         try:
@@ -2225,11 +2228,6 @@ class Viewer(QtWidgets.QMainWindow):
         image_x_origin = int(roi_origin[0])
         image_y_origin = int(roi_origin[1])
 
-        #print("origin ",image_x_origin,image_y_origin)
-
-        image_x_end = image_x_origin + int(roi_size[0])
-        image_y_end = image_y_origin + int(roi_size[1])
-
         #area based on rectangular roi
         roi_area = int(roi_size[0])*int(roi_size[1])
 
@@ -2237,10 +2235,6 @@ class Viewer(QtWidgets.QMainWindow):
         center_x = int(roi_size[0]/2)
         center_y = int(roi_size[1]/2)
 
-        #image array index
-        r = 0
-        g = 1
-        b = 2
 
 #        # colour settings
 #        red = [255,0,0]
@@ -2248,10 +2242,6 @@ class Viewer(QtWidgets.QMainWindow):
 #        blue = [0,0,255]
 #        black = [0,0,0]
 #        white = [255,255,255]
-
-        #pixel countvariables
-        board_pixel = 0
-        other_pixel = 0
 
         #filter variables
         red_min = board_min_red
@@ -2263,90 +2253,34 @@ class Viewer(QtWidgets.QMainWindow):
 
         print('ok')
 
-        #loop through all pixels in image and set pixel to maximum channel value - count pixels in each channel
-        for x in range (image_x_origin,image_x_end):
-            for y in range (image_y_origin,image_y_end):
-                #pixels with equivalent values
-                if image[x,y][b] == image[x,y][g]:
-                    image_other[x,y] = 0
-                    image_board[x,y] = 255
-                    other_pixel += 1
-                    mean_notBoard_values = mean_notBoard_values + image[x,y]
+        board_mean_values = (198,96,60)
+                
+        hsv = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
+        
+        # define range of blue color in HSV
+        #lower_blue = np.array([110,50,50])
+        #upper_blue = np.array([130,255,255])
+        
+        lower_red = np.array([0,100,100])
+        upper_red = np.array([100,255,255])
+        
+        # Threshold the HSV image to get only blue colors
+        mask = cv2.inRange(hsv, lower_red, upper_red)
+        
+        detected_pixels = cv2.countNonZero(mask)
+        total_pixels = np.size(image)
 
-                #count board pixels
-                elif ((image[x,y][r] > image[x,y][g])
-                        and (image[x,y][r] > image[x,y][b])):
-
-                    if (image[x,y][r] > red_min
-                        and image[x,y][r] < red_max
-                        and image[x,y][g] > green_min
-                        and image[x,y][g] < green_max
-                        and image[x,y][b] > blue_min
-                        and image[x,y][b] < blue_max):
-
-                        image_board[x,y] = 0
-                        image_other[x,y] = 255
-                        board_pixel += 1
-                        mean_coverBoard_values = mean_coverBoard_values + image[x,y]
-
-                    else:
-                        image_board[x,y] = 255
-                        image_other[x,y] = 0
-                        other_pixel += 1
-                        mean_notBoard_values = mean_notBoard_values + image[x,y]
-
-                #count green pixels
-                elif image[x,y][g] > image[x,y][r] and image[x,y][g] > image[x,y][b]:
-                    image_other[x,y] = 0
-                    image_board[x,y] = 255
-                    other_pixel += 1
-                    mean_notBoard_values = mean_notBoard_values + image[x,y]
-
-                #count blue pixels
-                elif image[x,y][b] > image[x,y][r] and image[x,y][b] > image[x,y][g]:
-                    image_board[x,y] = 255
-                    image_other[x,y] = 0
-                    other_pixel += 1
-                    mean_notBoard_values = mean_notBoard_values + image[x,y]
-
-                else:
-                    image_other[x,y] = 0
-                    image_board[x,y] = 255
-                    other_pixel += 1
-                    mean_notBoard_values = mean_notBoard_values + image[x,y]
-
-
-        mean_notBoard_values = np.divide(mean_notBoard_values,other_pixel) 
-        mean_coverBoard_values = np.divide(mean_coverBoard_values,board_pixel)
-
-        print("board_pixels = ", board_pixel)
-        print("other_pixels = ", other_pixel)
-        print("ROI_pixels = ", roi_area)
+        print("board_pixels = ", detected_pixels)
+        print("ROI_pixels = ", total_pixels)
         print("----------------------------------------------")
-        print("Area of ROI detected as board = ", round((board_pixel/roi_area)*100, 1), " %")
-        print("Area of ROI detected as other = ", round((other_pixel/roi_area)*100, 1), " %")
-        print("mean intensity = %d" % round(mean_intensity,2))
-        print("mean rgb = %d" % round(mean_red,2), round(mean_green,2), round( mean_blue,2))
-        print("mean coverboard rgb = %d" % mean_coverBoard_values[0],mean_coverBoard_values[1],mean_coverBoard_values[2])
-        print("mean other rgb = %d" % mean_notBoard_values[0],mean_notBoard_values[1],mean_notBoard_values[2])
+        print("Area of ROI detected as board = ", round((detected_pixels/roi_area)*100, 1), " %")
 
         #plot result
-        image_board = np.rot90(image_board, k=1)
-        image_board = np.flipud(image_board)
-        self.imageBoard = copy.deepcopy(image_board)
-
-#        #using matplotlib
-#        plt.imshow(image_board)
-#        plt.show()
-
-#        ###using skimage - it searches for suitable backend package###
-#        io.imshow(image_board)
-#        io.show()
-
-        #using pyqtgraph.image
-        image_board = np.rot90(image_board, k=1)
-        image_board = np.flipud(image_board)        
-        resultCoverBoard = pg.image(image_board)
+        #image_board = np.rot90(mask, k=1)
+        #image_board = np.flipud(mask)
+        self.imageBoard = copy.deepcopy(mask)
+        
+        resultCoverBoard = pg.image(mask)
 
     def detect_coverBoard_3(self):
         print('start analysis')

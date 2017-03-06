@@ -17,12 +17,12 @@ from skimage.color import label2rgb, rgb2hsv
 filename = r'C:\Users\George\Desktop\testImages\IMG_2039_test_crop.jpg'
 #filename = r'C:\Users\George\Desktop\testImages\test.tiff'
 
-image = cv2.imread(filename)
+image = io.imread(filename)
 
 board_mean_values = (198,96,60)
 
 
-hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+hsv = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
 
 # define range of blue color in HSV
 lower_blue = np.array([110,50,50])
