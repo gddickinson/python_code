@@ -14,10 +14,12 @@ from matplotlib import pyplot as plt
 from skimage.color import label2rgb, rgb2hsv
 
 
-filename = r'C:\Users\George\Desktop\testImages\IMG_2039_test_crop.jpg'
+#filename = r'C:\Users\George\Desktop\testImages\IMG_2039_test_crop.jpg'
+filename = r'C:\Google Drive\Image_Interpretation\IMG_2040_test_crop.jpg'
 #filename = r'C:\Users\George\Desktop\testImages\test.tiff'
 
-image = io.imread(filename)
+image = io.imread(filename) #RGB format
+#image = cv2.imread(filename) #BGR format 
 
 board_mean_values = (198,96,60)
 

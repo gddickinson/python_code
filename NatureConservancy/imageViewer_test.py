@@ -72,6 +72,103 @@ else:
 
 global roi_mean_hue, roi_mean_sat, roi_mean_val, roi_min_hue, roi_min_sat, roi_min_val, roi_max_hue, roi_max_sat, roi_max_val, colourSpace, filename, ROI_flag, roi_origin, roi_size, newimg, original_image, sky_array, canopy_array, sky_mean, sky_n, sky_sd, canopy_mean, canopy_n, canopy_sd, roi_mean_red, roi_mean_green, roi_mean_blue, roi_mean_intensity, roi_min_intensity, roi_max_intensity, roi_min_red, roi_max_red, roi_min_green, roi_max_green, roi_min_blue, roi_max_blue, board_min_red, board_max_red, board_mean_red, board_min_green, board_max_green, board_mean_green, board_min_blue, board_max_blue, board_mean_blue, board_min_intensity, board_max_intensity, board_mean_intensity, board_mean_hue, board_mean_sat, board_mean_val, board_min_hue, board_min_sat, board_min_val, board_max_hue, board_max_sat, board_max_val 
 
+
+########### helper functions ##################################################
+def RGB_2_HSV(RGB):
+    ''' Converts an integer RGB tuple (value range from 0 to 255) to an HSV tuple '''
+
+    # Unpack the tuple for readability
+    R, G, B = RGB
+
+    # Compute the H value by finding the maximum of the RGB values
+    RGB_Max = max(RGB)
+    RGB_Min = min(RGB)
+
+    # Compute the value
+    V = RGB_Max;
+    if V == 0:
+        H = S = 0
+        return (H,S,V)
+
+
+    # Compute the saturation value
+    S = 255 * (RGB_Max - RGB_Min) // V
+
+    if S == 0:
+        H = 0
+        return (H, S, V)
+
+    # Compute the Hue
+    if RGB_Max == R:
+        H = 0 + 43*(G - B)//(RGB_Max - RGB_Min)
+    elif RGB_Max == G:
+        H = 85 + 43*(B - R)//(RGB_Max - RGB_Min)
+    else: # RGB_MAX == B
+        H = 171 + 43*(R - G)//(RGB_Max - RGB_Min)
+
+    return (H, S, V)
+
+def HSV_2_RGB(HSV):
+    ''' Converts an integer HSV tuple (value range from 0 to 255) to an RGB tuple '''
+
+    # Unpack the HSV tuple for readability
+    H, S, V = HSV
+
+    # Check if the color is Grayscale
+    if S == 0:
+        R = V
+        G = V
+        B = V
+        return (R, G, B)
+
+    # Make hue 0-5
+    region = H // 43;
+
+    # Find remainder part, make it from 0-255
+    remainder = (H - (region * 43)) * 6; 
+
+    # Calculate temp vars, doing integer multiplication
+    P = (V * (255 - S)) >> 8;
+    Q = (V * (255 - ((S * remainder) >> 8))) >> 8;
+    T = (V * (255 - ((S * (255 - remainder)) >> 8))) >> 8;
+
+
+    # Assign temp vars based on color cone region
+    if region == 0:
+        R = V
+        G = T
+        B = P
+
+    elif region == 1:
+        R = Q; 
+        G = V; 
+        B = P;
+
+    elif region == 2:
+        R = P; 
+        G = V; 
+        B = T;
+
+    elif region == 3:
+        R = P; 
+        G = Q; 
+        B = V;
+
+    elif region == 4:
+        R = T; 
+        G = P; 
+        B = V;
+
+    else: 
+        R = V; 
+        G = P; 
+        B = Q;
+
+
+    return (R, G, B)
+##############################################################################
+
+
 ##############################################################################
 ########### define classes for GUI ###########################################
 ##############################################################################
@@ -1443,7 +1540,7 @@ class Console_Coverboard_2(QtWidgets.QDialog):
         self.stats_textIntensity.setText("Intensity: Min = %d, Max = %d, Mean = %d" % (board_min_intensity, board_max_intensity, board_mean_intensity))
         self.stats_textHue.setText("Hue: Min = %d, Max = %d, Mean = %d" % (board_min_hue,board_max_hue, board_mean_hue))
         self.stats_textSat.setText("Saturation: Min = %d, Max = %d, Mean = %d" % (board_min_sat, board_max_sat, board_mean_sat))
-        self.stats_textVal.setText("Vale: Min = %d, Max = %d, Mean = %d" % (board_min_val, board_max_val, board_mean_val))
+        self.stats_textVal.setText("Value: Min = %d, Max = %d, Mean = %d" % (board_min_val, board_max_val, board_mean_val))
 
         return
 
@@ -1987,20 +2084,11 @@ class Viewer(QtWidgets.QMainWindow):
         roi_max_blue = np.max(self.imgROI[:, :, 2])
         roi_max_intensity = np.max(self.imgROI[:, :, :,])         
         
+               
+        roi_mean_hue, roi_mean_sat, roi_mean_val = RGB_2_HSV([roi_mean_red, roi_mean_green, roi_mean_blue])
+        roi_min_hue, roi_min_sat, roi_min_val = RGB_2_HSV([roi_min_red, roi_min_green, roi_min_blue])
+        roi_max_hue, roi_max_sat, roi_max_val = RGB_2_HSV([roi_max_red, roi_max_green, roi_max_blue])
         
-        self.hsvImgROI = rgb2hsv(self.imgROI)
-        
-        roi_mean_hue = np.mean(self.hsvImgROI[:, :, 0])
-        roi_mean_sat = np.mean(self.hsvImgROI[:, :, 1])
-        roi_mean_val = np.mean(self.hsvImgROI[:, :, 2])
-        
-        roi_min_hue = np.min(self.hsvImgROI[:, :, 0])
-        roi_min_sat = np.min(self.hsvImgROI[:, :, 1])
-        roi_min_val = np.min(self.hsvImgROI[:, :, 2])       
-        
-        roi_max_hue = np.max(self.hsvImgROI[:, :, 0])
-        roi_max_sat = np.max(self.hsvImgROI[:, :, 1])
-        roi_max_val = np.max(self.hsvImgROI[:, :, 2])
                 
         self.roi_numberPixels = np.size(self.imgROI[:, :, 0])
         
@@ -2207,8 +2295,7 @@ class Viewer(QtWidgets.QMainWindow):
         #set up array
         image = newimg
 
-        #image stats
-        
+        #image stats       
         mean_coverBoard_values = np.array(([0,0,0]))
         mean_notBoard_values = np.array(([0,0,0]))
         
@@ -2228,14 +2315,6 @@ class Viewer(QtWidgets.QMainWindow):
         image_x_origin = int(roi_origin[0])
         image_y_origin = int(roi_origin[1])
 
-        #area based on rectangular roi
-        roi_area = int(roi_size[0])*int(roi_size[1])
-
-        #print ("end ", image_x_end, image_y_end)
-        center_x = int(roi_size[0]/2)
-        center_y = int(roi_size[1]/2)
-
-
 #        # colour settings
 #        red = [255,0,0]
 #        green = [0,255,0]
@@ -2243,12 +2322,38 @@ class Viewer(QtWidgets.QMainWindow):
 #        black = [0,0,0]
 #        white = [255,255,255]
 
-        #filter variables
-        lower_board_range = np.array([board_min_hue, board_min_sat, board_min_val])
-        upper_board_range = np.array([board_max_hue, board_max_sat, board_max_val])
-        mean_board_values = np.array([board_mean_hue, board_mean_sat, board_mean_val])        
+#       hue = 0-360
+#       sat = 0-255
+#       val = 0-255
 
-        print(lower_board_range,upper_board_range,mean_board_values)
+        #filter variables  
+        h_buffer = 10
+        s_buffer = 20
+        v_buffer = 20
+        
+        h_range = abs(board_max_hue-board_min_hue) + h_buffer
+        s_range = abs(board_max_sat-board_min_sat) + s_buffer
+        v_range = abs(board_max_val-board_min_val) + v_buffer
+        
+        low_h = board_mean_hue - h_range
+        low_s = board_mean_sat - s_range
+        low_v = board_mean_val - v_range
+        
+        high_h = board_mean_hue + h_range
+        high_s = board_mean_sat + s_range
+        high_v = board_mean_val + v_range
+        
+        if low_h <0:
+            low_h = 0
+        if low_s <0:
+            low_s = 0
+        if low_v <0:
+            low_v = 0
+
+        lower_board_range = np.array([low_h, low_s, low_v]) 
+        upper_board_range = np.array([high_h, high_s, high_v]) 
+        
+        print(np.round(lower_board_range,2), np.round(upper_board_range,2))
 
         #convert image to hsc colourspace
         hsv = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
@@ -2257,8 +2362,16 @@ class Viewer(QtWidgets.QMainWindow):
         #lower_blue = np.array([110,50,50])
         #upper_blue = np.array([130,255,255])
         
-        lower_board = np.array([0,100,100])
-        upper_board = np.array([100,255,255])
+        # define range of blue color in HSV
+        #lower_orange = np.array([5,50,50])
+        #upper_orange = np.array([15,255,255])
+        
+        
+        #lower_board = np.array([0,100,100])
+        #upper_board = np.array([100,255,255])
+
+        lower_board = lower_board_range
+        upper_board = upper_board_range
         
         # Threshold the HSV image to get only blue colors
         mask = cv2.inRange(hsv, lower_board, upper_board)
