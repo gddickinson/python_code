@@ -70,7 +70,7 @@ else:
 
 ########### define global variables ##########################################
 
-global roi_mean_hue, roi_mean_sat, roi_mean_val, roi_min_hue, roi_min_sat, roi_min_val, roi_max_hue, roi_max_sat, roi_max_val, colourSpace, filename, ROI_flag, roi_origin, roi_size, newimg, original_image, sky_array, canopy_array, sky_mean, sky_n, sky_sd, canopy_mean, canopy_n, canopy_sd, roi_mean_red, roi_mean_green, roi_mean_blue, roi_mean_intensity, roi_min_intensity, roi_max_intensity, roi_min_red, roi_max_red, roi_min_green, roi_max_green, roi_min_blue, roi_max_blue, board_min_red, board_max_red, board_mean_red, board_min_green, board_max_green, board_mean_green, board_min_blue, board_max_blue, board_mean_blue, board_min_intensity, board_max_intensity, board_mean_intensity, board_mean_hue, board_mean_sat, board_val, board_min_hue, board_min_sat, board_min_val, board_max_hue, board_max_sat, board_max_val 
+global roi_mean_hue, roi_mean_sat, roi_mean_val, roi_min_hue, roi_min_sat, roi_min_val, roi_max_hue, roi_max_sat, roi_max_val, colourSpace, filename, ROI_flag, roi_origin, roi_size, newimg, original_image, sky_array, canopy_array, sky_mean, sky_n, sky_sd, canopy_mean, canopy_n, canopy_sd, roi_mean_red, roi_mean_green, roi_mean_blue, roi_mean_intensity, roi_min_intensity, roi_max_intensity, roi_min_red, roi_max_red, roi_min_green, roi_max_green, roi_min_blue, roi_max_blue, board_min_red, board_max_red, board_mean_red, board_min_green, board_max_green, board_mean_green, board_min_blue, board_max_blue, board_mean_blue, board_min_intensity, board_max_intensity, board_mean_intensity, board_mean_hue, board_mean_sat, board_mean_val, board_min_hue, board_min_sat, board_min_val, board_max_hue, board_max_sat, board_max_val 
 
 ##############################################################################
 ########### define classes for GUI ###########################################
@@ -1262,7 +1262,7 @@ class Console_Coverboard_2(QtWidgets.QDialog):
     def __init__(self, parent = None):
         super(Console_Coverboard_2, self).__init__(parent)
         
-        global roi_mean_hue, roi_mean_sat, roi_mean_val, roi_min_hue, roi_min_sat, roi_min_val, roi_max_hue, roi_max_sat, roi_max_val, filename, roi_mean_red, roi_mean_green, roi_mean_blue, roi_mean_intensity, roi_min_intensity, roi_max_intensity, roi_min_red, roi_max_red, roi_min_green, roi_max_green, roi_min_blue, roi_max_blue, board_min_red, board_max_red, board_mean_red, board_min_green, board_max_green, board_mean_green, board_min_blue, board_max_blue, board_mean_blue, board_min_intensity, board_max_intensity, board_mean_intensity, board_mean_hue, board_mean_sat, board_val, board_min_hue, board_min_sat, board_min_val, board_max_hue, board_max_sat, board_max_val 
+        global roi_mean_hue, roi_mean_sat, roi_mean_val, roi_min_hue, roi_min_sat, roi_min_val, roi_max_hue, roi_max_sat, roi_max_val, filename, roi_mean_red, roi_mean_green, roi_mean_blue, roi_mean_intensity, roi_min_intensity, roi_max_intensity, roi_min_red, roi_max_red, roi_min_green, roi_max_green, roi_min_blue, roi_max_blue, board_min_red, board_max_red, board_mean_red, board_min_green, board_max_green, board_mean_green, board_min_blue, board_max_blue, board_mean_blue, board_min_intensity, board_max_intensity, board_mean_intensity, board_mean_hue, board_mean_sat, board_mean_val, board_min_hue, board_min_sat, board_min_val, board_max_hue, board_max_sat, board_max_val 
 
 
         ### Variables ####
@@ -1386,7 +1386,7 @@ class Console_Coverboard_2(QtWidgets.QDialog):
 
     def button_setAsBoard(self):
         
-        global roi_mean_hue, roi_mean_sat, roi_mean_val, roi_min_hue, roi_min_sat, roi_min_val, roi_max_hue, roi_max_sat, roi_max_val, filename, roi_mean_red, roi_mean_green, roi_mean_blue, roi_mean_intensity, roi_min_intensity, roi_max_intensity, roi_min_red, roi_max_red, roi_min_green, roi_max_green, roi_min_blue, roi_max_blue, board_min_red, board_max_red, board_mean_red, board_min_green, board_max_green, board_mean_green, board_min_blue, board_max_blue, board_mean_blue, board_min_intensity, board_max_intensity, board_mean_intensity, board_mean_hue, board_mean_sat, board_val, board_min_hue, board_min_sat, board_min_val, board_max_hue, board_max_sat, board_max_val 
+        global roi_mean_hue, roi_mean_sat, roi_mean_val, roi_min_hue, roi_min_sat, roi_min_val, roi_max_hue, roi_max_sat, roi_max_val, filename, roi_mean_red, roi_mean_green, roi_mean_blue, roi_mean_intensity, roi_min_intensity, roi_max_intensity, roi_min_red, roi_max_red, roi_min_green, roi_max_green, roi_min_blue, roi_max_blue, board_min_red, board_max_red, board_mean_red, board_min_green, board_max_green, board_mean_green, board_min_blue, board_max_blue, board_mean_blue, board_min_intensity, board_max_intensity, board_mean_intensity, board_mean_hue, board_mean_sat, board_mean_val, board_min_hue, board_min_sat, board_min_val, board_max_hue, board_max_sat, board_max_val 
 
 
         self.rgbValues_red_min.append(roi_min_red)
@@ -2202,7 +2202,7 @@ class Viewer(QtWidgets.QMainWindow):
     def detect_coverBoard_2(self):
         print('start analysis')
         #import global variables
-        global newimg, roi_origin, roi_size, filename, roi_mean_red, roi_mean_green, roi_mean_blue, roi_mean_intensity, roi_min_intensity, roi_max_intensity, roi_min_red, roi_max_red, roi_min_green, roi_max_green, roi_min_blue, roi_max_blue
+        global newimg, roi_origin, roi_size, filename, roi_mean_red, roi_mean_green, roi_mean_blue, roi_mean_intensity, roi_min_intensity, roi_max_intensity, roi_min_red, roi_max_red, roi_min_green, roi_max_green, roi_min_blue, roi_max_blue, board_min_red, board_max_red, board_mean_red, board_min_green, board_max_green, board_mean_green, board_min_blue, board_max_blue, board_mean_blue, board_min_intensity, board_max_intensity, board_mean_intensity, board_mean_hue, board_mean_sat, board_mean_val, board_min_hue, board_min_sat, board_min_val, board_max_hue, board_max_sat, board_max_val
         
         #set up array
         image = newimg
@@ -2244,28 +2244,24 @@ class Viewer(QtWidgets.QMainWindow):
 #        white = [255,255,255]
 
         #filter variables
-        red_min = board_min_red
-        red_max = board_max_red
-        green_min = board_min_green
-        green_max = board_max_green
-        blue_min = board_min_blue
-        blue_max = board_max_blue
+        lower_board_range = np.array([board_min_hue, board_min_sat, board_min_val])
+        upper_board_range = np.array([board_max_hue, board_max_sat, board_max_val])
+        mean_board_values = np.array([board_mean_hue, board_mean_sat, board_mean_val])        
 
-        print('ok')
+        print(lower_board_range,upper_board_range,mean_board_values)
 
-        board_mean_values = (198,96,60)
-                
+        #convert image to hsc colourspace
         hsv = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
         
         # define range of blue color in HSV
         #lower_blue = np.array([110,50,50])
         #upper_blue = np.array([130,255,255])
         
-        lower_red = np.array([0,100,100])
-        upper_red = np.array([100,255,255])
+        lower_board = np.array([0,100,100])
+        upper_board = np.array([100,255,255])
         
         # Threshold the HSV image to get only blue colors
-        mask = cv2.inRange(hsv, lower_red, upper_red)
+        mask = cv2.inRange(hsv, lower_board, upper_board)
         
         detected_pixels = cv2.countNonZero(mask)
         total_pixels = np.size(image)
@@ -2273,7 +2269,7 @@ class Viewer(QtWidgets.QMainWindow):
         print("board_pixels = ", detected_pixels)
         print("ROI_pixels = ", total_pixels)
         print("----------------------------------------------")
-        print("Area of ROI detected as board = ", round((detected_pixels/roi_area)*100, 1), " %")
+        print("Area of ROI detected as board = ", round((detected_pixels/total_pixels)*100, 1), " %")
 
         #plot result
         #image_board = np.rot90(mask, k=1)
@@ -2283,7 +2279,7 @@ class Viewer(QtWidgets.QMainWindow):
         resultCoverBoard = pg.image(mask)
 
     def detect_coverBoard_3(self):
-        print('start analysis')
+        #print('start analysis')
         print('not implemented')
         #import global variables
         global newimg, roi_origin, roi_size, filename, roi_mean_red, roi_mean_green, roi_mean_blue, roi_mean_intensity, roi_min_intensity, roi_max_intensity, roi_min_red, roi_max_red, roi_min_green, roi_max_green, roi_min_blue, roi_max_blue
