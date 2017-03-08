@@ -1363,7 +1363,17 @@ class Console_Coverboard_2(QtWidgets.QDialog):
 
 
         ### Variables ####
-        
+        #filter variables
+        self.red_min = 115
+        self.red_max = 210
+        self.green_min = 40
+        self.green_max = 110
+        self.blue_min = 15
+        self.blue_max = 75 
+
+        self.hue_min, self.sat_min, self.val_min = RGB_2_HSV([self.red_min,self.green_min, self.blue_min])
+        self.hue_max, self.sat_max, self.val_max = RGB_2_HSV([self.red_max,self.green_max, self.blue_max])
+    
         board_min_red = 0
         board_max_red = 0
         board_mean_red = 0
@@ -1446,6 +1456,139 @@ class Console_Coverboard_2(QtWidgets.QDialog):
         self.filename_text = QtWidgets.QLabel()
         self.filename_text.setText("file: %s" %filename)
 
+        self.SpinBox1=QtWidgets.QDoubleSpinBox()
+        self.SpinBox1.setRange(0,self.red_max)
+        self.SpinBox1.setValue(self.red_min)
+
+        self.SpinBox2=QtWidgets.QDoubleSpinBox()
+        self.SpinBox2.setRange(self.red_min,255)
+        self.SpinBox2.setValue(self.red_max)
+
+        self.SpinBox3=QtWidgets.QDoubleSpinBox()
+        self.SpinBox3.setRange(0,self.green_max)
+        self.SpinBox3.setValue(self.green_min)
+
+        self.SpinBox4=QtWidgets.QDoubleSpinBox()
+        self.SpinBox4.setRange(self.green_min,255)
+        self.SpinBox4.setValue(self.green_max)
+
+        self.SpinBox5=QtWidgets.QDoubleSpinBox()
+        self.SpinBox5.setRange(0,self.blue_max)
+        self.SpinBox5.setValue(self.blue_min)
+
+        self.SpinBox6=QtWidgets.QDoubleSpinBox()
+        self.SpinBox6.setRange(self.blue_min,255)
+        self.SpinBox6.setValue(self.blue_max)
+
+        self.SpinBox7=QtWidgets.QDoubleSpinBox()
+        self.SpinBox7.setRange(0,self.hue_max)
+        self.SpinBox7.setValue(self.hue_min)
+
+        self.SpinBox8=QtWidgets.QDoubleSpinBox()
+        self.SpinBox8.setRange(self.hue_min,255)
+        self.SpinBox8.setValue(self.hue_max)
+
+        self.SpinBox9=QtWidgets.QDoubleSpinBox()
+        self.SpinBox9.setRange(0,self.sat_max)
+        self.SpinBox9.setValue(self.sat_min)
+
+        self.SpinBox10=QtWidgets.QDoubleSpinBox()
+        self.SpinBox10.setRange(self.sat_min,255)
+        self.SpinBox10.setValue(self.sat_max)
+        
+        self.SpinBox11=QtWidgets.QDoubleSpinBox()
+        self.SpinBox11.setRange(0,self.val_max)
+        self.SpinBox11.setValue(self.val_min)
+
+        self.SpinBox12=QtWidgets.QDoubleSpinBox()
+        self.SpinBox12.setRange(self.val_min,255)
+        self.SpinBox12.setValue(self.val_max)
+
+        self.sld1 = QtWidgets.QSlider(QtCore.Qt.Vertical, self)
+        self.sld1.setRange(0,255)
+        self.sld1.setTickPosition(QtWidgets.QSlider.TicksBelow)
+        self.sld1.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.sld1.setValue(self.red_min)
+        self.sld1.setGeometry(30, 40, 100, 30)
+
+        self.sld2 = QtWidgets.QSlider(QtCore.Qt.Vertical, self)
+        self.sld2.setRange(0,255)
+        self.sld2.setTickPosition(QtWidgets.QSlider.TicksAbove)
+        self.sld2.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.sld2.setValue(self.red_max)
+        self.sld2.setGeometry(30, 40, 100, 30)
+
+        self.sld3 = QtWidgets.QSlider(QtCore.Qt.Vertical, self)
+        self.sld3.setRange(0,255)
+        self.sld3.setTickPosition(QtWidgets.QSlider.TicksBelow)
+        self.sld3.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.sld3.setValue(self.green_min)
+        self.sld3.setGeometry(30, 40, 100, 30)
+
+        self.sld4 = QtWidgets.QSlider(QtCore.Qt.Vertical, self)
+        self.sld4.setRange(0,255)
+        self.sld4.setTickPosition(QtWidgets.QSlider.TicksAbove)
+        self.sld4.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.sld4.setValue(self.green_max)
+        self.sld4.setGeometry(30, 40, 100, 30)
+
+        self.sld5 = QtWidgets.QSlider(QtCore.Qt.Vertical, self)
+        self.sld5.setRange(0,255)
+        self.sld5.setTickPosition(QtWidgets.QSlider.TicksBelow)
+        self.sld5.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.sld5.setValue(self.blue_min)
+        self.sld5.setGeometry(30, 40, 100, 30)
+
+        self.sld6 = QtWidgets.QSlider(QtCore.Qt.Vertical, self)
+        self.sld6.setRange(0,255)
+        self.sld6.setTickPosition(QtWidgets.QSlider.TicksAbove)
+        self.sld6.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.sld6.setValue(self.blue_max)
+        self.sld6.setGeometry(30, 40, 100, 30)
+
+        self.sld7 = QtWidgets.QSlider(QtCore.Qt.Vertical, self)
+        self.sld7.setRange(0,255)
+        self.sld7.setTickPosition(QtWidgets.QSlider.TicksBelow)
+        self.sld7.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.sld7.setValue(self.hue_min)
+        self.sld7.setGeometry(30, 40, 100, 30)
+
+        self.sld8 = QtWidgets.QSlider(QtCore.Qt.Vertical, self)
+        self.sld8.setRange(0,255)
+        self.sld8.setTickPosition(QtWidgets.QSlider.TicksAbove)
+        self.sld8.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.sld8.setValue(self.hue_max)
+        self.sld8.setGeometry(30, 40, 100, 30)
+
+        self.sld9 = QtWidgets.QSlider(QtCore.Qt.Vertical, self)
+        self.sld9.setRange(0,255)
+        self.sld9.setTickPosition(QtWidgets.QSlider.TicksBelow)
+        self.sld9.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.sld9.setValue(self.sat_min)
+        self.sld9.setGeometry(30, 40, 100, 30)
+
+        self.sld10 = QtWidgets.QSlider(QtCore.Qt.Vertical, self)
+        self.sld10.setRange(0,255)
+        self.sld10.setTickPosition(QtWidgets.QSlider.TicksAbove)
+        self.sld10.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.sld10.setValue(self.sat_max)
+        self.sld10.setGeometry(30, 40, 100, 30)
+        
+        self.sld11 = QtWidgets.QSlider(QtCore.Qt.Vertical, self)
+        self.sld11.setRange(0,255)
+        self.sld11.setTickPosition(QtWidgets.QSlider.TicksAbove)
+        self.sld11.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.sld11.setValue(self.val_min)
+        self.sld11.setGeometry(30, 40, 100, 30)
+        
+        self.sld12 = QtWidgets.QSlider(QtCore.Qt.Vertical, self)
+        self.sld12.setRange(0,255)
+        self.sld12.setTickPosition(QtWidgets.QSlider.TicksAbove)
+        self.sld12.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.sld12.setValue(self.val_max)
+        self.sld12.setGeometry(30, 40, 100, 30)
+
+
         layout = QtWidgets.QGridLayout()
         #layout.addWidget(self.dial, 0,0)
         #layout.addWidget(self.zerospinbox, 0,1)
@@ -1463,13 +1606,126 @@ class Console_Coverboard_2(QtWidgets.QDialog):
         layout.addWidget(self.stats_textVal, 4,1)        
         
         layout.addWidget(self.stats_textIntensity, 5,0)
+
+        layout.addWidget(self.sld1, 6, 0)
+        layout.addWidget(self.sld2, 6, 1)
+        layout.addWidget(self.SpinBox1, 6, 3)
+        layout.addWidget(self.SpinBox2, 6, 4)
+        layout.addWidget(self.sld3, 7, 0)
+        layout.addWidget(self.sld4, 7, 1)
+        layout.addWidget(self.SpinBox3, 7, 3)
+        layout.addWidget(self.SpinBox4, 7, 4)
+        layout.addWidget(self.sld5,8, 0)
+        layout.addWidget(self.sld6, 8, 1)
+        layout.addWidget(self.SpinBox5, 8, 3)
+        layout.addWidget(self.SpinBox6, 8, 4)
+
         
-        layout.addWidget(self.filename_text, 6,0,5,5)
+        layout.addWidget(self.filename_text, 9,0,5,5)
 
         self.setLayout(layout)
 
         self.connect(self.buttonRun,SIGNAL("clicked()"),self.button_run)
         self.connect(self.buttonSetAsBoard,SIGNAL("clicked()"),self.button_setAsBoard)
+
+
+
+    def slider_1(self):
+        if self.sld1.value() < self.red_max:
+            self.red_min = self.sld1.value()
+            self.SpinBox2.setRange(self.red_min,255)
+        else:
+            self.sld1.setValue(self.red_max)
+            self.SpinBox1.setValue(self.red_max)
+
+    def slider_2(self):
+        if self.sld2.value() > self.red_min:
+            self.red_max = self.sld2.value()
+            self.SpinBox1.setRange(0,self.red_max)
+        else:
+            self.sld2.setValue(self.red_min)
+            self.SpinBox2.setValue(self.red_min)
+
+    def slider_3(self):
+        if self.sld3.value() < self.green_max:
+            self.green_min = self.sld3.value()
+            self.SpinBox4.setRange(self.green_min,255)
+        else:
+            self.sld3.setValue(self.green_max)
+            self.SpinBox3.setValue(self.green_max)
+
+    def slider_4(self):
+        if self.sld4.value() > self.green_min:
+            self.green_max = self.sld4.value()
+            self.SpinBox3.setRange(0,self.green_max)
+        else:
+            self.sld4.setValue(self.green_min)
+            self.SpinBox4.setValue(self.green_min)
+
+    def slider_5(self):
+        if self.sld5.value() < self.blue_max:
+            self.blue_min = self.sld5.value()
+            self.SpinBox6.setRange(self.blue_min,255)
+        else:
+            self.sld5.setValue(self.blue_max)
+            self.SpinBox5.setValue(self.blue_max)
+
+    def slider_6(self):
+        if self.sld6.value() > self.blue_min:
+            self.blue_max = self.sld6.value()
+            self.SpinBox5.setRange(0,self.blue_max)
+        else:
+            self.sld6.setValue(self.blue_min)
+            self.SpinBox6.setValue(self.blue_min)
+
+    def slider_7(self):
+        if self.sld7.value() < self.hue_max:
+            self.hue_min = self.sld7.value()
+            self.SpinBox8.setRange(self.hue_min,255)
+        else:
+            self.sld7.setValue(self.hue_max)
+            self.SpinBox7.setValue(self.hue_max)
+
+    def slider_8(self):
+        if self.sld8.value() > self.hue_min:
+            self.hue_max = self.sld8.value()
+            self.SpinBox7.setRange(0,self.hue_max)
+        else:
+            self.sld8.setValue(self.hue_min)
+            self.SpinBox8.setValue(self.hue_min)
+
+    def slider_9(self):
+        if self.sld9.value() < self.sat_max:
+            self.sat_min = self.sld9.value()
+            self.SpinBox10.setRange(self.sat_min,255)
+        else:
+            self.sld9.setValue(self.sat_max)
+            self.SpinBox9.setValue(self.sat_max)
+
+    def slider_10(self):
+        if self.sld10.value() > self.sat_min:
+            self.sat_max = self.sld10.value()
+            self.SpinBox9.setRange(0,self.sat_max)
+        else:
+            self.sld10.setValue(self.sat_min)
+            self.SpinBox10.setValue(self.sat_min)
+
+    def slider_11(self):
+        if self.sld11.value() < self.val_max:
+            self.val_min = self.sld11.value()
+            self.SpinBox10.setRange(self.val_min,255)
+        else:
+            self.sld11.setValue(self.val_max)
+            self.SpinBox11.setValue(self.val_max)
+
+    def slider_12(self):
+        if self.sld12.value() > self.val_min:
+            self.val_max = self.sld12.value()
+            self.SpinBox11.setRange(0,self.val_max)
+        else:
+            self.sld12.setValue(self.val_min)
+            self.SpinBox12.setValue(self.val_min)
+
 
 
 
