@@ -1456,6 +1456,22 @@ class Console_Coverboard_2(QtWidgets.QDialog):
         self.filename_text = QtWidgets.QLabel()
         self.filename_text.setText("file: %s" %filename)
 
+        self.label_RMin = QtWidgets.QLabel()
+        self.label_BMin = QtWidgets.QLabel()
+        self.label_GMin = QtWidgets.QLabel()
+        self.label_RMax = QtWidgets.QLabel()
+        self.label_BMax = QtWidgets.QLabel()
+        self.label_GMax = QtWidgets.QLabel()
+
+
+        self.label_RMin.setText("Red Min")
+        self.label_BMin.setText("Blue Min")
+        self.label_GMin.setText("Green Min")
+        self.label_RMax.setText("Red Max")
+        self.label_BMax.setText("Blue Max")
+        self.label_GMax.setText("Green Max")
+        
+
         self.SpinBox1=QtWidgets.QDoubleSpinBox()
         self.SpinBox1.setRange(0,self.red_max)
         self.SpinBox1.setValue(self.red_min)
@@ -1504,124 +1520,54 @@ class Console_Coverboard_2(QtWidgets.QDialog):
         self.SpinBox12.setRange(self.val_min,255)
         self.SpinBox12.setValue(self.val_max)
 
-        self.sld1 = QtWidgets.QSlider(QtCore.Qt.Vertical, self)
-        self.sld1.setRange(0,255)
-        self.sld1.setTickPosition(QtWidgets.QSlider.TicksBelow)
-        self.sld1.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.sld1.setValue(self.red_min)
-        self.sld1.setGeometry(30, 40, 100, 30)
-
-        self.sld2 = QtWidgets.QSlider(QtCore.Qt.Vertical, self)
-        self.sld2.setRange(0,255)
-        self.sld2.setTickPosition(QtWidgets.QSlider.TicksAbove)
-        self.sld2.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.sld2.setValue(self.red_max)
-        self.sld2.setGeometry(30, 40, 100, 30)
-
-        self.sld3 = QtWidgets.QSlider(QtCore.Qt.Vertical, self)
-        self.sld3.setRange(0,255)
-        self.sld3.setTickPosition(QtWidgets.QSlider.TicksBelow)
-        self.sld3.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.sld3.setValue(self.green_min)
-        self.sld3.setGeometry(30, 40, 100, 30)
-
-        self.sld4 = QtWidgets.QSlider(QtCore.Qt.Vertical, self)
-        self.sld4.setRange(0,255)
-        self.sld4.setTickPosition(QtWidgets.QSlider.TicksAbove)
-        self.sld4.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.sld4.setValue(self.green_max)
-        self.sld4.setGeometry(30, 40, 100, 30)
-
-        self.sld5 = QtWidgets.QSlider(QtCore.Qt.Vertical, self)
-        self.sld5.setRange(0,255)
-        self.sld5.setTickPosition(QtWidgets.QSlider.TicksBelow)
-        self.sld5.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.sld5.setValue(self.blue_min)
-        self.sld5.setGeometry(30, 40, 100, 30)
-
-        self.sld6 = QtWidgets.QSlider(QtCore.Qt.Vertical, self)
-        self.sld6.setRange(0,255)
-        self.sld6.setTickPosition(QtWidgets.QSlider.TicksAbove)
-        self.sld6.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.sld6.setValue(self.blue_max)
-        self.sld6.setGeometry(30, 40, 100, 30)
-
-        self.sld7 = QtWidgets.QSlider(QtCore.Qt.Vertical, self)
-        self.sld7.setRange(0,255)
-        self.sld7.setTickPosition(QtWidgets.QSlider.TicksBelow)
-        self.sld7.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.sld7.setValue(self.hue_min)
-        self.sld7.setGeometry(30, 40, 100, 30)
-
-        self.sld8 = QtWidgets.QSlider(QtCore.Qt.Vertical, self)
-        self.sld8.setRange(0,255)
-        self.sld8.setTickPosition(QtWidgets.QSlider.TicksAbove)
-        self.sld8.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.sld8.setValue(self.hue_max)
-        self.sld8.setGeometry(30, 40, 100, 30)
-
-        self.sld9 = QtWidgets.QSlider(QtCore.Qt.Vertical, self)
-        self.sld9.setRange(0,255)
-        self.sld9.setTickPosition(QtWidgets.QSlider.TicksBelow)
-        self.sld9.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.sld9.setValue(self.sat_min)
-        self.sld9.setGeometry(30, 40, 100, 30)
-
-        self.sld10 = QtWidgets.QSlider(QtCore.Qt.Vertical, self)
-        self.sld10.setRange(0,255)
-        self.sld10.setTickPosition(QtWidgets.QSlider.TicksAbove)
-        self.sld10.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.sld10.setValue(self.sat_max)
-        self.sld10.setGeometry(30, 40, 100, 30)
-        
-        self.sld11 = QtWidgets.QSlider(QtCore.Qt.Vertical, self)
-        self.sld11.setRange(0,255)
-        self.sld11.setTickPosition(QtWidgets.QSlider.TicksAbove)
-        self.sld11.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.sld11.setValue(self.val_min)
-        self.sld11.setGeometry(30, 40, 100, 30)
-        
-        self.sld12 = QtWidgets.QSlider(QtCore.Qt.Vertical, self)
-        self.sld12.setRange(0,255)
-        self.sld12.setTickPosition(QtWidgets.QSlider.TicksAbove)
-        self.sld12.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.sld12.setValue(self.val_max)
-        self.sld12.setGeometry(30, 40, 100, 30)
-
 
         layout = QtWidgets.QGridLayout()
-        #layout.addWidget(self.dial, 0,0)
-        #layout.addWidget(self.zerospinbox, 0,1)
-        layout.addWidget(self.buttonRun, 0, 2)
-        layout.addWidget(self.buttonSetAsBoard, 0, 0)
-        
-        layout.addWidget(self.label1, 1,0)
-        
-        layout.addWidget(self.stats_textRed, 2,0)
-        layout.addWidget(self.stats_textGreen, 3,0)
-        layout.addWidget(self.stats_textBlue, 4,0)
 
-        layout.addWidget(self.stats_textHue, 2,1)
-        layout.addWidget(self.stats_textSat, 3,1)
-        layout.addWidget(self.stats_textVal, 4,1)        
+        layout.addWidget(self.buttonRun, 0, 6)
+        layout.addWidget(self.buttonSetAsBoard, 1, 6)
         
-        layout.addWidget(self.stats_textIntensity, 5,0)
+        layout.addWidget(self.label1, 2,6)
+        
+        layout.addWidget(self.stats_textRed, 3,6)
+        layout.addWidget(self.stats_textGreen, 4,6)
+        layout.addWidget(self.stats_textBlue, 5,6)
 
-        layout.addWidget(self.sld1, 6, 0)
-        layout.addWidget(self.sld2, 6, 1)
-        layout.addWidget(self.SpinBox1, 6, 3)
-        layout.addWidget(self.SpinBox2, 6, 4)
-        layout.addWidget(self.sld3, 7, 0)
-        layout.addWidget(self.sld4, 7, 1)
-        layout.addWidget(self.SpinBox3, 7, 3)
-        layout.addWidget(self.SpinBox4, 7, 4)
-        layout.addWidget(self.sld5,8, 0)
-        layout.addWidget(self.sld6, 8, 1)
-        layout.addWidget(self.SpinBox5, 8, 3)
-        layout.addWidget(self.SpinBox6, 8, 4)
+        layout.addWidget(self.stats_textHue, 6,6)
+        layout.addWidget(self.stats_textSat, 7,6)
+        layout.addWidget(self.stats_textVal, 8,6)        
+        
+        layout.addWidget(self.stats_textIntensity, 9,6)
+
+        layout.addWidget(self.label_RMin, 0,0)
+        layout.addWidget(self.label_RMax, 1,0)
+                
+        layout.addWidget(self.SpinBox1, 0, 1)
+        layout.addWidget(self.SpinBox2, 1, 1)
+        
+        layout.addWidget(self.label_GMin, 3,0)
+        layout.addWidget(self.label_GMax, 4,0)
+
+        layout.addWidget(self.SpinBox3, 3, 1)
+        layout.addWidget(self.SpinBox4, 4, 1)
+        
+        layout.addWidget(self.label_BMin, 6,0)
+        layout.addWidget(self.label_BMax, 7,0)        
+
+        layout.addWidget(self.SpinBox5, 6, 1)
+        layout.addWidget(self.SpinBox6, 7, 1)
+
+        layout.addWidget(self.SpinBox1, 0, 3)
+        layout.addWidget(self.SpinBox2, 1, 3)
+
+        layout.addWidget(self.SpinBox3, 3, 3)
+        layout.addWidget(self.SpinBox4, 4, 3)
+
+        layout.addWidget(self.SpinBox5, 6, 3)
+        layout.addWidget(self.SpinBox6, 7, 3)
+
 
         
-        layout.addWidget(self.filename_text, 9,0,5,5)
+        layout.addWidget(self.filename_text, 10,0)
 
         self.setLayout(layout)
 
