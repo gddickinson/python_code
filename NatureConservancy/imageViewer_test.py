@@ -70,7 +70,17 @@ else:
 
 ########### define global variables ##########################################
 
-global roi_mean_hue, roi_mean_sat, roi_mean_val, roi_min_hue, roi_min_sat, roi_min_val, roi_max_hue, roi_max_sat, roi_max_val, colourSpace, filename, ROI_flag, roi_origin, roi_size, newimg, original_image, sky_array, canopy_array, sky_mean, sky_n, sky_sd, canopy_mean, canopy_n, canopy_sd, roi_mean_red, roi_mean_green, roi_mean_blue, roi_mean_intensity, roi_min_intensity, roi_max_intensity, roi_min_red, roi_max_red, roi_min_green, roi_max_green, roi_min_blue, roi_max_blue, board_min_red, board_max_red, board_mean_red, board_min_green, board_max_green, board_mean_green, board_min_blue, board_max_blue, board_mean_blue, board_min_intensity, board_max_intensity, board_mean_intensity, board_mean_hue, board_mean_sat, board_mean_val, board_min_hue, board_min_sat, board_min_val, board_max_hue, board_max_sat, board_max_val 
+global roi_mean_hue, roi_mean_sat, roi_mean_val, roi_min_hue, roi_min_sat, \
+        roi_min_val, roi_max_hue, roi_max_sat, roi_max_val, colourSpace, filename, \
+        ROI_flag, roi_origin, roi_size, newimg, original_image, sky_array, canopy_array, \
+        sky_mean, sky_n, sky_sd, canopy_mean, canopy_n, canopy_sd, roi_mean_red, roi_mean_green, \
+        roi_mean_blue, roi_mean_intensity, roi_min_intensity, roi_max_intensity, roi_min_red, \
+        roi_max_red, roi_min_green, roi_max_green, roi_min_blue, roi_max_blue, board_min_red, \
+        board_max_red, board_mean_red, board_min_green, board_max_green, board_mean_green, \
+        board_min_blue, board_max_blue, board_mean_blue, board_min_intensity, board_max_intensity, \
+        board_mean_intensity, board_mean_hue, board_mean_sat, board_mean_val, board_min_hue, \
+        board_min_sat, board_min_val, board_max_hue, board_max_sat, board_max_val, picker_RGB, \
+        picker_HSV, picker_HSL 
 
 
 ########### helper functions ##################################################
@@ -800,14 +810,14 @@ class Console_Canopy(QtWidgets.QDialog):
         self.SpinBox2.setValue(self.intensity_max)
 
    
-        self.sld1 = QtWidgets.QSlider(QtCore.Qt.Vertical, self)
+        self.sld1 = QtWidgets.QSlider(QtCore.Qt.Vertical)
         self.sld1.setRange(0,255)
         self.sld1.setTickPosition(QtWidgets.QSlider.TicksBelow)
         self.sld1.setFocusPolicy(QtCore.Qt.NoFocus)
         self.sld1.setValue(self.intensity_min)
         self.sld1.setGeometry(30, 40, 100, 30)
 
-        self.sld2 = QtWidgets.QSlider(QtCore.Qt.Vertical, self)
+        self.sld2 = QtWidgets.QSlider(QtCore.Qt.Vertical)
         self.sld2.setRange(0,255)
         self.sld2.setTickPosition(QtWidgets.QSlider.TicksAbove)
         self.sld2.setFocusPolicy(QtCore.Qt.NoFocus)
@@ -1038,70 +1048,70 @@ class Console_Coverboard(QtWidgets.QDialog):
         # self.filterLabel=QtGui.QLabel("No Filter")
         # self.filterFlag = 'No Filter'
 
-        self.sld1 = QtWidgets.QSlider(QtCore.Qt.Vertical, self)
+        self.sld1 = QtWidgets.QSlider(QtCore.Qt.Vertical)
         self.sld1.setRange(0,255)
         self.sld1.setTickPosition(QtWidgets.QSlider.TicksBelow)
         self.sld1.setFocusPolicy(QtCore.Qt.NoFocus)
         self.sld1.setValue(self.red_min)
         self.sld1.setGeometry(30, 40, 100, 30)
 
-        self.sld2 = QtWidgets.QSlider(QtCore.Qt.Vertical, self)
+        self.sld2 = QtWidgets.QSlider(QtCore.Qt.Vertical)
         self.sld2.setRange(0,255)
         self.sld2.setTickPosition(QtWidgets.QSlider.TicksAbove)
         self.sld2.setFocusPolicy(QtCore.Qt.NoFocus)
         self.sld2.setValue(self.red_max)
         self.sld2.setGeometry(30, 40, 100, 30)
 
-        self.sld3 = QtWidgets.QSlider(QtCore.Qt.Vertical, self)
+        self.sld3 = QtWidgets.QSlider(QtCore.Qt.Vertical)
         self.sld3.setRange(0,255)
         self.sld3.setTickPosition(QtWidgets.QSlider.TicksBelow)
         self.sld3.setFocusPolicy(QtCore.Qt.NoFocus)
         self.sld3.setValue(self.green_min)
         self.sld3.setGeometry(30, 40, 100, 30)
 
-        self.sld4 = QtWidgets.QSlider(QtCore.Qt.Vertical, self)
+        self.sld4 = QtWidgets.QSlider(QtCore.Qt.Vertical)
         self.sld4.setRange(0,255)
         self.sld4.setTickPosition(QtWidgets.QSlider.TicksAbove)
         self.sld4.setFocusPolicy(QtCore.Qt.NoFocus)
         self.sld4.setValue(self.green_max)
         self.sld4.setGeometry(30, 40, 100, 30)
 
-        self.sld5 = QtWidgets.QSlider(QtCore.Qt.Vertical, self)
+        self.sld5 = QtWidgets.QSlider(QtCore.Qt.Vertical)
         self.sld5.setRange(0,255)
         self.sld5.setTickPosition(QtWidgets.QSlider.TicksBelow)
         self.sld5.setFocusPolicy(QtCore.Qt.NoFocus)
         self.sld5.setValue(self.blue_min)
         self.sld5.setGeometry(30, 40, 100, 30)
 
-        self.sld6 = QtWidgets.QSlider(QtCore.Qt.Vertical, self)
+        self.sld6 = QtWidgets.QSlider(QtCore.Qt.Vertical)
         self.sld6.setRange(0,255)
         self.sld6.setTickPosition(QtWidgets.QSlider.TicksAbove)
         self.sld6.setFocusPolicy(QtCore.Qt.NoFocus)
         self.sld6.setValue(self.blue_max)
         self.sld6.setGeometry(30, 40, 100, 30)
 
-        self.sld7 = QtWidgets.QSlider(QtCore.Qt.Vertical, self)
+        self.sld7 = QtWidgets.QSlider(QtCore.Qt.Vertical)
         self.sld7.setRange(0,255)
         self.sld7.setTickPosition(QtWidgets.QSlider.TicksBelow)
         self.sld7.setFocusPolicy(QtCore.Qt.NoFocus)
         self.sld7.setValue(self.green_blue_ratio_min)
         self.sld7.setGeometry(30, 40, 100, 30)
 
-        self.sld8 = QtWidgets.QSlider(QtCore.Qt.Vertical, self)
+        self.sld8 = QtWidgets.QSlider(QtCore.Qt.Vertical)
         self.sld8.setRange(0,255)
         self.sld8.setTickPosition(QtWidgets.QSlider.TicksAbove)
         self.sld8.setFocusPolicy(QtCore.Qt.NoFocus)
         self.sld8.setValue(self.green_blue_ratio_max)
         self.sld8.setGeometry(30, 40, 100, 30)
 
-        self.sld9 = QtWidgets.QSlider(QtCore.Qt.Vertical, self)
+        self.sld9 = QtWidgets.QSlider(QtCore.Qt.Vertical)
         self.sld9.setRange(0,255)
         self.sld9.setTickPosition(QtWidgets.QSlider.TicksBelow)
         self.sld9.setFocusPolicy(QtCore.Qt.NoFocus)
         self.sld9.setValue(self.red_green_ratio_min)
         self.sld9.setGeometry(30, 40, 100, 30)
 
-        self.sld10 = QtWidgets.QSlider(QtCore.Qt.Vertical, self)
+        self.sld10 = QtWidgets.QSlider(QtCore.Qt.Vertical)
         self.sld10.setRange(0,255)
         self.sld10.setTickPosition(QtWidgets.QSlider.TicksAbove)
         self.sld10.setFocusPolicy(QtCore.Qt.NoFocus)
@@ -1463,6 +1473,16 @@ class Console_Coverboard_2(QtWidgets.QDialog):
         self.label_BMax = QtWidgets.QLabel()
         self.label_GMax = QtWidgets.QLabel()
 
+        self.label_HMin = QtWidgets.QLabel()
+        self.label_SMin = QtWidgets.QLabel()
+        self.label_VMin = QtWidgets.QLabel()
+        self.label_HMax = QtWidgets.QLabel()
+        self.label_SMax = QtWidgets.QLabel()
+        self.label_VMax = QtWidgets.QLabel()
+
+        self.label_blank = QtWidgets.QLabel()
+        self.label_blank.setText("      ")
+
 
         self.label_RMin.setText("Red Min")
         self.label_BMin.setText("Blue Min")
@@ -1470,31 +1490,51 @@ class Console_Coverboard_2(QtWidgets.QDialog):
         self.label_RMax.setText("Red Max")
         self.label_BMax.setText("Blue Max")
         self.label_GMax.setText("Green Max")
+     
+        self.label_RMin.setStyleSheet('color: red')
+        self.label_RMax.setStyleSheet('color: red')      
+        self.label_GMin.setStyleSheet('color: green')
+        self.label_GMax.setStyleSheet('color: green')      
+        self.label_BMin.setStyleSheet('color: blue')
+        self.label_BMax.setStyleSheet('color: blue')
         
+        self.label_HMin.setText("Hue Min")
+        self.label_SMin.setText("Sat Min")
+        self.label_VMin.setText("Val Min")
+        self.label_HMax.setText("Hue Max")
+        self.label_SMax.setText("Sat Max")
+        self.label_VMax.setText("Val Max")
+
 
         self.SpinBox1=QtWidgets.QDoubleSpinBox()
         self.SpinBox1.setRange(0,self.red_max)
         self.SpinBox1.setValue(self.red_min)
+        self.SpinBox1.setStyleSheet('color: red')
 
         self.SpinBox2=QtWidgets.QDoubleSpinBox()
         self.SpinBox2.setRange(self.red_min,255)
         self.SpinBox2.setValue(self.red_max)
+        self.SpinBox2.setStyleSheet('color: red')
 
         self.SpinBox3=QtWidgets.QDoubleSpinBox()
         self.SpinBox3.setRange(0,self.green_max)
         self.SpinBox3.setValue(self.green_min)
+        self.SpinBox3.setStyleSheet('color: green')
 
         self.SpinBox4=QtWidgets.QDoubleSpinBox()
         self.SpinBox4.setRange(self.green_min,255)
         self.SpinBox4.setValue(self.green_max)
+        self.SpinBox4.setStyleSheet('color: green')
 
         self.SpinBox5=QtWidgets.QDoubleSpinBox()
         self.SpinBox5.setRange(0,self.blue_max)
         self.SpinBox5.setValue(self.blue_min)
+        self.SpinBox5.setStyleSheet('color: blue')
 
         self.SpinBox6=QtWidgets.QDoubleSpinBox()
         self.SpinBox6.setRange(self.blue_min,255)
         self.SpinBox6.setValue(self.blue_max)
+        self.SpinBox6.setStyleSheet('color: blue')
 
         self.SpinBox7=QtWidgets.QDoubleSpinBox()
         self.SpinBox7.setRange(0,self.hue_max)
@@ -1520,59 +1560,210 @@ class Console_Coverboard_2(QtWidgets.QDialog):
         self.SpinBox12.setRange(self.val_min,255)
         self.SpinBox12.setValue(self.val_max)
 
+        self.sld1 = QtWidgets.QSlider(QtCore.Qt.Vertical)
+        self.sld1.setRange(0,255)
+        self.sld1.setTickPosition(QtWidgets.QSlider.TicksBelow)
+        self.sld1.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.sld1.setValue(self.red_min)
+        self.sld1.setGeometry(30, 40, 100, 30)
+
+        self.sld2 = QtWidgets.QSlider(QtCore.Qt.Vertical)
+        self.sld2.setRange(0,255)
+        self.sld2.setTickPosition(QtWidgets.QSlider.TicksAbove)
+        self.sld2.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.sld2.setValue(self.red_max)
+        self.sld2.setGeometry(30, 40, 100, 30)
+
+        self.sld3 = QtWidgets.QSlider(QtCore.Qt.Vertical)
+        self.sld3.setRange(0,255)
+        self.sld3.setTickPosition(QtWidgets.QSlider.TicksBelow)
+        self.sld3.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.sld3.setValue(self.green_min)
+        self.sld3.setGeometry(30, 40, 100, 30)
+
+        self.sld4 = QtWidgets.QSlider(QtCore.Qt.Vertical)
+        self.sld4.setRange(0,255)
+        self.sld4.setTickPosition(QtWidgets.QSlider.TicksAbove)
+        self.sld4.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.sld4.setValue(self.green_max)
+        self.sld4.setGeometry(30, 40, 100, 30)
+
+        self.sld5 = QtWidgets.QSlider(QtCore.Qt.Vertical)
+        self.sld5.setRange(0,255)
+        self.sld5.setTickPosition(QtWidgets.QSlider.TicksBelow)
+        self.sld5.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.sld5.setValue(self.blue_min)
+        self.sld5.setGeometry(30, 40, 100, 30)
+
+        self.sld6 = QtWidgets.QSlider(QtCore.Qt.Vertical)
+        self.sld6.setRange(0,255)
+        self.sld6.setTickPosition(QtWidgets.QSlider.TicksAbove)
+        self.sld6.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.sld6.setValue(self.blue_max)
+        self.sld6.setGeometry(30, 40, 100, 30)
+
+        self.sld7 = QtWidgets.QSlider(QtCore.Qt.Vertical)
+        self.sld7.setRange(0,255)
+        self.sld7.setTickPosition(QtWidgets.QSlider.TicksBelow)
+        self.sld7.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.sld7.setValue(self.hue_min)
+        self.sld7.setGeometry(30, 40, 100, 30)
+
+        self.sld8 = QtWidgets.QSlider(QtCore.Qt.Vertical)
+        self.sld8.setRange(0,255)
+        self.sld8.setTickPosition(QtWidgets.QSlider.TicksAbove)
+        self.sld8.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.sld8.setValue(self.hue_max)
+        self.sld8.setGeometry(30, 40, 100, 30)
+
+        self.sld9 = QtWidgets.QSlider(QtCore.Qt.Vertical)
+        self.sld9.setRange(0,255)
+        self.sld9.setTickPosition(QtWidgets.QSlider.TicksBelow)
+        self.sld9.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.sld9.setValue(self.sat_min)
+        self.sld9.setGeometry(30, 40, 100, 30)
+
+        self.sld10 = QtWidgets.QSlider(QtCore.Qt.Vertical)
+        self.sld10.setRange(0,255)
+        self.sld10.setTickPosition(QtWidgets.QSlider.TicksAbove)
+        self.sld10.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.sld10.setValue(self.sat_max)
+        self.sld10.setGeometry(30, 40, 100, 30)
+
+        self.sld11 = QtWidgets.QSlider(QtCore.Qt.Vertical)
+        self.sld11.setRange(0,255)
+        self.sld11.setTickPosition(QtWidgets.QSlider.TicksBelow)
+        self.sld11.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.sld11.setValue(self.val_min)
+        self.sld11.setGeometry(30, 40, 100, 30)
+
+        self.sld12 = QtWidgets.QSlider(QtCore.Qt.Vertical)
+        self.sld12.setRange(0,255)
+        self.sld12.setTickPosition(QtWidgets.QSlider.TicksAbove)
+        self.sld12.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.sld12.setValue(self.val_max)
+        self.sld12.setGeometry(30, 40, 100, 30)
 
         layout = QtWidgets.QGridLayout()
 
-        layout.addWidget(self.buttonRun, 0, 6)
-        layout.addWidget(self.buttonSetAsBoard, 1, 6)
+        layout.addWidget(self.buttonRun, 0, 8)
+        layout.addWidget(self.buttonSetAsBoard, 1, 8)
         
-        layout.addWidget(self.label1, 2,6)
+        layout.addWidget(self.label1, 2,8)
         
-        layout.addWidget(self.stats_textRed, 3,6)
-        layout.addWidget(self.stats_textGreen, 4,6)
-        layout.addWidget(self.stats_textBlue, 5,6)
+        layout.addWidget(self.stats_textRed, 4,8)
+        layout.addWidget(self.stats_textGreen, 5,8)
+        layout.addWidget(self.stats_textBlue, 6,8)
 
-        layout.addWidget(self.stats_textHue, 6,6)
-        layout.addWidget(self.stats_textSat, 7,6)
-        layout.addWidget(self.stats_textVal, 8,6)        
+        layout.addWidget(self.stats_textHue, 16,8)
+        layout.addWidget(self.stats_textSat, 17,8)
+        layout.addWidget(self.stats_textVal, 18,8)        
         
-        layout.addWidget(self.stats_textIntensity, 9,6)
+        layout.addWidget(self.stats_textIntensity, 20,8)
+        
+        layout.addWidget(self.label_blank, 3,8)
+        layout.addWidget(self.label_blank, 7,8)
+        layout.addWidget(self.label_blank, 8,8)
+        layout.addWidget(self.label_blank, 13,8)
+        layout.addWidget(self.label_blank, 14,8)
+        layout.addWidget(self.label_blank, 15,8)
+        layout.addWidget(self.label_blank, 10,8)
+        layout.addWidget(self.label_blank, 11,8)
+        layout.addWidget(self.label_blank, 12,8)
+        layout.addWidget(self.label_blank, 19,8)
+        layout.addWidget(self.label_blank, 9,8)
 
-        layout.addWidget(self.label_RMin, 0,0)
-        layout.addWidget(self.label_RMax, 1,0)
+        layout.addWidget(self.label_RMin, 8,0)
+        layout.addWidget(self.label_RMax, 8,1)
                 
-        layout.addWidget(self.SpinBox1, 0, 1)
-        layout.addWidget(self.SpinBox2, 1, 1)
+        layout.addWidget(self.SpinBox1, 9, 0)
+        layout.addWidget(self.SpinBox2, 9, 1)
         
-        layout.addWidget(self.label_GMin, 3,0)
-        layout.addWidget(self.label_GMax, 4,0)
+        layout.addWidget(self.label_GMin, 8,2)
+        layout.addWidget(self.label_GMax, 8,3)
 
-        layout.addWidget(self.SpinBox3, 3, 1)
-        layout.addWidget(self.SpinBox4, 4, 1)
+        layout.addWidget(self.SpinBox3, 9, 2)
+        layout.addWidget(self.SpinBox4, 9, 3)
         
-        layout.addWidget(self.label_BMin, 6,0)
-        layout.addWidget(self.label_BMax, 7,0)        
+        layout.addWidget(self.label_BMin, 8,4)
+        layout.addWidget(self.label_BMax, 8,5)        
 
-        layout.addWidget(self.SpinBox5, 6, 1)
-        layout.addWidget(self.SpinBox6, 7, 1)
+        layout.addWidget(self.SpinBox5, 9, 4)
+        layout.addWidget(self.SpinBox6, 9, 5)
 
-        layout.addWidget(self.SpinBox1, 0, 3)
-        layout.addWidget(self.SpinBox2, 1, 3)
-
-        layout.addWidget(self.SpinBox3, 3, 3)
-        layout.addWidget(self.SpinBox4, 4, 3)
-
-        layout.addWidget(self.SpinBox5, 6, 3)
-        layout.addWidget(self.SpinBox6, 7, 3)
-
-
+        layout.addWidget(self.label_HMin, 19,0)
+        layout.addWidget(self.label_HMax, 19,1)
         
-        layout.addWidget(self.filename_text, 10,0)
+        layout.addWidget(self.SpinBox7, 20, 0)
+        layout.addWidget(self.SpinBox8, 20, 1)
+        
+        layout.addWidget(self.label_SMin, 19,2)
+        layout.addWidget(self.label_SMax, 19,3)
+        
+        layout.addWidget(self.SpinBox9, 20, 2)
+        layout.addWidget(self.SpinBox10, 20, 3)
+        
+        layout.addWidget(self.label_VMin, 19,4)
+        layout.addWidget(self.label_VMax, 19,5)
+        
+        layout.addWidget(self.SpinBox11, 20, 4)
+        layout.addWidget(self.SpinBox12, 20, 5)
+        
+        layout.addWidget(self.sld1, 0,0,8,0)
+        layout.addWidget(self.sld2, 0,1,8,1)
+        
+        layout.addWidget(self.sld3, 0,2,8,2)
+        layout.addWidget(self.sld4, 0,3,8,3)  
+        
+        layout.addWidget(self.sld5, 0,4,8,4)
+        layout.addWidget(self.sld6, 0,5,8,5)
+        
+ 
+        layout.addWidget(self.sld7, 10,0,9,0)
+        layout.addWidget(self.sld8, 10,1,9,1)
+        
+        layout.addWidget(self.sld9, 10,2,9,2)
+        layout.addWidget(self.sld10, 10,3,9,3)  
+        
+        layout.addWidget(self.sld11, 10,4,9,4)
+        layout.addWidget(self.sld12, 10,5,9,5)
+  
+
+
+     
+        #layout.addWidget(self.filename_text, 19,0,10,-1)
 
         self.setLayout(layout)
 
         self.connect(self.buttonRun,SIGNAL("clicked()"),self.button_run)
         self.connect(self.buttonSetAsBoard,SIGNAL("clicked()"),self.button_setAsBoard)
+
+        self.connect(self.sld1,SIGNAL("valueChanged(int)"), self.slider_1)
+        self.connect(self.sld1,SIGNAL("valueChanged(int)"),self.SpinBox1.setValue)
+        self.connect(self.sld2,SIGNAL("valueChanged(int)"), self.slider_2)
+        self.connect(self.sld2,SIGNAL("valueChanged(int)"),self.SpinBox2.setValue)
+        self.connect(self.sld3,SIGNAL("valueChanged(int)"), self.slider_3)
+        self.connect(self.sld3,SIGNAL("valueChanged(int)"),self.SpinBox3.setValue)
+        self.connect(self.sld4,SIGNAL("valueChanged(int)"), self.slider_4)
+        self.connect(self.sld4,SIGNAL("valueChanged(int)"),self.SpinBox4.setValue)
+        self.connect(self.sld5,SIGNAL("valueChanged(int)"), self.slider_5)
+        self.connect(self.sld5,SIGNAL("valueChanged(int)"),self.SpinBox5.setValue)
+        self.connect(self.sld6,SIGNAL("valueChanged(int)"), self.slider_6)
+        self.connect(self.sld6,SIGNAL("valueChanged(int)"),self.SpinBox6.setValue)
+
+        self.connect(self.sld7,SIGNAL("valueChanged(int)"), self.slider_7)
+        self.connect(self.sld7,SIGNAL("valueChanged(int)"),self.SpinBox7.setValue)
+        self.connect(self.sld8,SIGNAL("valueChanged(int)"), self.slider_8)
+        self.connect(self.sld8,SIGNAL("valueChanged(int)"),self.SpinBox8.setValue)
+        self.connect(self.sld9,SIGNAL("valueChanged(int)"), self.slider_9)
+        self.connect(self.sld9,SIGNAL("valueChanged(int)"),self.SpinBox9.setValue)
+        self.connect(self.sld10,SIGNAL("valueChanged(int)"), self.slider_10)
+        self.connect(self.sld10,SIGNAL("valueChanged(int)"),self.SpinBox10.setValue)
+        self.connect(self.sld11,SIGNAL("valueChanged(int)"), self.slider_11)
+        self.connect(self.sld11,SIGNAL("valueChanged(int)"),self.SpinBox11.setValue)
+        self.connect(self.sld12,SIGNAL("valueChanged(int)"), self.slider_12)
+        self.connect(self.sld12,SIGNAL("valueChanged(int)"),self.SpinBox12.setValue)
+
 
 
 
@@ -1687,7 +1878,6 @@ class Console_Coverboard_2(QtWidgets.QDialog):
         
         global roi_mean_hue, roi_mean_sat, roi_mean_val, roi_min_hue, roi_min_sat, roi_min_val, roi_max_hue, roi_max_sat, roi_max_val, filename, roi_mean_red, roi_mean_green, roi_mean_blue, roi_mean_intensity, roi_min_intensity, roi_max_intensity, roi_min_red, roi_max_red, roi_min_green, roi_max_green, roi_min_blue, roi_max_blue, board_min_red, board_max_red, board_mean_red, board_min_green, board_max_green, board_mean_green, board_min_blue, board_max_blue, board_mean_blue, board_min_intensity, board_max_intensity, board_mean_intensity, board_mean_hue, board_mean_sat, board_mean_val, board_min_hue, board_min_sat, board_min_val, board_max_hue, board_max_sat, board_max_val 
 
-
         self.rgbValues_red_min.append(roi_min_red)
         self.rgbValues_green_min.append(roi_min_green)
         self.rgbValues_blue_min.append(roi_min_blue)
@@ -1744,6 +1934,57 @@ class Console_Coverboard_2(QtWidgets.QDialog):
         self.stats_textSat.setText("Saturation: Min = %d, Max = %d, Mean = %d" % (board_min_sat, board_max_sat, board_mean_sat))
         self.stats_textVal.setText("Value: Min = %d, Max = %d, Mean = %d" % (board_min_val, board_max_val, board_mean_val))
 
+        self.SpinBox1.setRange(0,board_max_red)
+        self.sld1.setValue(board_min_red)
+        self.SpinBox1.setValue(board_min_red)
+        
+        self.SpinBox2.setRange(board_min_red, 255)
+        self.sld2.setValue(board_max_red)
+        self.SpinBox2.setValue(board_max_red)
+
+        self.SpinBox3.setRange(0,board_max_green)
+        self.sld3.setValue(board_min_green)
+        self.SpinBox3.setValue(board_min_green)
+        
+        self.SpinBox4.setRange(board_min_green, 255)
+        self.sld4.setValue(board_max_green)
+        self.SpinBox4.setValue(board_max_green)
+
+        self.SpinBox5.setRange(0,board_max_blue)
+        self.sld5.setValue(board_min_blue)
+        self.SpinBox5.setValue(board_min_blue)
+        
+        self.SpinBox6.setRange(board_min_blue, 255)
+        self.sld6.setValue(board_max_blue)
+        self.SpinBox6.setValue(board_max_blue)
+
+        self.SpinBox7.setRange(0,board_max_hue)
+        self.sld7.setValue(board_min_hue)
+        self.SpinBox7.setValue(board_min_hue)
+        
+        self.SpinBox8.setRange(board_min_hue, 255)
+        self.sld8.setValue(board_max_hue)
+        self.SpinBox8.setValue(board_max_hue)
+
+        self.SpinBox9.setRange(0,board_max_sat)
+        self.sld9.setValue(board_min_sat)
+        self.SpinBox9.setValue(board_min_sat)
+        
+        self.SpinBox10.setRange(board_min_sat, 255)
+        self.sld10.setValue(board_max_sat)
+        self.SpinBox10.setValue(board_max_sat)
+
+        self.SpinBox11.setRange(0,board_max_val)
+        self.sld11.setValue(board_min_val)
+        self.SpinBox11.setValue(board_min_val)
+        
+        self.SpinBox12.setRange(board_min_val, 255)
+        self.sld12.setValue(board_max_val)
+        self.SpinBox12.setValue(board_max_val)
+
+
+
+
         return
 
 
@@ -1755,7 +1996,7 @@ class Viewer(QtWidgets.QMainWindow):
         super(Viewer, self).__init__()
 
         self.initUI()
-        global ROI_flag
+        global ROI_flag, picker_RGB, picker_HSV, picker_HSL
         ROI_flag = False
 #    def mousePressEvent(self, QtGui.QMouseEvent):
 #        print (QMouseEvent.pos())
@@ -1902,6 +2143,12 @@ class Viewer(QtWidgets.QMainWindow):
         activateAnalysisConsole.setStatusTip('Start Analysis')
         activateAnalysisConsole.triggered.connect(self.initConsole_Analysis)
         
+        activateColourPicker = QtWidgets.QAction(QtGui.QIcon('save.png'), 'Colour Picker', self)
+        activateColourPicker.setShortcut('Ctrl+0')
+        activateColourPicker.setStatusTip('Launch Colour Picker')
+        activateColourPicker.triggered.connect(self.colour_picker)
+        
+        
         menubar = self.menuBar()
         fileMenu = menubar.addMenu('&File')
         fileMenu.addAction(openImage)
@@ -1938,7 +2185,10 @@ class Viewer(QtWidgets.QMainWindow):
         fileMenu4.addAction(activateConsoleCanopy)
         
         fileMenu5 = menubar.addMenu('&Random Point Analysis')       
-        fileMenu5.addAction(activateAnalysisConsole)        
+        fileMenu5.addAction(activateAnalysisConsole)    
+        
+        fileMenu6 = menubar.addMenu('&Colour Picker')       
+        fileMenu6.addAction(activateColourPicker)    
 
 #        fileMenu3 = menubar.addMenu('&Analysis')
 #        fileMenu3.addAction(analysis1)
@@ -2254,6 +2504,18 @@ class Viewer(QtWidgets.QMainWindow):
         self.ImageView.setImage(newimg)
         return
 
+    def colour_picker(self):
+        global picker_RGB, picker_HSV, picker_HSL
+        self.colour = QtWidgets.QColorDialog.getColor()
+        if self.colour.isValid(): 
+            picker_RGB = self.colour.getRgb()
+            picker_HSV = self.colour.getHsv()
+            picker_HSL = self.colour.getHsl()
+            self.statusBar().showMessage("Colour Picker: RGB = " + str(picker_RGB) +  " HSV = " +str(picker_HSV))
+            #print("R: %s, G: %s, B: %s --- H: %s, S: %s, V: %s" % picker_RGB[0], picker_RGB[1], picker_RGB[2], picker_HSV[0], picker_HSV[1], picker_HSV[2])
+        else:
+            print('No colour selected')
+
     def updateWin(self):
             
         global roi_mean_hue, roi_mean_sat, roi_mean_val, roi_min_hue, roi_min_sat, roi_min_val, roi_max_hue, roi_max_sat, roi_max_val, roi_mean_red, roi_mean_green, roi_mean_blue, roi_mean_intensity, roi_min_intensity, roi_max_intensity, roi_min_red, roi_max_red, roi_min_green, roi_max_green, roi_min_blue, roi_max_blue
@@ -2492,7 +2754,14 @@ class Viewer(QtWidgets.QMainWindow):
     def detect_coverBoard_2(self):
         print('start analysis')
         #import global variables
-        global newimg, roi_origin, roi_size, filename, roi_mean_red, roi_mean_green, roi_mean_blue, roi_mean_intensity, roi_min_intensity, roi_max_intensity, roi_min_red, roi_max_red, roi_min_green, roi_max_green, roi_min_blue, roi_max_blue, board_min_red, board_max_red, board_mean_red, board_min_green, board_max_green, board_mean_green, board_min_blue, board_max_blue, board_mean_blue, board_min_intensity, board_max_intensity, board_mean_intensity, board_mean_hue, board_mean_sat, board_mean_val, board_min_hue, board_min_sat, board_min_val, board_max_hue, board_max_sat, board_max_val
+        global newimg, roi_origin, roi_size, filename, roi_mean_red,\
+        roi_mean_green, roi_mean_blue, roi_mean_intensity, roi_min_intensity,\
+        roi_max_intensity, roi_min_red, roi_max_red, roi_min_green, roi_max_green,\
+        roi_min_blue, roi_max_blue, board_min_red, board_max_red, board_mean_red,\
+        board_min_green, board_max_green, board_mean_green, board_min_blue, board_max_blue,\
+        board_mean_blue, board_min_intensity, board_max_intensity, board_mean_intensity,\
+        board_mean_hue, board_mean_sat, board_mean_val, board_min_hue, board_min_sat,\
+        board_min_val, board_max_hue, board_max_sat, board_max_val
         
         #set up array
         image = newimg
@@ -2597,7 +2866,9 @@ class Viewer(QtWidgets.QMainWindow):
         #print('start analysis')
         print('not implemented')
         #import global variables
-        global newimg, roi_origin, roi_size, filename, roi_mean_red, roi_mean_green, roi_mean_blue, roi_mean_intensity, roi_min_intensity, roi_max_intensity, roi_min_red, roi_max_red, roi_min_green, roi_max_green, roi_min_blue, roi_max_blue
+        global newimg, roi_origin, roi_size, filename, roi_mean_red, roi_mean_green,\
+        roi_mean_blue, roi_mean_intensity, roi_min_intensity, roi_max_intensity,\
+        roi_min_red, roi_max_red, roi_min_green, roi_max_green, roi_min_blue, roi_max_blue
         
         #set up array
         image = newimg
