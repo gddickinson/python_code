@@ -1435,9 +1435,11 @@ class Console_Coverboard_2(QtWidgets.QDialog):
 
         #### Widgets #####
         self.buttonRun = QtWidgets.QPushButton("Run")
-        self.onFlag = False
+        self.onFlag = False      
+        self.buttonSetAsBoard = QtWidgets.QPushButton("Get board values")        
+        self.buttonReset = QtWidgets.QPushButton("Clear board values")
+        self.buttonBatch = QtWidgets.QPushButton("Batch run")
         
-        self.buttonSetAsBoard = QtWidgets.QPushButton("Get board values")
         
         self.stats_textRed = QtWidgets.QLabel()
         self.stats_textRed.setText("Red: Min = %d, Max = %d, Mean = %d" % (board_min_red, board_max_red, board_mean_red))
@@ -1648,12 +1650,15 @@ class Console_Coverboard_2(QtWidgets.QDialog):
 
         layout.addWidget(self.buttonRun, 0, 8)
         layout.addWidget(self.buttonSetAsBoard, 1, 8)
+        layout.addWidget(self.buttonReset, 2, 8)
+        layout.addWidget(self.buttonBatch, 3, 8) 
         
-        layout.addWidget(self.label1, 2,8)
         
-        layout.addWidget(self.stats_textRed, 4,8)
-        layout.addWidget(self.stats_textGreen, 5,8)
-        layout.addWidget(self.stats_textBlue, 6,8)
+        layout.addWidget(self.label1, 4,8)
+        
+        layout.addWidget(self.stats_textRed, 5,8)
+        layout.addWidget(self.stats_textGreen, 6,8)
+        layout.addWidget(self.stats_textBlue, 7,8)
 
         layout.addWidget(self.stats_textHue, 16,8)
         layout.addWidget(self.stats_textSat, 17,8)
@@ -1661,8 +1666,6 @@ class Console_Coverboard_2(QtWidgets.QDialog):
         
         layout.addWidget(self.stats_textIntensity, 20,8)
         
-        layout.addWidget(self.label_blank, 3,8)
-        layout.addWidget(self.label_blank, 7,8)
         layout.addWidget(self.label_blank, 8,8)
         layout.addWidget(self.label_blank, 13,8)
         layout.addWidget(self.label_blank, 14,8)
@@ -1728,10 +1731,7 @@ class Console_Coverboard_2(QtWidgets.QDialog):
         layout.addWidget(self.sld11, 10,4,9,4)
         layout.addWidget(self.sld12, 10,5,9,5)
   
-
-
-     
-        #layout.addWidget(self.filename_text, 19,0,10,-1)
+        layout.addWidget(self.filename_text, 21,0,21,-1)
 
         self.setLayout(layout)
 
@@ -1766,7 +1766,6 @@ class Console_Coverboard_2(QtWidgets.QDialog):
 
 
 
-
     def slider_1(self):
         if self.sld1.value() < self.red_max:
             self.red_min = self.sld1.value()
@@ -1774,6 +1773,7 @@ class Console_Coverboard_2(QtWidgets.QDialog):
         else:
             self.sld1.setValue(self.red_max)
             self.SpinBox1.setValue(self.red_max)
+        self.update_HSV()
 
     def slider_2(self):
         if self.sld2.value() > self.red_min:
@@ -1782,6 +1782,7 @@ class Console_Coverboard_2(QtWidgets.QDialog):
         else:
             self.sld2.setValue(self.red_min)
             self.SpinBox2.setValue(self.red_min)
+        self.update_HSV()
 
     def slider_3(self):
         if self.sld3.value() < self.green_max:
@@ -1790,6 +1791,7 @@ class Console_Coverboard_2(QtWidgets.QDialog):
         else:
             self.sld3.setValue(self.green_max)
             self.SpinBox3.setValue(self.green_max)
+        self.update_HSV()
 
     def slider_4(self):
         if self.sld4.value() > self.green_min:
@@ -1798,6 +1800,7 @@ class Console_Coverboard_2(QtWidgets.QDialog):
         else:
             self.sld4.setValue(self.green_min)
             self.SpinBox4.setValue(self.green_min)
+        self.update_HSV()
 
     def slider_5(self):
         if self.sld5.value() < self.blue_max:
@@ -1806,6 +1809,7 @@ class Console_Coverboard_2(QtWidgets.QDialog):
         else:
             self.sld5.setValue(self.blue_max)
             self.SpinBox5.setValue(self.blue_max)
+        self.update_HSV()
 
     def slider_6(self):
         if self.sld6.value() > self.blue_min:
@@ -1814,6 +1818,7 @@ class Console_Coverboard_2(QtWidgets.QDialog):
         else:
             self.sld6.setValue(self.blue_min)
             self.SpinBox6.setValue(self.blue_min)
+        self.update_HSV()
 
     def slider_7(self):
         if self.sld7.value() < self.hue_max:
@@ -1822,6 +1827,7 @@ class Console_Coverboard_2(QtWidgets.QDialog):
         else:
             self.sld7.setValue(self.hue_max)
             self.SpinBox7.setValue(self.hue_max)
+        self.update_RGB()
 
     def slider_8(self):
         if self.sld8.value() > self.hue_min:
@@ -1830,6 +1836,7 @@ class Console_Coverboard_2(QtWidgets.QDialog):
         else:
             self.sld8.setValue(self.hue_min)
             self.SpinBox8.setValue(self.hue_min)
+        self.update_RGB()
 
     def slider_9(self):
         if self.sld9.value() < self.sat_max:
@@ -1838,6 +1845,7 @@ class Console_Coverboard_2(QtWidgets.QDialog):
         else:
             self.sld9.setValue(self.sat_max)
             self.SpinBox9.setValue(self.sat_max)
+        self.update_RGB()
 
     def slider_10(self):
         if self.sld10.value() > self.sat_min:
@@ -1846,6 +1854,7 @@ class Console_Coverboard_2(QtWidgets.QDialog):
         else:
             self.sld10.setValue(self.sat_min)
             self.SpinBox10.setValue(self.sat_min)
+        self.update_RGB()
 
     def slider_11(self):
         if self.sld11.value() < self.val_max:
@@ -1854,6 +1863,7 @@ class Console_Coverboard_2(QtWidgets.QDialog):
         else:
             self.sld11.setValue(self.val_max)
             self.SpinBox11.setValue(self.val_max)
+        self.update_RGB()
 
     def slider_12(self):
         if self.sld12.value() > self.val_min:
@@ -1862,8 +1872,14 @@ class Console_Coverboard_2(QtWidgets.QDialog):
         else:
             self.sld12.setValue(self.val_min)
             self.SpinBox12.setValue(self.val_min)
+        self.update_RGB()
 
 
+    def update_HSV(self):
+        pass
+    
+    def update_RGB(self):
+        pass
 
 
     def button_run(self):
