@@ -1432,6 +1432,7 @@ class Console_Coverboard_2(QtWidgets.QDialog):
         self.hsvValues_v_max = []
         self.hsvValues_v_mean = []
         
+        self.pathname = 'None'
 
         #### Widgets #####
         self.buttonRun = QtWidgets.QPushButton("Run")
@@ -1439,6 +1440,7 @@ class Console_Coverboard_2(QtWidgets.QDialog):
         self.buttonSetAsBoard = QtWidgets.QPushButton("Sample board values")  
         self.buttonSetSliders = QtWidgets.QPushButton("Set board values")  
         self.buttonReset = QtWidgets.QPushButton("Clear board values")
+        self.buttonPicker = QtWidgets.QPushButton("Set from colour picker")
         self.buttonBatchPath = QtWidgets.QPushButton("Get batch path")
         self.buttonBatch = QtWidgets.QPushButton("Batch run")
         
@@ -1469,6 +1471,9 @@ class Console_Coverboard_2(QtWidgets.QDialog):
         
         self.filename_text = QtWidgets.QLabel()
         self.filename_text.setText("file: %s" %filename)
+        
+        self.batchpath_text = QtWidgets.QLabel()
+        self.batchpath_text.setText("Batch folder = : %s" %self.pathname)       
 
         self.label_RMin = QtWidgets.QLabel()
         self.label_BMin = QtWidgets.QLabel()
@@ -1652,30 +1657,32 @@ class Console_Coverboard_2(QtWidgets.QDialog):
 
         layout.addWidget(self.buttonRun, 0, 8)
         layout.addWidget(self.buttonSetAsBoard, 1, 8)
-        layout.addWidget(self.buttonSetSliders, 2, 8)   
-        layout.addWidget(self.buttonReset, 3, 8)
-        layout.addWidget(self.buttonBatchPath, 4, 8) 
-        layout.addWidget(self.buttonBatch, 5, 8)
+        layout.addWidget(self.buttonSetSliders, 2, 8)        
+        layout.addWidget(self.buttonPicker, 4, 8)  
+        layout.addWidget(self.buttonReset, 5, 8)
+        layout.addWidget(self.buttonBatchPath, 6, 8) 
+        layout.addWidget(self.buttonBatch, 7, 8)
         
-        layout.addWidget(self.label1, 6,8)
+        layout.addWidget(self.label1, 8,8)
         
-        layout.addWidget(self.stats_textRed, 7,8)
-        layout.addWidget(self.stats_textGreen, 8,8)
-        layout.addWidget(self.stats_textBlue, 9,8)
+        layout.addWidget(self.stats_textRed, 9,8)
+        layout.addWidget(self.stats_textGreen, 10,8)
+        layout.addWidget(self.stats_textBlue, 11,8)
 
         layout.addWidget(self.stats_textHue, 16,8)
         layout.addWidget(self.stats_textSat, 17,8)
         layout.addWidget(self.stats_textVal, 18,8)        
         
         layout.addWidget(self.stats_textIntensity, 20,8)
-        
+   
+        layout.addWidget(self.label_blank, 3,8)      
+        layout.addWidget(self.label_blank, 12,8)     
         layout.addWidget(self.label_blank, 13,8)
         layout.addWidget(self.label_blank, 14,8)
         layout.addWidget(self.label_blank, 15,8)
-        layout.addWidget(self.label_blank, 10,8)
-        layout.addWidget(self.label_blank, 11,8)
-        layout.addWidget(self.label_blank, 12,8)
         layout.addWidget(self.label_blank, 19,8)
+        layout.addWidget(self.label_blank, 21,8)
+        layout.addWidget(self.label_blank, 22,8)
 
         layout.addWidget(self.label_RMin, 8,0)
         layout.addWidget(self.label_RMax, 8,1)
@@ -1733,6 +1740,7 @@ class Console_Coverboard_2(QtWidgets.QDialog):
         layout.addWidget(self.sld12, 10,5,9,5)
   
         layout.addWidget(self.filename_text, 21,0,21,-1)
+        layout.addWidget(self.batchpath_text, 22, 0, 22, -1)
 
         self.setLayout(layout)
 
@@ -1740,6 +1748,9 @@ class Console_Coverboard_2(QtWidgets.QDialog):
         self.connect(self.buttonSetAsBoard,SIGNAL("clicked()"),self.button_setAsBoard)
         self.connect(self.buttonSetSliders,SIGNAL("clicked()"),self.setSliders)
         self.connect(self.buttonReset,SIGNAL("clicked()"),self.resetSampling)
+        self.connect(self.buttonBatchPath,SIGNAL("clicked()"),self.getPath) 
+        self.connect(self.buttonPicker,SIGNAL("clicked()"),self.setFromPicker)   
+         
 
         self.connect(self.sld1,SIGNAL("valueChanged(int)"), self.slider_1)
         self.connect(self.sld1,SIGNAL("valueChanged(int)"),self.SpinBox1.setValue)
@@ -2116,6 +2127,89 @@ class Console_Coverboard_2(QtWidgets.QDialog):
         board_median_hue = (self.hue_max + self.hue_min)/2
         board_median_sat = (self.sat_max + self.sat_min)/2
         board_median_val = (self.val_max + self.val_min)/2
+
+    def getPath(self):
+        pathname = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select a folder',
+                os.path.expanduser("~"), QtWidgets.QFileDialog.ShowDirsOnly)
+        
+        self.pathname = str(pathname)
+        #print(pathname)
+#        if pathname == '':
+#            return False
+#        else:
+#            self.runBatch(pathname)
+#            return
+        self.batchpath_text.setText("Batch folder = : %s" %self.pathname) 
+        
+    def setFromPicker(self):
+        
+        global picker_HSV, picker_RGB
+
+        self.board_min_hue = picker_HSV[0] - 5
+        self.board_min_sat = picker_HSV[1] - 15
+        self.board_min_val = picker_HSV[2] - 50
+
+        self.board_max_hue = picker_HSV[0] + 5
+        self.board_max_sat = picker_HSV[1] + 5
+        self.board_max_val = picker_HSV[2] + 50
+
+        
+        self.board_min_red,self.board_min_green,self.board_min_blue  = RGB_2_HSV((self.board_min_hue,self.board_min_sat,self.board_min_val))
+        self.board_max_red,self.board_max_green,self.board_max_blue  = RGB_2_HSV((self.board_max_hue,self.board_max_sat,self.board_max_val))
+
+
+        self.SpinBox1.setRange(0, self.board_max_red)
+        self.sld1.setValue(self.board_min_red)
+        self.SpinBox1.setValue(self.board_min_red)
+    
+        self.SpinBox2.setRange(self.board_min_red, 255)
+        self.sld2.setValue(self.board_max_red)
+        self.SpinBox2.setValue(self.board_max_red)
+
+        self.SpinBox3.setRange(0,self.board_max_green)
+        self.sld3.setValue(self.board_min_green)
+        self.SpinBox3.setValue(self.board_min_green)
+        
+        self.SpinBox4.setRange(self.board_min_green, 255)
+        self.sld4.setValue(self.board_max_green)
+        self.SpinBox4.setValue(self.board_max_green)
+
+        self.SpinBox5.setRange(0,self.board_max_blue)
+        self.sld5.setValue(self.board_min_blue)
+        self.SpinBox5.setValue(self.board_min_blue)
+        
+        self.SpinBox6.setRange(self.board_min_blue, 255)
+        self.sld6.setValue(self.board_max_blue)
+        self.SpinBox6.setValue(self.board_max_blue)
+
+        self.SpinBox7.setRange(0,self.board_max_hue)
+        self.sld7.setValue(self.board_min_hue)
+        self.SpinBox7.setValue(self.board_min_hue)
+        
+        self.SpinBox8.setRange(self.board_min_hue, 255)
+        self.sld8.setValue(self.board_max_hue)
+        self.SpinBox8.setValue(self.board_max_hue)
+
+        self.SpinBox9.setRange(0,self.board_max_sat)
+        self.sld9.setValue(self.board_min_sat)
+        self.SpinBox9.setValue(self.board_min_sat)
+        
+        self.SpinBox10.setRange(self.board_min_sat, 255)
+        self.sld10.setValue(self.board_max_sat)
+        self.SpinBox10.setValue(self.board_max_sat)
+
+        self.SpinBox11.setRange(0,self.board_max_val)
+        self.sld11.setValue(self.board_min_val)
+        self.SpinBox11.setValue(self.board_min_val)
+        
+        self.SpinBox12.setRange(self.board_min_val, 255)
+        self.sld12.setValue(self.board_max_val)
+        self.SpinBox12.setValue(self.board_max_val)
+        
+        self.setGlobalHSV()
+        
+        return
+
 
 
 

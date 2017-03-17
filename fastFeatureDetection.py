@@ -19,10 +19,10 @@ kp = fast.detect(img,None)
 img2 = cv2.drawKeypoints(img, kp, color=(255,0,0))
 
 # Print all default params
-print "Threshold: ", fast.getInt('threshold')
-print "nonmaxSuppression: ", fast.getBool('nonmaxSuppression')
+print ("Threshold: ", fast.getInt('threshold'))
+print ("nonmaxSuppression: ", fast.getBool('nonmaxSuppression'))
 #print "neighborhood: ", fast.getInt('type')
-print "Total Keypoints with nonmaxSuppression: ", len(kp)
+print ("Total Keypoints with nonmaxSuppression: ", len(kp))
 
 #cv2.imwrite('fast_true.png',img2)
 
@@ -30,7 +30,7 @@ print "Total Keypoints with nonmaxSuppression: ", len(kp)
 fast.setBool('nonmaxSuppression',0)
 kp = fast.detect(img,None)
 
-print "Total Keypoints without nonmaxSuppression: ", len(kp)
+print( "Total Keypoints without nonmaxSuppression: ", len(kp))
 
 img3 = cv2.drawKeypoints(img, kp, color=(255,0,0))
 
