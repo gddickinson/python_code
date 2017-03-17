@@ -1436,7 +1436,8 @@ class Console_Coverboard_2(QtWidgets.QDialog):
         #### Widgets #####
         self.buttonRun = QtWidgets.QPushButton("Run")
         self.onFlag = False      
-        self.buttonSetAsBoard = QtWidgets.QPushButton("Get board values")        
+        self.buttonSetAsBoard = QtWidgets.QPushButton("Sample board values")  
+        self.buttonSetSliders = QtWidgets.QPushButton("Set board values")  
         self.buttonReset = QtWidgets.QPushButton("Clear board values")
         self.buttonBatchPath = QtWidgets.QPushButton("Get batch path")
         self.buttonBatch = QtWidgets.QPushButton("Batch run")
@@ -1651,15 +1652,16 @@ class Console_Coverboard_2(QtWidgets.QDialog):
 
         layout.addWidget(self.buttonRun, 0, 8)
         layout.addWidget(self.buttonSetAsBoard, 1, 8)
-        layout.addWidget(self.buttonReset, 2, 8)
-        layout.addWidget(self.buttonBatchPath, 3, 8) 
-        layout.addWidget(self.buttonBatch, 4, 8)
+        layout.addWidget(self.buttonSetSliders, 2, 8)   
+        layout.addWidget(self.buttonReset, 3, 8)
+        layout.addWidget(self.buttonBatchPath, 4, 8) 
+        layout.addWidget(self.buttonBatch, 5, 8)
         
-        layout.addWidget(self.label1, 5,8)
+        layout.addWidget(self.label1, 6,8)
         
-        layout.addWidget(self.stats_textRed, 6,8)
-        layout.addWidget(self.stats_textGreen, 7,8)
-        layout.addWidget(self.stats_textBlue, 8,8)
+        layout.addWidget(self.stats_textRed, 7,8)
+        layout.addWidget(self.stats_textGreen, 8,8)
+        layout.addWidget(self.stats_textBlue, 9,8)
 
         layout.addWidget(self.stats_textHue, 16,8)
         layout.addWidget(self.stats_textSat, 17,8)
@@ -1674,7 +1676,6 @@ class Console_Coverboard_2(QtWidgets.QDialog):
         layout.addWidget(self.label_blank, 11,8)
         layout.addWidget(self.label_blank, 12,8)
         layout.addWidget(self.label_blank, 19,8)
-        layout.addWidget(self.label_blank, 9,8)
 
         layout.addWidget(self.label_RMin, 8,0)
         layout.addWidget(self.label_RMax, 8,1)
@@ -1737,6 +1738,8 @@ class Console_Coverboard_2(QtWidgets.QDialog):
 
         self.connect(self.buttonRun,SIGNAL("clicked()"),self.button_run)
         self.connect(self.buttonSetAsBoard,SIGNAL("clicked()"),self.button_setAsBoard)
+        self.connect(self.buttonSetSliders,SIGNAL("clicked()"),self.setSliders)
+        self.connect(self.buttonReset,SIGNAL("clicked()"),self.resetSampling)
 
         self.connect(self.sld1,SIGNAL("valueChanged(int)"), self.slider_1)
         self.connect(self.sld1,SIGNAL("valueChanged(int)"),self.SpinBox1.setValue)
@@ -1839,7 +1842,7 @@ class Console_Coverboard_2(QtWidgets.QDialog):
         else:
             self.sld7.setValue(self.hue_max)
             self.SpinBox7.setValue(self.hue_max)
-
+        self.setGlobalHSV()
 
     def slider_8(self):
         if self.sld8.value() > self.hue_min:
@@ -1848,7 +1851,7 @@ class Console_Coverboard_2(QtWidgets.QDialog):
         else:
             self.sld8.setValue(self.hue_min)
             self.SpinBox8.setValue(self.hue_min)
-
+        self.setGlobalHSV()
 
     def slider_9(self):
         if self.sld9.value() < self.sat_max:
@@ -1857,7 +1860,7 @@ class Console_Coverboard_2(QtWidgets.QDialog):
         else:
             self.sld9.setValue(self.sat_max)
             self.SpinBox9.setValue(self.sat_max)
-
+        self.setGlobalHSV()
 
     def slider_10(self):
         if self.sld10.value() > self.sat_min:
@@ -1866,7 +1869,7 @@ class Console_Coverboard_2(QtWidgets.QDialog):
         else:
             self.sld10.setValue(self.sat_min)
             self.SpinBox10.setValue(self.sat_min)
-
+        self.setGlobalHSV()
 
     def slider_11(self):
         if self.sld11.value() < self.val_max:
@@ -1875,7 +1878,7 @@ class Console_Coverboard_2(QtWidgets.QDialog):
         else:
             self.sld11.setValue(self.val_max)
             self.SpinBox11.setValue(self.val_max)
-
+        self.setGlobalHSV()
 
     def slider_12(self):
         if self.sld12.value() > self.val_min:
@@ -1884,8 +1887,7 @@ class Console_Coverboard_2(QtWidgets.QDialog):
         else:
             self.sld12.setValue(self.val_min)
             self.SpinBox12.setValue(self.val_min)
-
-
+        self.setGlobalHSV()
 
     def update_HSV(self):
         min_hsv = RGB_2_HSV((self.red_min,self.green_min,self.blue_min))
@@ -1957,90 +1959,163 @@ class Console_Coverboard_2(QtWidgets.QDialog):
         self.hsvValues_s_mean.append(roi_mean_sat)
         self.hsvValues_v_mean.append(roi_mean_val)    
         
-        board_min_red = np.min(self.rgbValues_red_min)
-        board_max_red = np.max(self.rgbValues_red_max)
-        board_mean_red = np.mean(self.rgbValues_red_mean)
+        self.board_min_red = np.min(self.rgbValues_red_min)
+        self.board_max_red = np.max(self.rgbValues_red_max)
+        self.board_mean_red = np.mean(self.rgbValues_red_mean)
         
-        board_min_green = np.min(self.rgbValues_green_min)
-        board_max_green = np.max(self.rgbValues_green_max)
-        board_mean_green = np.mean(self.rgbValues_green_mean)
+        self.board_min_green = np.min(self.rgbValues_green_min)
+        self.board_max_green = np.max(self.rgbValues_green_max)
+        self.board_mean_green = np.mean(self.rgbValues_green_mean)
         
-        board_min_blue = np.min(self.rgbValues_blue_min)
-        board_max_blue = np.max(self.rgbValues_blue_max)
-        board_mean_blue = np.mean(self.rgbValues_blue_mean)
+        self.board_min_blue = np.min(self.rgbValues_blue_min)
+        self.board_max_blue = np.max(self.rgbValues_blue_max)
+        self.board_mean_blue = np.mean(self.rgbValues_blue_mean)
 
-        board_min_hue = np.min(self.hsvValues_h_min)
-        board_max_hue = np.max(self.hsvValues_h_max)
-        board_mean_hue = np.mean(self.hsvValues_h_mean)
+        self.board_min_hue = np.min(self.hsvValues_h_min)
+        self.board_max_hue = np.max(self.hsvValues_h_max)
+        self.board_mean_hue = np.mean(self.hsvValues_h_mean)
         
-        board_min_sat = np.min(self.hsvValues_s_min)
-        board_max_sat = np.max(self.hsvValues_s_max)
-        board_mean_sat = np.mean(self.hsvValues_s_mean)
+        self.board_min_sat = np.min(self.hsvValues_s_min)
+        self.board_max_sat = np.max(self.hsvValues_s_max)
+        self.board_mean_sat = np.mean(self.hsvValues_s_mean)
         
-        board_min_val = np.min(self.hsvValues_v_min)
-        board_max_val = np.max(self.hsvValues_v_max)
-        board_mean_val = np.mean(self.hsvValues_v_mean)
+        self.board_min_val = np.min(self.hsvValues_v_min)
+        self.board_max_val = np.max(self.hsvValues_v_max)
+        self.board_mean_val = np.mean(self.hsvValues_v_mean)
 
-        self.stats_textRed.setText("Red: Min = %d, Max = %d, Mean = %d" % (board_min_red, board_max_red, board_mean_red))
-        self.stats_textGreen.setText("Green: Min = %d, Max = %d, Mean = %d" % (board_min_green, board_max_green, board_mean_green))
-        self.stats_textBlue.setText("Blue: Min = %d, Max = %d, Mean = %d" % (board_min_blue, board_max_blue, board_mean_blue))
+        self.stats_textRed.setText("Red: Min = %d, Max = %d, Mean = %d" % (self.board_min_red, self.board_max_red, self.board_mean_red))
+        self.stats_textGreen.setText("Green: Min = %d, Max = %d, Mean = %d" % (self.board_min_green, self.board_max_green, self.board_mean_green))
+        self.stats_textBlue.setText("Blue: Min = %d, Max = %d, Mean = %d" % (self.board_min_blue, self.board_max_blue, self.board_mean_blue))
         self.stats_textIntensity.setText("Intensity: Min = %d, Max = %d, Mean = %d" % (board_min_intensity, board_max_intensity, board_mean_intensity))
-        self.stats_textHue.setText("Hue: Min = %d, Max = %d, Mean = %d" % (board_min_hue,board_max_hue, board_mean_hue))
-        self.stats_textSat.setText("Saturation: Min = %d, Max = %d, Mean = %d" % (board_min_sat, board_max_sat, board_mean_sat))
-        self.stats_textVal.setText("Value: Min = %d, Max = %d, Mean = %d" % (board_min_val, board_max_val, board_mean_val))
+        self.stats_textHue.setText("Hue: Min = %d, Max = %d, Mean = %d" % (self.board_min_hue, self.board_max_hue, self.board_mean_hue))
+        self.stats_textSat.setText("Saturation: Min = %d, Max = %d, Mean = %d" % (self.board_min_sat, self.board_max_sat, self.board_mean_sat))
+        self.stats_textVal.setText("Value: Min = %d, Max = %d, Mean = %d" % (self.board_min_val, self.board_max_val, self.board_mean_val))
 
-        self.SpinBox1.setRange(0,board_max_red)
-        self.sld1.setValue(board_min_red)
-        self.SpinBox1.setValue(board_min_red)
+
+    def resetSampling (self):
+        self.rgbValues_red_min = []
+        self.rgbValues_green_min = []
+        self.rgbValues_blue_min = []
         
-        self.SpinBox2.setRange(board_min_red, 255)
-        self.sld2.setValue(board_max_red)
-        self.SpinBox2.setValue(board_max_red)
+        self.rgbValues_red_max = []
+        self.rgbValues_green_max = []
+        self.rgbValues_blue_max = []
 
-        self.SpinBox3.setRange(0,board_max_green)
-        self.sld3.setValue(board_min_green)
-        self.SpinBox3.setValue(board_min_green)
+        self.rgbValues_red_mean = []
+        self.rgbValues_green_mean = []
+        self.rgbValues_blue_mean = []         
+             
+        self.hsvValues_h_min = []
+        self.hsvValues_s_min = []
+        self.hsvValues_v_min = []
         
-        self.SpinBox4.setRange(board_min_green, 255)
-        self.sld4.setValue(board_max_green)
-        self.SpinBox4.setValue(board_max_green)
+        self.hsvValues_h_max = []
+        self.hsvValues_s_max = []
+        self.hsvValues_v_max = []
 
-        self.SpinBox5.setRange(0,board_max_blue)
-        self.sld5.setValue(board_min_blue)
-        self.SpinBox5.setValue(board_min_blue)
+        self.hsvValues_h_mean = []
+        self.hsvValues_s_mean = []
+        self.hsvValues_v_mean = [] 
         
-        self.SpinBox6.setRange(board_min_blue, 255)
-        self.sld6.setValue(board_max_blue)
-        self.SpinBox6.setValue(board_max_blue)
-
-        self.SpinBox7.setRange(0,board_max_hue)
-        self.sld7.setValue(board_min_hue)
-        self.SpinBox7.setValue(board_min_hue)
+        self.board_min_red = 0
+        self.board_max_red = 0
+        self.board_mean_red = 0
         
-        self.SpinBox8.setRange(board_min_hue, 255)
-        self.sld8.setValue(board_max_hue)
-        self.SpinBox8.setValue(board_max_hue)
-
-        self.SpinBox9.setRange(0,board_max_sat)
-        self.sld9.setValue(board_min_sat)
-        self.SpinBox9.setValue(board_min_sat)
+        self.board_min_green = 0
+        self.board_max_green = 0
+        self.board_mean_green = 0
         
-        self.SpinBox10.setRange(board_min_sat, 255)
-        self.sld10.setValue(board_max_sat)
-        self.SpinBox10.setValue(board_max_sat)
+        self.board_min_blue = 0
+        self.board_max_blue = 0
+        self.board_mean_blue = 0
 
-        self.SpinBox11.setRange(0,board_max_val)
-        self.sld11.setValue(board_min_val)
-        self.SpinBox11.setValue(board_min_val)
+        self.board_min_hue = 0
+        self.board_max_hue = 0
+        self.board_mean_hue = 0
         
-        self.SpinBox12.setRange(board_min_val, 255)
-        self.sld12.setValue(board_max_val)
-        self.SpinBox12.setValue(board_max_val)
+        self.board_min_sat = 0
+        self.board_max_sat = 0
+        self.board_mean_sat = 0
+        
+        self.board_min_val = 0
+        self.board_max_val = 0
+        self.board_mean_val = 0
+        
+        board_min_intensity = 0
+        board_max_intensity = 0
+        board_mean_intensity = 0
 
+        self.stats_textRed.setText("Red: Min = %d, Max = %d, Mean = %d" % (self.board_min_red, self.board_max_red, self.board_mean_red))
+        self.stats_textGreen.setText("Green: Min = %d, Max = %d, Mean = %d" % (self.board_min_green, self.board_max_green, self.board_mean_green))
+        self.stats_textBlue.setText("Blue: Min = %d, Max = %d, Mean = %d" % (self.board_min_blue, self.board_max_blue, self.board_mean_blue))
+        self.stats_textIntensity.setText("Intensity: Min = %d, Max = %d, Mean = %d" % (board_min_intensity, board_max_intensity, board_mean_intensity))
+        self.stats_textHue.setText("Hue: Min = %d, Max = %d, Mean = %d" % (self.board_min_hue, self.board_max_hue, self.board_mean_hue))
+        self.stats_textSat.setText("Saturation: Min = %d, Max = %d, Mean = %d" % (self.board_min_sat, self.board_max_sat, self.board_mean_sat))
+        self.stats_textVal.setText("Value: Min = %d, Max = %d, Mean = %d" % (self.board_min_val, self.board_max_val, self.board_mean_val))
 
+    def setSliders(self):
+        self.SpinBox1.setRange(0, self.board_max_red)
+        self.sld1.setValue(self.board_min_red)
+        self.SpinBox1.setValue(self.board_min_red)
+        
+        self.SpinBox2.setRange(self.board_min_red, 255)
+        self.sld2.setValue(self.board_max_red)
+        self.SpinBox2.setValue(self.board_max_red)
 
+        self.SpinBox3.setRange(0,self.board_max_green)
+        self.sld3.setValue(self.board_min_green)
+        self.SpinBox3.setValue(self.board_min_green)
+        
+        self.SpinBox4.setRange(self.board_min_green, 255)
+        self.sld4.setValue(self.board_max_green)
+        self.SpinBox4.setValue(self.board_max_green)
 
+        self.SpinBox5.setRange(0,self.board_max_blue)
+        self.sld5.setValue(self.board_min_blue)
+        self.SpinBox5.setValue(self.board_min_blue)
+        
+        self.SpinBox6.setRange(self.board_min_blue, 255)
+        self.sld6.setValue(self.board_max_blue)
+        self.SpinBox6.setValue(self.board_max_blue)
+
+        self.SpinBox7.setRange(0,self.board_max_hue)
+        self.sld7.setValue(self.board_min_hue)
+        self.SpinBox7.setValue(self.board_min_hue)
+        
+        self.SpinBox8.setRange(self.board_min_hue, 255)
+        self.sld8.setValue(self.board_max_hue)
+        self.SpinBox8.setValue(self.board_max_hue)
+
+        self.SpinBox9.setRange(0,self.board_max_sat)
+        self.sld9.setValue(self.board_min_sat)
+        self.SpinBox9.setValue(self.board_min_sat)
+        
+        self.SpinBox10.setRange(self.board_min_sat, 255)
+        self.sld10.setValue(self.board_max_sat)
+        self.SpinBox10.setValue(self.board_max_sat)
+
+        self.SpinBox11.setRange(0,self.board_max_val)
+        self.sld11.setValue(self.board_min_val)
+        self.SpinBox11.setValue(self.board_min_val)
+        
+        self.SpinBox12.setRange(self.board_min_val, 255)
+        self.sld12.setValue(self.board_max_val)
+        self.SpinBox12.setValue(self.board_max_val)
         return
+
+    def setGlobalHSV(self):   
+        global board_median_hue, board_median_sat, board_median_val, board_min_hue, board_min_sat, board_min_val, board_max_hue, board_max_sat, board_max_val 
+
+        board_min_hue = self.hue_min
+        board_max_hue = self.hue_max
+        board_min_sat = self.sat_min
+        board_max_sat = self.sat_max
+        board_min_val = self.val_min
+        board_max_val = self.val_max
+        
+        board_median_hue = (self.hue_max + self.hue_min)/2
+        board_median_sat = (self.sat_max + self.sat_min)/2
+        board_median_val = (self.val_max + self.val_min)/2
 
 
 
@@ -2816,7 +2891,7 @@ class Viewer(QtWidgets.QMainWindow):
         board_min_green, board_max_green, board_mean_green, board_min_blue, board_max_blue,\
         board_mean_blue, board_min_intensity, board_max_intensity, board_mean_intensity,\
         board_mean_hue, board_mean_sat, board_mean_val, board_min_hue, board_min_sat,\
-        board_min_val, board_max_hue, board_max_sat, board_max_val
+        board_min_val, board_max_hue, board_max_sat, board_max_val, board_median_hue, board_median_sat, board_median_val
         
         #set up array
         image = newimg
@@ -2861,13 +2936,13 @@ class Viewer(QtWidgets.QMainWindow):
         s_range = abs(board_max_sat-board_min_sat) + s_buffer
         v_range = abs(board_max_val-board_min_val) + v_buffer
         
-        low_h = board_mean_hue - h_range
-        low_s = board_mean_sat - s_range
-        low_v = board_mean_val - v_range
+        low_h = board_median_hue - h_range
+        low_s = board_median_sat - s_range
+        low_v = board_median_val - v_range
         
-        high_h = board_mean_hue + h_range
-        high_s = board_mean_sat + s_range
-        high_v = board_mean_val + v_range
+        high_h = board_median_hue + h_range
+        high_s = board_median_sat + s_range
+        high_v = board_median_val + v_range
         
         if low_h <0:
             low_h = 0
