@@ -1438,6 +1438,7 @@ class Console_Coverboard_2(QtWidgets.QDialog):
         self.onFlag = False      
         self.buttonSetAsBoard = QtWidgets.QPushButton("Get board values")        
         self.buttonReset = QtWidgets.QPushButton("Clear board values")
+        self.buttonBatchPath = QtWidgets.QPushButton("Get batch path")
         self.buttonBatch = QtWidgets.QPushButton("Batch run")
         
         
@@ -1651,14 +1652,14 @@ class Console_Coverboard_2(QtWidgets.QDialog):
         layout.addWidget(self.buttonRun, 0, 8)
         layout.addWidget(self.buttonSetAsBoard, 1, 8)
         layout.addWidget(self.buttonReset, 2, 8)
-        layout.addWidget(self.buttonBatch, 3, 8) 
+        layout.addWidget(self.buttonBatchPath, 3, 8) 
+        layout.addWidget(self.buttonBatch, 4, 8)
         
+        layout.addWidget(self.label1, 5,8)
         
-        layout.addWidget(self.label1, 4,8)
-        
-        layout.addWidget(self.stats_textRed, 5,8)
-        layout.addWidget(self.stats_textGreen, 6,8)
-        layout.addWidget(self.stats_textBlue, 7,8)
+        layout.addWidget(self.stats_textRed, 6,8)
+        layout.addWidget(self.stats_textGreen, 7,8)
+        layout.addWidget(self.stats_textBlue, 8,8)
 
         layout.addWidget(self.stats_textHue, 16,8)
         layout.addWidget(self.stats_textSat, 17,8)
@@ -1666,7 +1667,6 @@ class Console_Coverboard_2(QtWidgets.QDialog):
         
         layout.addWidget(self.stats_textIntensity, 20,8)
         
-        layout.addWidget(self.label_blank, 8,8)
         layout.addWidget(self.label_blank, 13,8)
         layout.addWidget(self.label_blank, 14,8)
         layout.addWidget(self.label_blank, 15,8)
@@ -1740,40 +1740,52 @@ class Console_Coverboard_2(QtWidgets.QDialog):
 
         self.connect(self.sld1,SIGNAL("valueChanged(int)"), self.slider_1)
         self.connect(self.sld1,SIGNAL("valueChanged(int)"),self.SpinBox1.setValue)
+        self.connect(self.sld1,SIGNAL("valueChanged(int)"),self.update_HSV)   
         self.connect(self.sld2,SIGNAL("valueChanged(int)"), self.slider_2)
         self.connect(self.sld2,SIGNAL("valueChanged(int)"),self.SpinBox2.setValue)
+        self.connect(self.sld2,SIGNAL("valueChanged(int)"),self.update_HSV)
         self.connect(self.sld3,SIGNAL("valueChanged(int)"), self.slider_3)
         self.connect(self.sld3,SIGNAL("valueChanged(int)"),self.SpinBox3.setValue)
+        self.connect(self.sld3,SIGNAL("valueChanged(int)"),self.update_HSV)
         self.connect(self.sld4,SIGNAL("valueChanged(int)"), self.slider_4)
         self.connect(self.sld4,SIGNAL("valueChanged(int)"),self.SpinBox4.setValue)
+        self.connect(self.sld4,SIGNAL("valueChanged(int)"),self.update_HSV)
         self.connect(self.sld5,SIGNAL("valueChanged(int)"), self.slider_5)
         self.connect(self.sld5,SIGNAL("valueChanged(int)"),self.SpinBox5.setValue)
+        self.connect(self.sld5,SIGNAL("valueChanged(int)"),self.update_HSV)
         self.connect(self.sld6,SIGNAL("valueChanged(int)"), self.slider_6)
         self.connect(self.sld6,SIGNAL("valueChanged(int)"),self.SpinBox6.setValue)
+        self.connect(self.sld6,SIGNAL("valueChanged(int)"),self.update_HSV)
 
         self.connect(self.sld7,SIGNAL("valueChanged(int)"), self.slider_7)
         self.connect(self.sld7,SIGNAL("valueChanged(int)"),self.SpinBox7.setValue)
+        #self.connect(self.sld7,SIGNAL("valueChanged(int)"),self.update_RGB)        
         self.connect(self.sld8,SIGNAL("valueChanged(int)"), self.slider_8)
         self.connect(self.sld8,SIGNAL("valueChanged(int)"),self.SpinBox8.setValue)
+        #self.connect(self.sld8,SIGNAL("valueChanged(int)"),self.update_RGB)         
         self.connect(self.sld9,SIGNAL("valueChanged(int)"), self.slider_9)
         self.connect(self.sld9,SIGNAL("valueChanged(int)"),self.SpinBox9.setValue)
+        #self.connect(self.sld9,SIGNAL("valueChanged(int)"),self.update_RGB)        
         self.connect(self.sld10,SIGNAL("valueChanged(int)"), self.slider_10)
         self.connect(self.sld10,SIGNAL("valueChanged(int)"),self.SpinBox10.setValue)
+        #self.connect(self.sld10,SIGNAL("valueChanged(int)"),self.update_RGB)          
         self.connect(self.sld11,SIGNAL("valueChanged(int)"), self.slider_11)
         self.connect(self.sld11,SIGNAL("valueChanged(int)"),self.SpinBox11.setValue)
+        #self.connect(self.sld11,SIGNAL("valueChanged(int)"),self.update_RGB)         
         self.connect(self.sld12,SIGNAL("valueChanged(int)"), self.slider_12)
         self.connect(self.sld12,SIGNAL("valueChanged(int)"),self.SpinBox12.setValue)
-
+        #self.connect(self.sld12,SIGNAL("valueChanged(int)"),self.update_RGB) 
 
 
     def slider_1(self):
         if self.sld1.value() < self.red_max:
             self.red_min = self.sld1.value()
             self.SpinBox2.setRange(self.red_min,255)
+
         else:
             self.sld1.setValue(self.red_max)
             self.SpinBox1.setValue(self.red_max)
-        self.update_HSV()
+
 
     def slider_2(self):
         if self.sld2.value() > self.red_min:
@@ -1782,7 +1794,7 @@ class Console_Coverboard_2(QtWidgets.QDialog):
         else:
             self.sld2.setValue(self.red_min)
             self.SpinBox2.setValue(self.red_min)
-        self.update_HSV()
+
 
     def slider_3(self):
         if self.sld3.value() < self.green_max:
@@ -1791,7 +1803,7 @@ class Console_Coverboard_2(QtWidgets.QDialog):
         else:
             self.sld3.setValue(self.green_max)
             self.SpinBox3.setValue(self.green_max)
-        self.update_HSV()
+
 
     def slider_4(self):
         if self.sld4.value() > self.green_min:
@@ -1800,7 +1812,7 @@ class Console_Coverboard_2(QtWidgets.QDialog):
         else:
             self.sld4.setValue(self.green_min)
             self.SpinBox4.setValue(self.green_min)
-        self.update_HSV()
+
 
     def slider_5(self):
         if self.sld5.value() < self.blue_max:
@@ -1809,7 +1821,7 @@ class Console_Coverboard_2(QtWidgets.QDialog):
         else:
             self.sld5.setValue(self.blue_max)
             self.SpinBox5.setValue(self.blue_max)
-        self.update_HSV()
+
 
     def slider_6(self):
         if self.sld6.value() > self.blue_min:
@@ -1818,7 +1830,7 @@ class Console_Coverboard_2(QtWidgets.QDialog):
         else:
             self.sld6.setValue(self.blue_min)
             self.SpinBox6.setValue(self.blue_min)
-        self.update_HSV()
+
 
     def slider_7(self):
         if self.sld7.value() < self.hue_max:
@@ -1827,7 +1839,7 @@ class Console_Coverboard_2(QtWidgets.QDialog):
         else:
             self.sld7.setValue(self.hue_max)
             self.SpinBox7.setValue(self.hue_max)
-        self.update_RGB()
+
 
     def slider_8(self):
         if self.sld8.value() > self.hue_min:
@@ -1836,7 +1848,7 @@ class Console_Coverboard_2(QtWidgets.QDialog):
         else:
             self.sld8.setValue(self.hue_min)
             self.SpinBox8.setValue(self.hue_min)
-        self.update_RGB()
+
 
     def slider_9(self):
         if self.sld9.value() < self.sat_max:
@@ -1845,7 +1857,7 @@ class Console_Coverboard_2(QtWidgets.QDialog):
         else:
             self.sld9.setValue(self.sat_max)
             self.SpinBox9.setValue(self.sat_max)
-        self.update_RGB()
+
 
     def slider_10(self):
         if self.sld10.value() > self.sat_min:
@@ -1854,7 +1866,7 @@ class Console_Coverboard_2(QtWidgets.QDialog):
         else:
             self.sld10.setValue(self.sat_min)
             self.SpinBox10.setValue(self.sat_min)
-        self.update_RGB()
+
 
     def slider_11(self):
         if self.sld11.value() < self.val_max:
@@ -1863,7 +1875,7 @@ class Console_Coverboard_2(QtWidgets.QDialog):
         else:
             self.sld11.setValue(self.val_max)
             self.SpinBox11.setValue(self.val_max)
-        self.update_RGB()
+
 
     def slider_12(self):
         if self.sld12.value() > self.val_min:
@@ -1872,15 +1884,42 @@ class Console_Coverboard_2(QtWidgets.QDialog):
         else:
             self.sld12.setValue(self.val_min)
             self.SpinBox12.setValue(self.val_min)
-        self.update_RGB()
+
 
 
     def update_HSV(self):
-        pass
+        min_hsv = RGB_2_HSV((self.red_min,self.green_min,self.blue_min))
+        max_hsv = RGB_2_HSV((self.red_max,self.green_max,self.blue_max))
+        self.sld7.setValue(min_hsv[0])
+        self.sld8.setValue(max_hsv[0])       
+        self.sld9.setValue(min_hsv[1])   
+        self.sld10.setValue(max_hsv[1])
+        self.sld11.setValue(min_hsv[2])
+        self.sld12.setValue(max_hsv[2])  
+ 
+        self.SpinBox7.setValue(min_hsv[0])
+        self.SpinBox8.setRange(max_hsv[0])
+        self.SpinBox9.setValue(min_hsv[1])
+        self.SpinBox10.setRange(max_hsv[1])
+        self.SpinBox11.setValue(min_hsv[2])
+        self.SpinBox12.setRange(max_hsv[2])
     
     def update_RGB(self):
-        pass
-
+        min_hsv = HSV_2_RGB((self.hue_min,self.sat_min,self.val_min))
+        max_hsv = HSV_2_RGB((self.hue_min,self.sat_min,self.val_min))
+        self.sld1.setValue(min_hsv[0])
+        self.sld2.setValue(max_hsv[0])       
+        self.sld3.setValue(min_hsv[1])   
+        self.sld4.setValue(max_hsv[1])
+        self.sld5.setValue(min_hsv[2])
+        self.sld6.setValue(max_hsv[2])  
+ 
+        self.SpinBox1.setValue(min_hsv[0])
+        self.SpinBox2.setRange(max_hsv[0])
+        self.SpinBox3.setValue(min_hsv[1])
+        self.SpinBox4.setRange(max_hsv[1])
+        self.SpinBox5.setValue(min_hsv[2])
+        self.SpinBox6.setRange(max_hsv[2])
 
     def button_run(self):
         if self.onFlag == False:
