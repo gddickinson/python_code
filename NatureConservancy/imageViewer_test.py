@@ -1369,21 +1369,34 @@ class Console_Coverboard_2(QtWidgets.QDialog):
     def __init__(self, parent = None):
         super(Console_Coverboard_2, self).__init__(parent)
         
-        global roi_mean_hue, roi_mean_sat, roi_mean_val, roi_min_hue, roi_min_sat, roi_min_val, roi_max_hue, roi_max_sat, roi_max_val, filename, roi_mean_red, roi_mean_green, roi_mean_blue, roi_mean_intensity, roi_min_intensity, roi_max_intensity, roi_min_red, roi_max_red, roi_min_green, roi_max_green, roi_min_blue, roi_max_blue, board_min_red, board_max_red, board_mean_red, board_min_green, board_max_green, board_mean_green, board_min_blue, board_max_blue, board_mean_blue, board_min_intensity, board_max_intensity, board_mean_intensity, board_mean_hue, board_mean_sat, board_mean_val, board_min_hue, board_min_sat, board_min_val, board_max_hue, board_max_sat, board_max_val 
+        global roi_mean_hue, roi_mean_sat, roi_mean_val,\
+            roi_min_hue, roi_min_sat, roi_min_val, roi_max_hue,\
+            roi_max_sat, roi_max_val, filename, roi_mean_red, roi_mean_green,\
+            roi_mean_blue, roi_mean_intensity, roi_min_intensity, roi_max_intensity,\
+            roi_min_red, roi_max_red, roi_min_green, roi_max_green, roi_min_blue,\
+            roi_max_blue, board_min_red, board_max_red, board_mean_red, board_min_green,\
+            board_max_green, board_mean_green, board_min_blue, board_max_blue, board_mean_blue,\
+            board_min_intensity, board_max_intensity, board_mean_intensity, board_mean_hue,\
+            board_mean_sat, board_mean_val, board_min_hue, board_min_sat, board_min_val,\
+            board_max_hue, board_max_sat, board_max_val 
 
 
         ### Variables ####
         #filter variables
         
-        self.red_min = 115
+        self.red_min = 120
         self.red_max = 210
-        self.green_min = 40
-        self.green_max = 110
-        self.blue_min = 15
-        self.blue_max = 75 
+        self.green_min = 53
+        self.green_max = 68
+        self.blue_min = 12
+        self.blue_max = 42 
 
-        self.hue_min, self.sat_min, self.val_min = RGB_2_HSV([self.red_min,self.green_min, self.blue_min])
-        self.hue_max, self.sat_max, self.val_max = RGB_2_HSV([self.red_max,self.green_max, self.blue_max])
+        self.hue_min = 6
+        self.sat_min = 165
+        self.val_min = 121
+        self.hue_max = 12
+        self.sat_max = 240
+        self.val_max = 210
 
         self.sample_min_red = 0
         self.sample_max_red = 0
@@ -1413,33 +1426,33 @@ class Console_Coverboard_2(QtWidgets.QDialog):
         self.sample_max_intensity = 0
         self.sample_mean_intensity = 0
 
-        board_min_red = 0
-        board_max_red = 0
-        board_mean_red = 0
+        board_min_red = self.red_min
+        board_min_green = self.green_min
+        board_min_blue = self.blue_min
+        
+        board_max_red = self.red_max
+        board_max_green = self.green_max
+        board_max_blue = self.blue_max
+        
+        board_mean_red = (board_min_red+board_max_red)/2
+        board_mean_green = (board_min_green+board_max_green)/2
+        board_mean_blue = (board_min_blue+board_max_blue)/2
 
-        board_min_green = 0
-        board_max_green = 0
-        board_mean_green = 0
+        board_min_hue = self.hue_min
+        board_min_sat = self.sat_min
+        board_min_val = self.val_min
+        
+        board_max_hue = self.hue_max
+        board_max_sat = self.sat_max
+        board_max_val = self.val_max
+        
+        board_mean_hue = (board_min_hue+board_max_hue)/2
+        board_mean_sat = (board_min_sat+board_max_sat)/2
+        board_mean_val = (board_min_val+board_max_val)/2
 
-        board_min_blue = 0
-        board_max_blue = 0
-        board_mean_blue = 0
-
-        board_min_hue = 0
-        board_max_hue = 0
-        board_mean_hue = 0
-
-        board_min_sat = 0
-        board_max_sat = 0
-        board_mean_sat = 0
-
-        board_min_val = 0
-        board_max_val = 0
-        board_mean_val = 0
-
-        board_min_intensity = 0
-        board_max_intensity = 0
-        board_mean_intensity = 0
+        board_min_intensity = (board_min_red+board_min_green+board_min_blue)/3
+        board_max_intensity = (board_max_red+board_max_green+board_max_blue)/3
+        board_mean_intensity = (board_mean_red+board_mean_green+board_mean_blue)/3
         
         self.rgbValues = []
         self.hsvValues = []
@@ -2188,14 +2201,23 @@ class Console_Coverboard_2(QtWidgets.QDialog):
         return
 
     def setGlobalHSV(self):   
-        global board_median_hue, board_median_sat, board_median_val, board_min_hue, board_min_sat, board_min_val, board_max_hue, board_max_sat, board_max_val 
+        global board_median_hue, board_median_sat, board_median_val,\
+                board_min_hue, board_min_sat, board_min_val, board_max_hue,\
+                board_max_sat, board_max_val 
 
-        board_min_hue = self.hue_min
-        board_max_hue = self.hue_max
-        board_min_sat = self.sat_min
-        board_max_sat = self.sat_max
-        board_min_val = self.val_min
-        board_max_val = self.val_max
+        board_min_red = self.sld1.value()
+        board_max_red = self.sld2.value()
+        board_min_green = self.sld3.value()
+        board_max_green = self.sld4.value()
+        board_min_blue = self.sld5.value()
+        board_max_blue = self.sld6.value()
+        
+        board_min_hue = self.sld7.value()
+        board_max_hue = self.sld8.value()
+        board_min_sat = self.sld9.value()
+        board_max_sat = self.sld10.value()
+        board_min_val = self.sld11.value()
+        board_max_val = self.sld12.value() 
         
         board_median_hue = (self.hue_max + self.hue_min)/2
         board_median_sat = (self.sat_max + self.sat_min)/2
@@ -3110,7 +3132,15 @@ class Viewer(QtWidgets.QMainWindow):
 #        high_s = board_median_sat + s_range
 #        high_v = board_median_val + v_range
  
+
         low_h = board_min_hue - h_buffer
+        #for some reason hue valuespassed to here  are higher than they should be! Fudging problem with buffer until I can track down the error
+        if board_min_hue >50 and board_min_hue <150:
+            low_h = board_min_hue - h_buffer*6
+        
+        if board_min_hue >149:
+            low_h = board_min_hue - h_buffer*10
+        
         low_s = board_min_sat - s_buffer
         low_v = board_min_val - v_buffer
         
