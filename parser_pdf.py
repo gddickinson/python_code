@@ -10,12 +10,13 @@ import numpy as np
 from PyPDF2 import PdfFileReader
 from collections import Counter
 from collections import OrderedDict
+from matplotlib import pyplot as plt
 
 path = r'C:\Users\George\Desktop\report_no_dir'
 filename = path + r'\abiotic_factors_insect_pop_07.pdf'
 filename2 = path + r'\commonWords.txt'
 
-projectCode = 'c33'
+projectCode = 'd1'
 files_in_dir = os.listdir(path)
 
 
@@ -29,7 +30,7 @@ for word in commonWords:
 
 dateTime = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday', 'january', 'february', 'april', 'march', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december', 'mon', 'tue', 'wed', 'thr', 'fri', 'jan', 'feb', 'apr', 'may', 'aug', 'sep', 'oct', 'nov', 'dec']
 stopwords = ["a", "about", "above", "above", "across", "after", "afterwards", "again", "against", "all", "almost", "alone", "along", "already", "also","although","always","am","among", "amongst", "amoungst", "amount",  "an", "and", "another", "any","anyhow","anyone","anything","anyway", "anywhere", "are", "around", "as",  "at", "back","be","became", "because","become","becomes", "becoming", "been", "before", "beforehand", "behind", "being", "below", "beside", "besides", "between", "beyond", "bill", "both", "bottom","but", "by", "call", "can", "cannot", "cant", "co", "con", "could", "couldnt", "cry", "de", "describe", "detail", "do", "done", "down", "due", "during", "each", "eg", "eight", "either", "eleven","else", "elsewhere", "empty", "enough", "etc", "even", "ever", "every", "everyone", "everything", "everywhere", "except", "few", "fifteen", "fify", "fill", "find", "fire", "first", "five", "for", "former", "formerly", "forty", "found", "four", "from", "front", "full", "further", "get", "give", "go", "had", "has", "hasnt", "have", "he", "hence", "her", "here", "hereafter", "hereby", "herein", "hereupon", "hers", "herself", "him", "himself", "his", "how", "however", "hundred", "ie", "if", "in", "inc", "indeed", "interest", "into", "is", "it", "its", "itself", "keep", "last", "latter", "latterly", "least", "less", "ltd", "made", "many", "may", "me", "meanwhile", "might", "mill", "mine", "more", "moreover", "most", "mostly", "move", "much", "must", "my", "myself", "name", "namely", "neither", "never", "nevertheless", "next", "nine", "no", "nobody", "none", "noone", "nor", "not", "nothing", "now", "nowhere", "of", "off", "often", "on", "once", "one", "only", "onto", "or", "other", "others", "otherwise", "our", "ours", "ourselves", "out", "over", "own","part", "per", "perhaps", "please", "put", "rather", "re", "same", "see", "seem", "seemed", "seeming", "seems", "serious", "several", "she", "should", "show", "side", "since", "sincere", "six", "sixty", "so", "some", "somehow", "someone", "something", "sometime", "sometimes", "somewhere", "still", "such", "system", "take", "ten", "than", "that", "the", "their", "them", "themselves", "then", "thence", "there", "thereafter", "thereby", "therefore", "therein", "thereupon", "these", "they", "thickv", "thin", "third", "this", "those", "though", "three", "through", "throughout", "thru", "thus", "to", "together", "too", "top", "toward", "towards", "twelve", "twenty", "two", "un", "under", "until", "up", "upon", "us", "very", "via", "was", "we", "well", "were", "what", "whatever", "when", "whence", "whenever", "where", "whereafter", "whereas", "whereby", "wherein", "whereupon", "wherever", "whether", "which", "while", "whither", "who", "whoever", "whole", "whom", "whose", "why", "will", "with", "within", "without", "would", "yet", "you", "your", "yours", "yourself", "yourselves", "the"]
-blacklist1 = ["result", "resulted","zone","majority","unit","individual","based","species","colorado","arizona","nevada","california","bureau","contacts","contact","program","proportion","included","conservation","wildlife","analysis", "efforts", "model", "district", "estimates", "report", "estimate", "data", "location"]
+blacklist1 = ["comment","recommendation","determined","presently","completed","identified","identify","specifically","potentially","currently","information","administration","technical","certainly","later","involved","successfully","portion","concern","bulletin","biology","implemented","editor","preferred","consistent","document","method","concern","authority","detection","encountered","detected","protocol","participant","using","conducted","used","attachment","bird","research","department","lower","rate","result", "resulted","zone","majority","unit","individual","based","species","colorado","arizona","nevada","california","bureau","contacts","contact","program","proportion","included","conservation","wildlife","analysis", "efforts", "model", "district", "estimates", "report", "estimate", "data", "location"]
 blacklist2 = []
 for word in blacklist1:
     blacklist2.append(word+'s')
@@ -75,15 +76,23 @@ def parsePDF(filename):
 
 ###########################################################
 projectList = []
-
+i = 0
 for file in files_in_dir:
     if file.split('_')[0] == projectCode:
         try:
             print(file)
             word_list = parsePDF(os.path.join(path,file))
-            projectList = projectList + word_list
+            
+            if i == 0:
+                projectList = word_list
+            else:
+                for word in word_list:
+                    if word in projectList:
+                        projectList.append(word)
+
         except:
             print('finished project')
+        i+=1
 
 wc = OrderedDict()
 for w in projectList:
@@ -91,6 +100,17 @@ for w in projectList:
         wc[w] = wc.get(w, 0) + 1
 
 projectFinalList = list(wc.items())
+projectFinalList = [word for word in projectFinalList if word[1] >= 3]
 projectFinalList.sort(key=lambda tup: tup[1])
 projectFinalList.reverse()
-print(projectFinalList[:50])
+print(projectFinalList[:100])
+
+words = [word[0] for word in projectFinalList][:20]
+score = [int(word[1]) for word in projectFinalList][:20]
+x_pos = range(len(words)) 
+
+  
+plt.bar(x_pos, score)
+plt.xticks(x_pos, words, rotation='vertical', horizontalalignment='center') 
+plt.ylabel('Word Frequency')
+plt.show()

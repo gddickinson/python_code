@@ -183,6 +183,102 @@ def HSV_2_RGB(HSV):
 ########### define classes for GUI ###########################################
 ##############################################################################
 
+class CameraConsole(QtWidgets.QDialog):
+    def __init__(self, parent = None):
+        super(CameraConsole, self).__init__(parent)
+        
+        self.colourFlag = 'COLOUR'
+
+        self.button1 = QtWidgets.QPushButton("Start Camera")
+        self.button2 = QtWidgets.QPushButton("Black & White")
+        self.button3 = QtWidgets.QPushButton("Take Picture")
+        self.button4 = QtWidgets.QPushButton("Detect Faces")
+        self.button5 = QtWidgets.QPushButton("Detect Colour")
+        self.button6 = QtWidgets.QPushButton("Apply filter")
+        self.button7 = QtWidgets.QPushButton("Start Recording")
+        self.button8 = QtWidgets.QPushButton("Not set")               
+        self.button9 = QtWidgets.QPushButton("Track object")
+
+        layout = QtWidgets.QGridLayout()
+        
+        layout.addWidget(self.button1, 0, 0)
+        layout.addWidget(self.button2, 0, 1)
+        layout.addWidget(self.button3, 0, 2)
+        layout.addWidget(self.button4, 1, 0)
+        layout.addWidget(self.button5, 1, 1)
+        layout.addWidget(self.button6, 1, 2)
+        layout.addWidget(self.button7, 2, 0)
+        layout.addWidget(self.button8, 2, 1)
+        layout.addWidget(self.button9, 2, 2)
+        
+        self.setLayout(layout)
+        
+        self.connect(self.button1,SIGNAL("clicked()"),self.button_1)                
+        self.connect(self.button2,SIGNAL("clicked()"),self.button_2)
+        self.connect(self.button3,SIGNAL("clicked()"),self.button_3)
+        self.connect(self.button4,SIGNAL("clicked()"),self.button_4)
+        self.connect(self.button5,SIGNAL("clicked()"),self.button_5)
+        self.connect(self.button6,SIGNAL("clicked()"),self.button_6)    
+        self.connect(self.button7,SIGNAL("clicked()"),self.button_7)       
+        self.connect(self.button8,SIGNAL("clicked()"),self.button_8)          
+        self.connect(self.button9,SIGNAL("clicked()"),self.button_9) 
+
+    def button_1(self):
+        try:
+            self.video = cv2.VideoCapture(0)
+        except:
+            print('No Camera Detected')
+            return
+        
+        while(self.video.isOpened()):
+            ret, frame = self.video.read()
+            if frame == None:
+                break
+
+            if self.colourFlag == 'BGR':
+                pass
+            elif self.colourFlag == 'GRAY':
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            elif self.colourFlag == 'HSV':
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)      
+
+            cv2.imshow('Video', frame)    
+    
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+        self.video.release()
+        cv2.destroyAllWindows()
+        return
+
+    def button_2(self):
+        if self.colourFlag == 'GRAY':
+            self.colourFlag = 'COLOUR'
+            self.button2.setText('GRAY')  
+        else:
+            self.colourFlag = 'GRAY'
+            self.button2.setText('Colour')
+    
+    def button_3(self):
+        print("not implemented")
+
+    def button_4(self):
+        print("not implemented")
+
+    def button_5(self):
+        print("not implemented")
+
+    def button_6(self):
+        print("not implemented")
+
+    def button_7(self):
+        print("not implemented")
+        
+    def button_8(self):
+        print("not implemented")        
+
+    def button_9(self):
+        print("not implemented")        
+        
 class Console_Analysis(QtWidgets.QDialog):
     def __init__(self, parent = None):
         super(Console_Analysis, self).__init__(parent)
@@ -2467,7 +2563,12 @@ class Viewer(QtWidgets.QMainWindow):
         activateColourPicker.setStatusTip('Launch Colour Picker')
         activateColourPicker.triggered.connect(self.colour_picker)
         
-        
+        activateCameraConsole = QtWidgets.QAction(QtGui.QIcon('save.png'), 'Camera Console', self)
+        activateCameraConsole.setShortcut('Ctrl+8')
+        activateCameraConsole.setStatusTip('Launch Camera Console')
+        activateCameraConsole.triggered.connect(self.initCameraConsole)
+
+      
         menubar = self.menuBar()
         fileMenu = menubar.addMenu('&File')
         fileMenu.addAction(openImage)
@@ -2507,7 +2608,10 @@ class Viewer(QtWidgets.QMainWindow):
         fileMenu5.addAction(activateAnalysisConsole)    
         
         fileMenu6 = menubar.addMenu('&Colour Picker')       
-        fileMenu6.addAction(activateColourPicker)    
+        fileMenu6.addAction(activateColourPicker) 
+        
+        fileMenu7 = menubar.addMenu('&Camera')       
+        fileMenu7.addAction(activateCameraConsole)      
 
 #        fileMenu3 = menubar.addMenu('&Analysis')
 #        fileMenu3.addAction(analysis1)
@@ -2518,6 +2622,10 @@ class Viewer(QtWidgets.QMainWindow):
 
         #self.initROI()
         self.show()
+
+    def initCameraConsole(self):
+        self.cameraConsole = CameraConsole()
+        self.cameraConsole.show()
 
     def initConsole_CoverBoard_1(self):
         self.console = Console_Coverboard()
@@ -3217,7 +3325,6 @@ class Viewer(QtWidgets.QMainWindow):
         image = newimg
 
 
-
     def cluster_coverBoard(self):
                 
         #threshold and find clusters
@@ -3543,6 +3650,8 @@ class Viewer(QtWidgets.QMainWindow):
             self.console.close()
             self.consoleCanopy.close()
             self.AnalysisCanopy.close()
+            self.cameraConsole.close()
+            self.console2.close()
         except:
             print("console close error_1")
         
@@ -3570,6 +3679,8 @@ class Viewer(QtWidgets.QMainWindow):
                 self.console.close()
                 self.consoleCanopy.close()
                 self.AnalysisCanopy.close()
+                self.cameraConsole.close()
+                self.console2.close()
                 
             except:
                 print("console close error_2")
