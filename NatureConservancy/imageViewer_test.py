@@ -188,16 +188,20 @@ class CameraConsole(QtWidgets.QDialog):
         super(CameraConsole, self).__init__(parent)
         
         self.colourFlag = 'COLOUR'
+        self.savePath = r'C:\Users\George\Pictures\Camera Roll'
+        self.cameraFlag = 'OFF'
+        self.recordFlag = 'OFF'
+        self.playRecordingFlag = "OFF"
 
         self.button1 = QtWidgets.QPushButton("Start Camera")
         self.button2 = QtWidgets.QPushButton("Black & White")
-        self.button3 = QtWidgets.QPushButton("Take Picture")
-        self.button4 = QtWidgets.QPushButton("Detect Faces")
-        self.button5 = QtWidgets.QPushButton("Detect Colour")
-        self.button6 = QtWidgets.QPushButton("Apply filter")
-        self.button7 = QtWidgets.QPushButton("Start Recording")
-        self.button8 = QtWidgets.QPushButton("Not set")               
-        self.button9 = QtWidgets.QPushButton("Track object")
+        self.button3 = QtWidgets.QPushButton("Start Recording")
+        self.button4 = QtWidgets.QPushButton("Play Recording")
+        self.button5 = QtWidgets.QPushButton("Take picture")
+        self.button6 = QtWidgets.QPushButton("Apply Filter")
+        self.button7 = QtWidgets.QPushButton("Detect Faces")
+        self.button8 = QtWidgets.QPushButton("Set Save Path")               
+        self.button9 = QtWidgets.QPushButton("Track Object")
 
         layout = QtWidgets.QGridLayout()
         
@@ -223,49 +227,137 @@ class CameraConsole(QtWidgets.QDialog):
         self.connect(self.button8,SIGNAL("clicked()"),self.button_8)          
         self.connect(self.button9,SIGNAL("clicked()"),self.button_9) 
 
+
     def button_1(self):
-        try:
-            self.video = cv2.VideoCapture(0)
-        except:
-            print('No Camera Detected')
-            return
+        if self.cameraFlag == "OFF":
+            try:
+                self.video = cv2.VideoCapture(0)
+            except:
+                print('No Camera Detected')
+                return
+
+            try:
+                fourcc = cv2.VideoWriter_fourcc(*'XVID')
+                filename = self.savePath + r'\output.avi'
+                framesPerSec = 20.0
+                frameSize = (640,480)
+                self.out = cv2.VideoWriter(filename,fourcc, framesPerSec, frameSize)
+            except:
+                print('No codec detected')
         
-        while(self.video.isOpened()):
-            ret, frame = self.video.read()
-            if frame == None:
-                break
-
-            if self.colourFlag == 'BGR':
-                pass
-            elif self.colourFlag == 'GRAY':
-                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            elif self.colourFlag == 'HSV':
-                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)      
-
-            cv2.imshow('Video', frame)    
+            self.button1.setText('Stop Camera')
+            self.cameraFlag = "ON"
+            
+            while(self.video.isOpened()):
+                ret, self.frame = self.video.read()
+                if self.frame == None:
+                    break
     
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                break
-        self.video.release()
-        cv2.destroyAllWindows()
+                if self.colourFlag == 'BGR':
+                    pass
+                elif self.colourFlag == 'GRAY':
+                    self.frame = cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)
+                elif self.colourFlag == 'HSV':
+                    self.frame = cv2.cvtColor(self.frame, cv2.COLOR_BGR2HSV)      
+    
+                cv2.imshow('Video', self.frame)  
+                
+                if self.recordFlag == "ON":
+                    #self.frame = cv2.flip(self.frame,0)
+                    # write the flipped frame
+                    self.out.write(self.frame)
+                
+                if self.cameraFlag == "OFF":
+                    break
+                
+                if cv2.waitKey(1) & 0xFF == ord('q'):
+                    break
+    
+            self.video.release()
+            self.out.release()
+            cv2.destroyAllWindows()
+            self.cameraFlag = "OFF"
+            self.button1.setText('Start Camera')
+
+        else:
+            self.cameraFlag = "OFF"
+            self.button1.setText('Start Camera') 
+            
         return
 
     def button_2(self):
         if self.colourFlag == 'GRAY':
             self.colourFlag = 'COLOUR'
-            self.button2.setText('GRAY')  
+            self.button2.setText('Black & White')  
         else:
             self.colourFlag = 'GRAY'
             self.button2.setText('Colour')
     
     def button_3(self):
-        print("not implemented")
+        if self.cameraFlag == "OFF":
+            print ("Camera not on")
+            return
+        if self.recordFlag == "ON":
+            self.recordFlag = "OFF"
+            self.button3.setText("Start Recording")
+        else:
+            self.recordFlag = "ON"
+            self.button3.setText("Stop Recording")
 
     def button_4(self):
-        print("not implemented")
+        if self.playRecordingFlag == "OFF":
+            try:
+                filename = self.savePath + r'\output.avi'
+                self.recording = cv2.VideoCapture(filename)
+            except:
+                print('No Recording Detected')
+                return
+        
+            self.button4.setText('Stop Playing')
+            self.playRecordingFlag = "ON"
+            
+            while(self.recording.isOpened()):
+                ret, frame = self.recording.read()
+                if frame == None:
+                    break
+    
+                if self.colourFlag == 'BGR':
+                    pass
+                elif self.colourFlag == 'GRAY':
+                    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                elif self.colourFlag == 'HSV':
+                    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)      
+    
+                cv2.imshow('Rcording', frame)  
+                
+                if self.playRecordingFlag == "OFF":
+                    break
+                
+                if cv2.waitKey(1) & 0xFF == ord('q'):
+                    break
+    
+            self.recording.release()
+            cv2.destroyAllWindows()
+            self.playRecordingFlag = "OFF"
+            self.button4.setText('Play Recording')
+
+        else:
+            self.playRecordingFlag = "OFF"
+            self.button4.setText('Play Recording')
+            
+        return
 
     def button_5(self):
-        print("not implemented")
+        global newimg, original_image
+        if self.cameraFlag == "OFF":
+            print ("No Camera Running")
+            return
+        else:
+            img = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB)
+            img = np.rot90(img,k=1)
+            img = np.flipud(img)
+            newimg = img
+            original_image = newimg
 
     def button_6(self):
         print("not implemented")
@@ -2625,7 +2717,12 @@ class Viewer(QtWidgets.QMainWindow):
 
     def initCameraConsole(self):
         self.cameraConsole = CameraConsole()
+        self.cameraConsole.connect(self.cameraConsole.button5,SIGNAL("clicked()"),self.getCameraPic)
         self.cameraConsole.show()
+
+    def getCameraPic(self):
+        global newimg
+        self.ImageView.setImage(newimg)
 
     def initConsole_CoverBoard_1(self):
         self.console = Console_Coverboard()
