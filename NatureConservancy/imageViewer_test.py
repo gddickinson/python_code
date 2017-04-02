@@ -187,11 +187,21 @@ class CameraConsole(QtWidgets.QDialog):
     def __init__(self, parent = None):
         super(CameraConsole, self).__init__(parent)
         
+        self.face_cascade =cv2.CascadeClassifier('/Users/George/Documents/GitHub/opencv/data/haarcascades/haarcascade_frontalface_alt.xml')
+        if self.face_cascade.empty(): raise Exception("your face_cascade is empty. are you sure, the path is correct ?")
+
+        self.eye_cascade = cv2.CascadeClassifier('/Users/George/Documents/GitHub//opencv/data/haarcascades/haarcascade_eye.xml')
+        if self.eye_cascade.empty(): raise Exception("your eye_cascade is empty. are you sure, the path is correct ?")
+        
         self.colourFlag = 'COLOUR'
         self.savePath = r'C:\Users\George\Pictures\Camera Roll'
         self.cameraFlag = 'OFF'
         self.recordFlag = 'OFF'
         self.playRecordingFlag = "OFF"
+        self.framerate = 20.0
+        self.channelFlag = 'BGR'
+        self.channelList = ['BGR', 'Red Mask', 'Green Mask', 'Blue Mask']
+        self.faceDetectFlag = "OFF"
 
         self.button1 = QtWidgets.QPushButton("Start Camera")
         self.button2 = QtWidgets.QPushButton("Black & White")
@@ -202,6 +212,9 @@ class CameraConsole(QtWidgets.QDialog):
         self.button7 = QtWidgets.QPushButton("Detect Faces")
         self.button8 = QtWidgets.QPushButton("Set Save Path")               
         self.button9 = QtWidgets.QPushButton("Track Object")
+        
+        self.channelBox = QtWidgets.QComboBox()
+        self.channelBox.addItems(self.channelList)
 
         layout = QtWidgets.QGridLayout()
         
@@ -215,6 +228,8 @@ class CameraConsole(QtWidgets.QDialog):
         layout.addWidget(self.button8, 2, 1)
         layout.addWidget(self.button9, 2, 2)
         
+        layout.addWidget(self.channelBox, 0,3)
+        
         self.setLayout(layout)
         
         self.connect(self.button1,SIGNAL("clicked()"),self.button_1)                
@@ -226,10 +241,15 @@ class CameraConsole(QtWidgets.QDialog):
         self.connect(self.button7,SIGNAL("clicked()"),self.button_7)       
         self.connect(self.button8,SIGNAL("clicked()"),self.button_8)          
         self.connect(self.button9,SIGNAL("clicked()"),self.button_9) 
+        
+        self.connect(self.channelBox,SIGNAL("currentIndexChanged(QString)"),self.channelBox_select) 
 
+
+    def channelBox_select(self):
+        self.channelFlag = self.channelBox.currentText()
 
     def button_1(self):
-        if self.cameraFlag == "OFF":
+        if self.cameraFlag == "OFF" and self.faceDetectFlag == "OFF":
             try:
                 self.video = cv2.VideoCapture(0)
             except:
@@ -239,9 +259,8 @@ class CameraConsole(QtWidgets.QDialog):
             try:
                 fourcc = cv2.VideoWriter_fourcc(*'XVID')
                 filename = self.savePath + r'\output.avi'
-                framesPerSec = 20.0
                 frameSize = (640,480)
-                self.out = cv2.VideoWriter(filename,fourcc, framesPerSec, frameSize)
+                self.out = cv2.VideoWriter(filename,fourcc, self.framerate, frameSize)
             except:
                 print('No codec detected')
         
@@ -252,6 +271,35 @@ class CameraConsole(QtWidgets.QDialog):
                 ret, self.frame = self.video.read()
                 if self.frame == None:
                     break
+ 
+                if self.faceDetectFlag == "ON":
+                    break
+    
+                if self.channelFlag == "Blue Mask":
+                    #self.frame = self.frame[:,:,2]
+                    #ret,self.frame = cv2.threshold(self.frame,175,255,cv2.THRESH_BINARY)
+                    lower = np.array([86, 31, 4], dtype = "uint8")
+                    upper = np.array([220, 88, 50], dtype = "uint8")
+                    
+                    mask = cv2.inRange(self.frame, lower, upper)
+                    self.frame = cv2.bitwise_and(self.frame, self.frame, mask = mask)
+
+                if self.channelFlag == "Green Mask":
+                    #self.frame = self.frame[:,:,1]
+                    #ret,self.frame = cv2.threshold(self.frame,175,255,cv2.THRESH_BINARY)
+                    lower = np.array([29, 86, 6], dtype = "uint8")
+                    upper = np.array([64, 255, 255], dtype = "uint8")
+                    self.frame = cv2.cvtColor(self.frame, cv2.COLOR_BGR2HSV)
+                    mask = cv2.inRange(self.frame, lower, upper)
+                    self.frame = cv2.bitwise_and(self.frame, self.frame, mask = mask)
+
+                if self.channelFlag == "Red Mask":
+                    #self.frame = self.frame[:,:,0]
+                    #ret,self.frame = cv2.threshold(self.frame,175,255,cv2.THRESH_BINARY)
+                    lower = np.array([17, 15, 100], dtype = "uint8")
+                    upper = np.array([50, 56, 200], dtype = "uint8")
+                    mask = cv2.inRange(self.frame, lower, upper)
+                    self.frame = cv2.bitwise_and(self.frame, self.frame, mask = mask)
     
                 if self.colourFlag == 'BGR':
                     pass
@@ -363,7 +411,62 @@ class CameraConsole(QtWidgets.QDialog):
         print("not implemented")
 
     def button_7(self):
-        print("not implemented")
+        if self.faceDetectFlag == 'OFF':
+            self.faceDetectFlag = 'ON'
+            self.button7.setText('Stop Face Detect')  
+            
+            self.cameraFlag = "OFF"
+            self.button1.setText ("Start Camera")
+
+            
+            def playcamera():
+                video = cv2.VideoCapture(0)
+                
+                while(video.isOpened()):
+                    ret, frame = video.read()
+                    if frame == None:
+                        break
+                
+                    if self.faceDetectFlag == "OFF":
+                        break
+
+                    if self.cameraFlag == "ON":
+                        break
+                
+                    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)        
+                    
+                    facedetect(gray)        
+                    cv2.imshow('Video', gray)    
+            
+                    if cv2.waitKey(1) & 0xFF == ord('q'):
+                        break
+                video.release()
+                cv2.destroyAllWindows()
+                self.faceDetectFlag = 'OFF'
+                self.button7.setText('Detect Faces')                
+
+                return 
+            
+            def facedetect(gray):
+                frame = gray
+                faces = self.face_cascade.detectMultiScale(gray, 1.3, 5)
+                for (x,y,w,h) in faces:
+                    cv2.rectangle(frame,(x,y),(x+w,y+h),(255,0,0),2)
+                    roi_gray = gray[y:y+h, x:x+w]
+                    roi_color = frame[y:y+h, x:x+w]
+                    eyes = self.eye_cascade.detectMultiScale(roi_gray)
+                    for (ex,ey,ew,eh) in eyes:
+                        cv2.rectangle(roi_color,(ex,ey),(ex+ew,ey+eh),(0,255,0),2)                    
+                        if self.cameraFlag == "ON":
+                            break
+                    
+                return
+            
+            playcamera()
+            cv2.destroyAllWindows()
+        else:
+            self.faceDetectFlag = 'OFF'
+            self.button7.setText('Detect Faces')  
         
     def button_8(self):
         print("not implemented")        

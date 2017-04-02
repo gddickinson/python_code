@@ -8,10 +8,10 @@ Created on Sun Oct 18 12:47:23 2015
 import numpy as np
 import cv2
 
-face_cascade =cv2.CascadeClassifier('/home/george/opencv/data/haarcascades/haarcascade_frontalface_alt.xml')
+face_cascade =cv2.CascadeClassifier('/Users/George/Documents/GitHub/opencv/data/haarcascades/haarcascade_frontalface_alt.xml')
 if face_cascade.empty(): raise Exception("your face_cascade is empty. are you sure, the path is correct ?")
 
-eye_cascade = cv2.CascadeClassifier('/home/george/opencv/data/haarcascades/haarcascade_eye.xml')
+eye_cascade = cv2.CascadeClassifier('/Users/George/Documents/GitHub//opencv/data/haarcascades/haarcascade_eye.xml')
 if eye_cascade.empty(): raise Exception("your eye_cascade is empty. are you sure, the path is correct ?")
 
 def playcamera():
