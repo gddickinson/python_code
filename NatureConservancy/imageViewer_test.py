@@ -203,6 +203,10 @@ class CameraConsole(QtWidgets.QDialog):
         self.channelList = ['BGR', 'Red Mask', 'Green Mask', 'Blue Mask']
         self.faceDetectFlag = "OFF"
 
+        self.filterList = ["None", "Threshold", "Blur", "Edge Detect", "Equalize"]
+        self.filterFlag = 'None'
+
+
         self.button1 = QtWidgets.QPushButton("Start Camera")
         self.button2 = QtWidgets.QPushButton("Black & White")
         self.button3 = QtWidgets.QPushButton("Start Recording")
@@ -210,11 +214,14 @@ class CameraConsole(QtWidgets.QDialog):
         self.button5 = QtWidgets.QPushButton("Take picture")
         self.button6 = QtWidgets.QPushButton("Apply Filter")
         self.button7 = QtWidgets.QPushButton("Detect Faces")
-        self.button8 = QtWidgets.QPushButton("Set Save Path")               
+        self.button8 = QtWidgets.QPushButton("Optical Flow")               
         self.button9 = QtWidgets.QPushButton("Track Object")
         
         self.channelBox = QtWidgets.QComboBox()
         self.channelBox.addItems(self.channelList)
+
+        self.filterBox = QtWidgets.QComboBox()
+        self.filterBox.addItems(self.filterList)
 
         layout = QtWidgets.QGridLayout()
         
@@ -229,7 +236,8 @@ class CameraConsole(QtWidgets.QDialog):
         layout.addWidget(self.button9, 2, 2)
         
         layout.addWidget(self.channelBox, 0,3)
-        
+        layout.addWidget(self.filterBox, 1,3)   
+     
         self.setLayout(layout)
         
         self.connect(self.button1,SIGNAL("clicked()"),self.button_1)                
@@ -242,12 +250,31 @@ class CameraConsole(QtWidgets.QDialog):
         self.connect(self.button8,SIGNAL("clicked()"),self.button_8)          
         self.connect(self.button9,SIGNAL("clicked()"),self.button_9) 
         
-        self.connect(self.channelBox,SIGNAL("currentIndexChanged(QString)"),self.channelBox_select) 
-
+        self.connect(self.channelBox,SIGNAL("currentIndexChanged(QString)"),self.channelBox_select)         
+        self.connect(self.filterBox,SIGNAL("currentIndexChanged(QString)"),self.filterBox_select) 
 
     def channelBox_select(self):
         self.channelFlag = self.channelBox.currentText()
+        
+    def filterBox_select(self):
+        self.filterFlag = self.filterBox.currentText()       
 
+    def threshold(self, frame):
+        ret, frame = cv2.threshold(frame,127,255,cv2.THRESH_BINARY)
+        return frame
+ 
+    def medianBlur (self,frame):
+        return cv2.medianBlur(frame,5)
+ 
+    def edgeDetect(self,frame):
+        minVal = 100
+        maxVal = 200
+        return cv2.Canny(frame,minVal,maxVal)
+    
+    def equalize(self,frame):
+        return cv2.equalizeHist(frame)
+
+     
     def button_1(self):
         if self.cameraFlag == "OFF" and self.faceDetectFlag == "OFF":
             try:
@@ -266,25 +293,32 @@ class CameraConsole(QtWidgets.QDialog):
         
             self.button1.setText('Stop Camera')
             self.cameraFlag = "ON"
+            ret, previousFrame = self.video.read()
+            ret, oldFrame = self.video.read()
             
             while(self.video.isOpened()):
                 ret, self.frame = self.video.read()
                 if self.frame == None:
                     break
- 
+
+
+                #turn off if face detect 
                 if self.faceDetectFlag == "ON":
                     break
+
+                #turn on/off colour mask
     
                 if self.channelFlag == "Blue Mask":
                     #self.frame = self.frame[:,:,2]
                     #ret,self.frame = cv2.threshold(self.frame,175,255,cv2.THRESH_BINARY)
-                    lower = np.array([86, 31, 4], dtype = "uint8")
-                    upper = np.array([220, 88, 50], dtype = "uint8")
+                    lower = np.array([85, 30, 4], dtype = "uint8")
+                    upper = np.array([221, 89, 51], dtype = "uint8")
                     
                     mask = cv2.inRange(self.frame, lower, upper)
                     self.frame = cv2.bitwise_and(self.frame, self.frame, mask = mask)
 
                 if self.channelFlag == "Green Mask":
+                    #uses HSV
                     #self.frame = self.frame[:,:,1]
                     #ret,self.frame = cv2.threshold(self.frame,175,255,cv2.THRESH_BINARY)
                     lower = np.array([29, 86, 6], dtype = "uint8")
@@ -296,20 +330,40 @@ class CameraConsole(QtWidgets.QDialog):
                 if self.channelFlag == "Red Mask":
                     #self.frame = self.frame[:,:,0]
                     #ret,self.frame = cv2.threshold(self.frame,175,255,cv2.THRESH_BINARY)
-                    lower = np.array([17, 15, 100], dtype = "uint8")
-                    upper = np.array([50, 56, 200], dtype = "uint8")
+                    lower = np.array([16, 14, 99], dtype = "uint8")
+                    upper = np.array([51, 57, 201], dtype = "uint8")
                     mask = cv2.inRange(self.frame, lower, upper)
                     self.frame = cv2.bitwise_and(self.frame, self.frame, mask = mask)
     
                 if self.colourFlag == 'BGR':
                     pass
+ 
+                #set colourspace
+
                 elif self.colourFlag == 'GRAY':
                     self.frame = cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)
+                    if self.filterFlag == "Equalize":
+                        self.frame = self.equalize(self.frame) 
+                    
                 elif self.colourFlag == 'HSV':
                     self.frame = cv2.cvtColor(self.frame, cv2.COLOR_BGR2HSV)      
+ 
+    
+                #filters
+                if self.filterFlag == "Threshold":
+                    self.frame = self.threshold(self.frame)
+
+                if self.filterFlag == "Blur":
+                    self.frame = self.medianBlur(self.frame)    
+                    
+                if self.filterFlag == "Edge Detect":
+                    self.frame = self.edgeDetect(self.frame) 
+
     
                 cv2.imshow('Video', self.frame)  
+  
                 
+              
                 if self.recordFlag == "ON":
                     #self.frame = cv2.flip(self.frame,0)
                     # write the flipped frame
@@ -376,7 +430,7 @@ class CameraConsole(QtWidgets.QDialog):
                 elif self.colourFlag == 'HSV':
                     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)      
     
-                cv2.imshow('Rcording', frame)  
+                cv2.imshow('Recording', frame)  
                 
                 if self.playRecordingFlag == "OFF":
                     break
@@ -398,6 +452,13 @@ class CameraConsole(QtWidgets.QDialog):
     def button_5(self):
         global newimg, original_image
         if self.cameraFlag == "OFF":
+            if self.faceDetectFlag == "ON":
+                img = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB)
+                img = np.rot90(img,k=1)
+                img = np.flipud(img)
+                newimg = img
+                original_image = newimg
+                return               
             print ("No Camera Running")
             return
         else:
@@ -423,8 +484,8 @@ class CameraConsole(QtWidgets.QDialog):
                 video = cv2.VideoCapture(0)
                 
                 while(video.isOpened()):
-                    ret, frame = video.read()
-                    if frame == None:
+                    ret, self.frame = video.read()
+                    if self.frame == None:
                         break
                 
                     if self.faceDetectFlag == "OFF":
@@ -432,11 +493,10 @@ class CameraConsole(QtWidgets.QDialog):
 
                     if self.cameraFlag == "ON":
                         break
-                
-                    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)        
+                     
                     
-                    facedetect(gray)        
-                    cv2.imshow('Video', gray)    
+                    facedetect(self.frame)        
+                    cv2.imshow('Video', self.frame)    
             
                     if cv2.waitKey(1) & 0xFF == ord('q'):
                         break
@@ -469,7 +529,60 @@ class CameraConsole(QtWidgets.QDialog):
             self.button7.setText('Detect Faces')  
         
     def button_8(self):
-        print("not implemented")        
+        cap = cv2.VideoCapture(0)
+        
+        # params for ShiTomasi corner detection
+        feature_params = dict( maxCorners = 100,
+                               qualityLevel = 0.3,
+                               minDistance = 7,
+                               blockSize = 7 )
+        
+        # Parameters for lucas kanade optical flow
+        lk_params = dict( winSize  = (15,15),
+                          maxLevel = 2,
+                          criteria = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 0.03))
+        
+        # Create some random colors
+        color = np.random.randint(0,255,(100,3))
+        
+        # Take first frame and find corners in it
+        ret, old_frame = cap.read()
+        old_gray = cv2.cvtColor(old_frame, cv2.COLOR_BGR2GRAY)
+        p0 = cv2.goodFeaturesToTrack(old_gray, mask = None, **feature_params)
+        
+        # Create a mask image for drawing purposes
+        mask = np.zeros_like(old_frame)
+        
+        while(1):
+            ret,frame = cap.read()
+            frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        
+            # calculate optical flow
+            p1, st, err = cv2.calcOpticalFlowPyrLK(old_gray, frame_gray, p0, None, **lk_params)
+        
+            # Select good points
+            good_new = p1[st==1]
+            good_old = p0[st==1]
+        
+            # draw the tracks
+            for i,(new,old) in enumerate(zip(good_new,good_old)):
+                a,b = new.ravel()
+                c,d = old.ravel()
+                mask = cv2.line(mask, (a,b),(c,d), color[i].tolist(), 2)
+                frame = cv2.circle(frame,(a,b),5,color[i].tolist(),-1)
+            img = cv2.add(frame,mask)
+        
+            cv2.imshow('frame',img)
+            k = cv2.waitKey(30) & 0xff
+            if k == 27:
+                break
+        
+            # Now update the previous frame and previous points
+            old_gray = frame_gray.copy()
+            p0 = good_new.reshape(-1,1,2)
+        
+        cv2.destroyAllWindows()
+        cap.release()       
 
     def button_9(self):
         print("not implemented")        
