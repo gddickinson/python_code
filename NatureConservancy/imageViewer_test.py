@@ -187,11 +187,17 @@ class CameraConsole(QtWidgets.QDialog):
     def __init__(self, parent = None):
         super(CameraConsole, self).__init__(parent)
         
-        self.face_cascade =cv2.CascadeClassifier('/Users/George/Documents/GitHub/opencv/data/haarcascades/haarcascade_frontalface_alt.xml')
-        if self.face_cascade.empty(): raise Exception("your face_cascade is empty. are you sure, the path is correct ?")
-
-        self.eye_cascade = cv2.CascadeClassifier('/Users/George/Documents/GitHub//opencv/data/haarcascades/haarcascade_eye.xml')
-        if self.eye_cascade.empty(): raise Exception("your eye_cascade is empty. are you sure, the path is correct ?")
+        try:
+            self.face_cascade =cv2.CascadeClassifier('/Users/George/Documents/GitHub/opencv/data/haarcascades/haarcascade_frontalface_alt.xml')
+            if self.face_cascade.empty(): raise Exception("your face_cascade is empty. are you sure, the path is correct ?")
+        except: 
+            print("No face cascade found")
+        
+        try:
+            self.eye_cascade = cv2.CascadeClassifier('/Users/George/Documents/GitHub//opencv/data/haarcascades/haarcascade_eye.xml')
+            if self.eye_cascade.empty(): raise Exception("your eye_cascade is empty. are you sure, the path is correct ?")
+        except:
+            print("No eye cascade found")
         
         self.colourFlag = 'COLOUR'
         self.savePath = r'C:\Users\George\Pictures\Camera Roll'
