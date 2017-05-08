@@ -58,6 +58,10 @@ import cv2
 #from PyQt4.QtGui import *
 
 
+import serial
+import io
+import serial.tools.list_ports
+
 if sys.version_info[:2]<(2,5):
     def partial(func,arg):
         def callme():
@@ -182,6 +186,107 @@ def HSV_2_RGB(HSV):
 ##############################################################################
 ########### define classes for GUI ###########################################
 ##############################################################################
+class BotConsole(QtWidgets.QDialog):
+    def __init__(self, parent = None):
+        super(BotConsole, self).__init__(parent)
+
+            
+
+        self.ports = list(serial.tools.list_ports.comports()) 
+        print(self.ports)
+
+ 
+
+
+        self.sonar = "Waiting"
+
+        try:
+            self.sonar = self.getLine(name = "Mega", baudRate = 115200, timeout = 1.1)
+        except:
+            print("error")
+
+        self.button1 = QtWidgets.QPushButton("Forward")
+        self.button2 = QtWidgets.QPushButton("Back")
+        self.button3 = QtWidgets.QPushButton("Rotate Left")
+        self.button4 = QtWidgets.QPushButton("Rotate Right")
+        self.button5 = QtWidgets.QPushButton("Arm Left")
+        self.button6 = QtWidgets.QPushButton("Arm Right")
+        self.button7 = QtWidgets.QPushButton("Arm Up")
+        self.button8 = QtWidgets.QPushButton("Arm Down")               
+
+        self.sonar1_text = QtWidgets.QLabel()
+        self.sonar1_text.setText(self.sonar)
+
+
+        layout = QtWidgets.QGridLayout()
+
+        layout.addWidget(self.button1, 0, 0)
+        layout.addWidget(self.button2, 0, 1)
+        layout.addWidget(self.button3, 0, 2)
+        layout.addWidget(self.button4, 1, 0)
+        layout.addWidget(self.button5, 1, 1)
+        layout.addWidget(self.button6, 1, 2)
+        layout.addWidget(self.button7, 2, 0)
+        layout.addWidget(self.button8, 2, 1)
+        layout.addWidget(self.sonar1_text, 3,0)
+
+        self.setLayout(layout)
+
+        self.connect(self.button1,SIGNAL("clicked()"),self.button_1)                
+        self.connect(self.button2,SIGNAL("clicked()"),self.button_2)
+        self.connect(self.button3,SIGNAL("clicked()"),self.button_3)
+        self.connect(self.button4,SIGNAL("clicked()"),self.button_4)
+        self.connect(self.button5,SIGNAL("clicked()"),self.button_5)
+        self.connect(self.button6,SIGNAL("clicked()"),self.button_6)    
+        self.connect(self.button7,SIGNAL("clicked()"),self.button_7)       
+        self.connect(self.button8,SIGNAL("clicked()"),self.button_8) 
+
+
+
+    def button_1(self):
+        return
+
+    def button_2(self):
+        return
+
+    def button_3(self):
+        return
+
+    def button_4(self):
+        return
+
+    def button_5(self):
+        return
+
+    def button_6(self):
+        return
+
+    def button_7(self):
+        return
+
+    def button_8(self):
+        return
+
+    def getArduinoSerial(self, name = "Uno", baudRate=19200, timeOut = 1.1):
+        for p in self.ports:
+            if name in p[1]:
+                ser = serial.serial_for_url(p[0], baudRate, timeout=timeOut)
+                ser_sio = io.TextIOWrapper(io.BufferedRWPair(ser, ser))
+                return ser_sio
+            else:
+                print("No " + name + " detected")
+            return
+
+
+    def getLine(self, name = "Uno", baudRate=19200, timeout = 1.1):
+        line = False
+        while line == False:
+            serialObject = getArduinoSerial(name = name, baudRate = baudRate, timeOut=timeout)
+            line = serialObject.readline()
+        return line 
+
+###############################################################################
+
 
 class CameraConsole(QtWidgets.QDialog):
     def __init__(self, parent = None):
@@ -2882,6 +2987,10 @@ class Viewer(QtWidgets.QMainWindow):
         activateCameraConsole.setStatusTip('Launch Camera Console')
         activateCameraConsole.triggered.connect(self.initCameraConsole)
 
+        activateBotConsole = QtWidgets.QAction(QtGui.QIcon('save.png'), 'Bot Console', self)
+        activateBotConsole.setShortcut('Ctrl+R')
+        activateBotConsole.setStatusTip('Launch Bot Console')
+        activateBotConsole.triggered.connect(self.initBotConsole)
       
         menubar = self.menuBar()
         fileMenu = menubar.addMenu('&File')
@@ -2927,6 +3036,10 @@ class Viewer(QtWidgets.QMainWindow):
         fileMenu7 = menubar.addMenu('&Camera')       
         fileMenu7.addAction(activateCameraConsole)      
 
+        fileMenu8 = menubar.addMenu('&Bot')       
+        fileMenu8.addAction(activateBotConsole)
+
+
 #        fileMenu3 = menubar.addMenu('&Analysis')
 #        fileMenu3.addAction(analysis1)
 
@@ -2936,6 +3049,10 @@ class Viewer(QtWidgets.QMainWindow):
 
         #self.initROI()
         self.show()
+
+    def initBotConsole(self):
+        self.BotConsole = BotConsole()
+        self.BotConsole.show()       
 
     def initCameraConsole(self):
         self.cameraConsole = CameraConsole()
