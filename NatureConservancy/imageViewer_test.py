@@ -60,6 +60,7 @@ import cv2
 
 import serial
 import io
+from skimage.io import imread
 import serial.tools.list_ports
 
 if sys.version_info[:2]<(2,5):
@@ -3141,7 +3142,7 @@ class Viewer(QtWidgets.QMainWindow):
         self.statusBar().showMessage('Loading {}'.format(os.path.basename(filename)))
         t=time.time()
         global newimg, original_image, ROI_flag, colourSpace
-        newimg = io.imread(filename)
+        newimg = imread(filename)
         original_image = copy.deepcopy(newimg)
         newimg = np.rot90(newimg,k=1)
         newimg = np.flipud(newimg)
