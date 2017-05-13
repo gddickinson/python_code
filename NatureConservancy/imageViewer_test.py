@@ -181,6 +181,143 @@ def HSV_2_RGB(HSV):
 
 
     return (R, G, B)
+
+
+class Arduino():   
+    def __init__(self,Port='COM3',Boud=115200,connState=0): 
+        self.parent=self
+        self.port=Port
+        self.boud=Boud
+        self.connState=connState
+        self.timeount=1
+        self.ser=None
+        self.connect()
+
+    def connect(self): 
+        try:
+            self.ser=serial.Serial(self.port,self.boud,timeout=0.0001)
+            self.connState=1
+            print('connected')
+            return [1,'connect']
+        except:
+            self.connState=0
+            print('no hardware found')
+            return [0,'no hardware found']
+
+
+    def loadData(self):     
+        self.buffer=self.ser.read(1)        
+        if (self.buffer!=''):
+            try:
+                print (self.buffer)
+            except Exception:
+                pass
+
+    def getSonar(self):    
+        i=0
+        a =[]
+        b = []
+        c = []
+        while i<2:
+            self.data=self.ser.read(30)
+            if (self.data!=''):
+                try:
+                    self.data = str(self.data)
+                    self.ser.flush()
+                    if "A" in self.data:
+                        a.append(int(self.data.split('A')[1].split(")")[0]))
+                    if "C" in self.data:
+                        b.append(int(self.data.split('C')[1].split(")")[0]))
+                    if "C" in self.data:
+                        c.append(int(self.data.split('C')[1].split(")")[0]))
+                    i+=1        
+                    time.sleep(0.01)
+                    return  [np.mean(a),np.mean(b),np.mean(c)]
+
+                except Exception:
+                    pass
+
+    def close(self):
+        self.ser.close()
+
+
+class Arduino_Motor():   
+    def __init__(self,Port='COM4',Boud=19200,connState=0): 
+        self.parent=self
+        self.port=Port
+        self.boud=Boud
+        self.connState=connState
+        self.timeount=1
+        self.ser=None
+        self.connect()
+
+    def connect(self): 
+        try:
+            self.ser=serial.Serial(self.port,self.boud,timeout=0.0001)
+            self.connState=1
+            print('motor board connected')
+            return [1,'connect']
+        except:
+            self.connState=0
+            print('no motor board found')
+            return [0,'no hardware found']
+
+
+    def loadData(self):     
+        self.buffer=self.ser.read(1)        
+        if (self.buffer!=''):
+            try:
+                print (self.buffer)
+            except Exception:
+                pass
+
+    def forward(self, move_time = 0.3, power = 150):
+        self.ser.write(b'$F150Z')
+        time.sleep(move_time)
+        self.ser.write(b'$F0Z')
+
+    def back(self,move_time = 0.3, power = 150):
+        self.ser.write(b'$B150Z')
+        time.sleep(move_time)
+        self.ser.write(b'$B0Z')
+
+    def left(self,move_time = 0.3, power = 150):
+        self.ser.write(b'$L255Z')
+        self.ser.write(b'$R-255Z')
+        time.sleep(move_time)
+        self.ser.write(b'$L0Z')
+        self.ser.write(b'$R0Z')
+
+    def right(self,move_time = 0.3, power = 150):
+        self.ser.write(b'$R255Z')
+        self.ser.write(b'$L-255Z')
+        time.sleep(move_time)
+        self.ser.write(b'$R0Z')
+        self.ser.write(b'$L0Z')
+
+    def armLeft(self, move_time = 0.5, power = 200):
+        self.ser.write(b'$S200Z')
+        time.sleep(move_time)
+        self.ser.write(b'$S0Z')
+
+    def armRight(self, move_time = 0.5, power = 200):
+        self.ser.write(b'$S-200Z')
+        time.sleep(move_time)
+        self.ser.write(b'$S0Z')
+
+    def armUp(self, move_time = 0.5, power = 200):
+        pass
+
+    def armDown(self, move_time = 0.5, power = 200):
+        pass
+
+    def allStop(self):
+        self.ser.write(b'$XZ')
+
+    def close(self):
+        self.ser.close()
+
+
 ##############################################################################
 
 
@@ -194,8 +331,13 @@ class BotConsole(QtWidgets.QDialog):
         self.ports = list(serial.tools.list_ports.comports()) 
         print(self.ports)
 
+        self.arduino1 = Arduino()
+        self.arduino2 = Arduino_Motor()
 
-        self.sonar = "Waiting"
+        if self.arduino1.connState == 1:
+            self.sonar = self.arduino1.getSonar()
+        else:
+            self.sonar = "Waiting"
 
         self.button1 = QtWidgets.QPushButton("Forward")
         self.button2 = QtWidgets.QPushButton("Back")
@@ -208,10 +350,11 @@ class BotConsole(QtWidgets.QDialog):
         self.button9 = QtWidgets.QPushButton("Get Sonar")
         self.button10 = QtWidgets.QPushButton("Zero Arm")
         self.button11 = QtWidgets.QPushButton("All Stop")
+        self.button12 = QtWidgets.QPushButton("Close COMs")
                      
 
         self.sonar1_text = QtWidgets.QLabel()
-        self.sonar1_text.setText(self.sonar)
+        self.sonar1_text.setText(str(self.sonar))
 
 
         layout = QtWidgets.QGridLayout()
@@ -228,6 +371,7 @@ class BotConsole(QtWidgets.QDialog):
         layout.addWidget(self.button9, 3,1)
         layout.addWidget(self.button10, 4,0)
         layout.addWidget(self.button11, 4,1)
+        layout.addWidget(self.button12, 4,2)
 
         self.setLayout(layout)
 
@@ -242,89 +386,45 @@ class BotConsole(QtWidgets.QDialog):
         self.connect(self.button9,SIGNAL("clicked()"),self.button_9) 
         self.connect(self.button10,SIGNAL("clicked()"),self.button_10) 
         self.connect(self.button11,SIGNAL("clicked()"),self.button_11) 
-
+        self.connect(self.button12,SIGNAL("clicked()"),self.button_12)
+        
     def button_1(self, move_time = 0.3, power = 150):
         print('Forward: ', move_time," ", power)
-        self.motor_ser = serial.Serial("COM4", 19200)
-        time.sleep(2)
-        self.motor_ser.write(b'$F150Z')
-        time.sleep(move_time)
-        self.motor_ser.write(b'$F0Z')
-        self.motor_ser.close()
+        self.arduino2.forward()
         
 
     def button_2(self, move_time = 0.3, power = 150):
         print('Back: ', move_time," ", power)
-        self.motor_ser = serial.Serial("COM4", 19200)
-        time.sleep(2)
-        self.motor_ser.write(b'$B150Z')
-        time.sleep(move_time)
-        self.motor_ser.write(b'$B0Z')
-        self.motor_ser.close()
+        self.arduino2.back()
 
     def button_3(self, move_time = 0.3, power = 255):
         print('Left: ', move_time," ", power)
-        self.motor_ser = serial.Serial("COM4", 19200)
-        time.sleep(2)
-        self.motor_ser.write(b'$L255Z')
-        self.motor_ser.write(b'$R-255Z')
-        time.sleep(move_time)
-        self.motor_ser.write(b'$L0Z')
-        self.motor_ser.write(b'$R0Z')
-        self.motor_ser.close()
+        self.arduino2.left()
 
     def button_4(self, move_time = 0.3, power = 255):
         print('Right: ', move_time," ", power)
-        self.motor_ser = serial.Serial("COM4", 19200)
-        time.sleep(2)
-        self.motor_ser.write(b'$R255Z')
-        self.motor_ser.write(b'$L-255Z')
-        time.sleep(move_time)
-        self.motor_ser.write(b'$R0Z')
-        self.motor_ser.write(b'$L0Z')
-        self.motor_ser.close()
-
+        self.arduino2.right()
 
     def button_5(self, move_time = 0.5, power = 200):
         print('Arm Left: ', move_time," ", power)
-        self.motor_ser = serial.Serial("COM4", 19200)
-        time.sleep(2)
-        self.motor_ser.write(b'$S200Z')
-        time.sleep(move_time)
-        self.motor_ser.write(b'$S0Z')
-        self.motor_ser.close()
+        self.arduino2.armLeft()
 
 
     def button_6(self, move_time = 0.5, power = 200):
         print('Arm Right: ', move_time," ", power)
-        self.motor_ser = serial.Serial("COM4", 19200)
-        time.sleep(2)
-        self.motor_ser.write(b'$S-200Z')
-        time.sleep(move_time)
-        self.motor_ser.write(b'$S0Z')
-        self.motor_ser.close()
-
+        self.arduino2.armRight()
+        
     def button_7(self, move_time = 0.3, power = 150):
         print('Arm Up: ', move_time," ", power)
-        self.motor_ser = serial.Serial("COM4", 19200)
-        time.sleep(2)
-        self.motor_ser.write(b'$A-150Z')
-        time.sleep(move_time)
-        self.motor_ser.write(b'$A0Z')
-        self.motor_ser.close()
+
 
     def button_8(self, move_time = 0.3, power = 150):
         print('Arm Down: ', move_time," ", power)
-        self.motor_ser = serial.Serial("COM4", 19200)
-        time.sleep(2)
-        self.motor_ser.write(b'$A+150Z')
-        time.sleep(move_time)
-        self.motor_ser.write(b'$A0Z')
-        self.motor_ser.close()
+
 
     def button_9(self):
         try:
-            self.sonar = self.getSonar()
+            self.sonar = self.arduino1.getSonar()
         except:
             self.sonar = "Error"
             print("error")
@@ -333,49 +433,61 @@ class BotConsole(QtWidgets.QDialog):
         return
 
     def button_10(self):
-        self.motor_ser = serial.Serial("COM4", 19200)
-        time.sleep(2)
-        sonarRead = self.getSonar()[0]
+        sonarRead = self.arduino1.getSonar()[0]
         while sonarRead >19:
-            self.motor_ser.write(b'$S-200Z')
-            time.sleep(3)
+            self.arduino2.armRight()
             print (sonarRead)
-            self.motor_ser.write(b'$S0Z')
-            time.sleep(0.1)
-            sonarRead = self.getSonar()[0]
             time.sleep(0.2)
-        self.motor_ser.close()
+            newSonarRead = self.arduino1.getSonar()[0]
+            if newSonarRead >= sonarRead+5:
+                while newSonarRead >= sonarRead+5:
+                    self.arduino2.allStop()
+                    newSonarRead = self.arduino1.getSonar()[0]
+            
+            sonarRead = newSonarRead  
+
 
     def button_11(self):
         print('All Stop')
-        self.motor_ser = serial.Serial("COM4", 19200)
-        time.sleep(2)
-        self.motor_ser.write(b'$XZ')
-        self.motor_ser.close()
+        self.arduino2.allStop()
 
-    def getSonar(self,port="COM3"):
-        self.ser = serial.Serial(port, 115200, timeout=0.5)
-        i=0
-        a =[]
-        b = []
-        c = []
-        while i<2:
-            data = self.ser.read(30)
-            self.ser.flush()
-            if len(data) > 0:
-                data = str(data)
-                if "A" in data:
-                    a.append(int(data.split('A')[1].split(")")[0]))
-                if "C" in data:
-                    b.append(int(data.split('C')[1].split(")")[0]))
-                if "C" in data:
-                    c.append(int(data.split('C')[1].split(")")[0]))
-                i+=1        
-            time.sleep(0.01)
+    def button_12(self):
+        try: 
+            self.arduino2.close()
+            print('Motor COMs closed')
+        except:
+            pass
+        try:
+            self.arduino1.close()
+            print('Sonar COMs closed')
+        except:
+            pass
         
 
-        self.ser.close()
-        return  [np.mean(a),np.mean(b),np.mean(c)]
+
+#    def getSonar(self,port="COM3"):
+#        self.ser = serial.Serial(port, 115200, timeout=0.5)
+#        i=0
+#        a =[]
+#        b = []
+#        c = []
+#        while i<2:
+#            data = self.ser.read(30)
+#            self.ser.flush()
+#            if len(data) > 0:
+#                data = str(data)
+#                if "A" in data:
+#                    a.append(int(data.split('A')[1].split(")")[0]))
+#                if "C" in data:
+#                    b.append(int(data.split('C')[1].split(")")[0]))
+#                if "C" in data:
+#                    c.append(int(data.split('C')[1].split(")")[0]))
+#                i+=1        
+#            time.sleep(0.01)
+#        
+#
+#        self.ser.close()
+#        return  [np.mean(a),np.mean(b),np.mean(c)]
 
 ###############################################################################
 
