@@ -189,13 +189,14 @@ class Arduino():
         self.port=Port
         self.boud=Boud
         self.connState=connState
-        self.timeount=1
+        self.timeout=0.001
         self.ser=None
         self.connect()
 
+
     def connect(self): 
         try:
-            self.ser=serial.Serial(self.port,self.boud,timeout=0.0001)
+            self.ser=serial.Serial(self.port,self.boud,timeout=self.timeout)
             self.connState=1
             print('connected')
             return [1,'connect']
@@ -214,28 +215,27 @@ class Arduino():
                 pass
 
     def getSonar(self):    
-        i=0
-        a =[]
-        b = []
-        c = []
-        while i<2:
-            self.data=self.ser.read(30)
-            if (self.data!=''):
-                try:
-                    self.data = str(self.data)
-                    self.ser.flush()
-                    if "A" in self.data:
-                        a.append(int(self.data.split('A')[1].split(")")[0]))
-                    if "C" in self.data:
-                        b.append(int(self.data.split('C')[1].split(")")[0]))
-                    if "C" in self.data:
-                        c.append(int(self.data.split('C')[1].split(")")[0]))
-                    i+=1        
-                    time.sleep(0.01)
-                    return  [np.mean(a),np.mean(b),np.mean(c)]
+        a=0
+        b=0
+        c=0
+        read =self.ser.read(30)
+        try:
+            newData = str(read)
+            if "A" in newData:
+                a = (int(newData.split('A')[1].split(")")[0]))
+            if "B" in newData:
+                b = (int(newData.split('B')[1].split(")")[0]))
+            if "C" in newData:
+                c = (int(newData.split('C')[1].split(")")[0]))
+            self.data = newData
+            return  [a,b,c]
+        
+        except Exception:
+            print("no data")
 
-                except Exception:
-                    pass
+        
+    def getData(self):
+        return self.data
 
     def close(self):
         self.ser.close()
@@ -247,13 +247,14 @@ class Arduino_Motor():
         self.port=Port
         self.boud=Boud
         self.connState=connState
-        self.timeount=1
+        self.timeout= 0.001
         self.ser=None
         self.connect()
 
+
     def connect(self): 
         try:
-            self.ser=serial.Serial(self.port,self.boud,timeout=0.0001)
+            self.ser=serial.Serial(self.port,self.boud,timeout=self.timeout)
             self.connState=1
             print('motor board connected')
             return [1,'connect']
@@ -272,38 +273,60 @@ class Arduino_Motor():
                 pass
 
     def forward(self, move_time = 0.3, power = 150):
+        startTime = time.time()
+        newTime = startTime
         self.ser.write(b'$F150Z')
-        time.sleep(move_time)
+        while newTime < startTime + move_time:
+            newTime = time.time()
+            pass
         self.ser.write(b'$F0Z')
+        self.ser.flush()
 
     def back(self,move_time = 0.3, power = 150):
+        startTime = time.time()
+        newTime = startTime
         self.ser.write(b'$B150Z')
-        time.sleep(move_time)
+        while newTime < startTime + move_time:     
+            newTime = time.time()
+            pass
         self.ser.write(b'$B0Z')
+        self.ser.flush()
 
     def left(self,move_time = 0.3, power = 150):
+        startTime = time.time()
+        newTime = startTime
         self.ser.write(b'$L255Z')
         self.ser.write(b'$R-255Z')
-        time.sleep(move_time)
+        while newTime < startTime + move_time:     
+            newTime = time.time()
+            pass
         self.ser.write(b'$L0Z')
         self.ser.write(b'$R0Z')
+        self.ser.flush()
 
     def right(self,move_time = 0.3, power = 150):
+        startTime = time.time()
+        newTime = startTime
         self.ser.write(b'$R255Z')
         self.ser.write(b'$L-255Z')
-        time.sleep(move_time)
+        while newTime < startTime + move_time:     
+            newTime = time.time()
+            pass
         self.ser.write(b'$R0Z')
         self.ser.write(b'$L0Z')
+        self.ser.flush()
 
     def armLeft(self, move_time = 0.5, power = 200):
         self.ser.write(b'$S200Z')
         time.sleep(move_time)
         self.ser.write(b'$S0Z')
+        self.ser.flush()
 
     def armRight(self, move_time = 0.5, power = 200):
         self.ser.write(b'$S-200Z')
         time.sleep(move_time)
         self.ser.write(b'$S0Z')
+        self.ser.flush()
 
     def armUp(self, move_time = 0.5, power = 200):
         pass
@@ -313,6 +336,7 @@ class Arduino_Motor():
 
     def allStop(self):
         self.ser.write(b'$XZ')
+        self.ser.flush()
 
     def close(self):
         self.ser.close()
@@ -336,6 +360,7 @@ class BotConsole(QtWidgets.QDialog):
 
         if self.arduino1.connState == 1:
             self.sonar = self.arduino1.getSonar()
+            #self.sonar = self.arduino1.getData()
         else:
             self.sonar = "Waiting"
 
@@ -424,7 +449,9 @@ class BotConsole(QtWidgets.QDialog):
 
     def button_9(self):
         try:
-            self.sonar = self.arduino1.getSonar()
+            if self.arduino1.connState == 1:
+                self.sonar = self.arduino1.getSonar()
+                #self.sonar = self.arduino1.getData()
         except:
             self.sonar = "Error"
             print("error")
@@ -462,32 +489,8 @@ class BotConsole(QtWidgets.QDialog):
             print('Sonar COMs closed')
         except:
             pass
-        
 
 
-#    def getSonar(self,port="COM3"):
-#        self.ser = serial.Serial(port, 115200, timeout=0.5)
-#        i=0
-#        a =[]
-#        b = []
-#        c = []
-#        while i<2:
-#            data = self.ser.read(30)
-#            self.ser.flush()
-#            if len(data) > 0:
-#                data = str(data)
-#                if "A" in data:
-#                    a.append(int(data.split('A')[1].split(")")[0]))
-#                if "C" in data:
-#                    b.append(int(data.split('C')[1].split(")")[0]))
-#                if "C" in data:
-#                    c.append(int(data.split('C')[1].split(")")[0]))
-#                i+=1        
-#            time.sleep(0.01)
-#        
-#
-#        self.ser.close()
-#        return  [np.mean(a),np.mean(b),np.mean(c)]
 
 ###############################################################################
 

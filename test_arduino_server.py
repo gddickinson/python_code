@@ -32,9 +32,11 @@ class Arduino():
         try:
             self.ser=serial.Serial(self.port,self.boud,timeout=0.0001)
             self.connState=1
+            print('connected')
             return [1,'connect']
         except:
             self.connState=0
+            print('no hardware found')
             return [0,'no hardware found']
 
 
@@ -47,60 +49,65 @@ class Arduino():
                 pass
 
     def getSonar(self):    
-        i=0
-        a =[]
-        b = []
-        c = []
-        while i<2:
-            self.data=self.ser.read(30)
-            if (self.data!=''):
-                try:
-                    self.data = str(self.data)
-                    self.ser.flush()
-                    if "A" in self.data:
-                        a.append(int(self.data.split('A')[1].split(")")[0]))
-                    if "C" in self.data:
-                        b.append(int(self.data.split('C')[1].split(")")[0]))
-                    if "C" in self.data:
-                        c.append(int(self.data.split('C')[1].split(")")[0]))
-                    i+=1        
-                    time.sleep(0.01)
-                    return  [np.mean(a),np.mean(b),np.mean(c)]
-
-                except Exception:
-                    pass
+        a=0
+        b=0
+        c=0
+        self.data=self.ser.read(30)
+        if (self.data!=''):
+            try:
+                self.data = str(self.data)
+                self.ser.flush()
+                if "A" in self.data:
+                    a = (int(self.data.split('A')[1].split(")")[0]))
+                if "B" in self.data:
+                    b = (int(self.data.split('B')[1].split(")")[0]))
+                if "C" in self.data:
+                    c = (int(self.data.split('C')[1].split(")")[0]))
+                #print(a,b,c)
+                return  [a,b,c]
+                self.ser.flush()
+            except Exception:
+                print("no data")
+                self.ser.flush()
 
     def close(self):
         self.ser.close()
 
 #create serial connection
 ard=Arduino()
-# Create a socket (SOCK_STREAM means a TCP socket)
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
 
 def run_program():
     while True:
+        # Create a socket (SOCK_STREAM means a TCP socket)
+        global sock
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        # Connect to server 
+        sock.connect((HOST, PORT))
         if ard.connState:
             #ard.loadData()
-            data = ard.loadData()
+            #data = str(ard.loadData())
+            data = str(ard.getSonar())
             #print(ard.getSonar())
             try:
-                # Connect to server and send data
-                sock.connect((HOST, PORT))
-                print(data)
+                # send data            
                 if data != None:
                     sock.sendall(str.encode(data + "\n"))
+                    
                 else:
                     print("No Data to Send")
-                # Receive data from the server and shut down
+                # Receive data from the server 
                 received = sock.recv(1024)
+                
             finally:
                 sock.close()
 
+      
             print ("Sent:     {}".format(data))
             print ("Received: {}".format(received))
         else:
             print ("Arduino not found")
+            sock.close()
             break
 
 def exit_gracefully(signum, frame):
@@ -112,11 +119,13 @@ def exit_gracefully(signum, frame):
         if input("\nReally quit? (y/n)> ").lower().startswith('y'):
             ard.close()
             sys.exit(1)
+            sock.close()
 
     except KeyboardInterrupt:
         print("Ok ok, quitting")
         ard.close()
         sys.exit(1)
+        sock.close()
 
     # restore the exit gracefully handler here    
     signal.signal(signal.SIGINT, exit_gracefully)
