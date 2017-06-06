@@ -7,7 +7,8 @@
 import thread, time, sys, traceback, math
 
 #com_port = "COM30" # example: 5 == "COM6" == "/dev/tty5"
-com_port = '/dev/ttyACM0'
+#com_port = '/dev/ttyACM0'
+com_port = "COM5"
 baudrate = 115200
 visualization = True
 
@@ -48,7 +49,7 @@ Takes the angle (an int, from 0 to 359) and the list of four bytes of data in th
     x1= data[1]
     x2= data[2]
     x3= data[3]
-    
+
     angle_rad = angle * math.pi / 180.0
     c = math.cos(angle_rad)
     s = -math.sin(angle_rad)
@@ -68,8 +69,8 @@ Takes the angle (an int, from 0 to 359) and the list of four bytes of data in th
         if not use_outer_line :
             outer_line.pos[angle]=(offset*c,0,offset*s)
             outer_line.color[angle] = (0.1, 0.1, 0.2)
-        
-        
+
+
         # display the sample
         if x1 & 0x80: # is the flag for "bad data" set?
             # yes it's bad data
@@ -105,7 +106,7 @@ data -- list of 20 bytes (as ints), in the order they arrived in.
     data_list = []
     for t in range(10):
         data_list.append( data[2*t] + (data[2*t+1]<<8) )
-    
+
     # compute the checksum on 32 bits
     chk32 = 0
     for d in data_list:
@@ -126,7 +127,7 @@ def compute_speed(data):
 
 def read_Lidar():
     global init_level, angle, index
-    
+
     nb_errors = 0
     while True:
         try:
@@ -151,7 +152,7 @@ def read_Lidar():
             elif init_level == 2 :
                 # speed
                 b_speed = [ ord(b) for b in ser.read(2)]
-                
+
                 # data
                 b_data0 = [ ord(b) for b in ser.read(4)]
                 b_data1 = [ ord(b) for b in ser.read(4)]
@@ -171,7 +172,7 @@ def read_Lidar():
                     speed_rpm = compute_speed(b_speed)
                     if visualization:
                         gui_update_speed(speed_rpm)
-                    
+
                     update_view(index * 4 + 0, b_data0)
                     update_view(index * 4 + 1, b_data1)
                     update_view(index * 4 + 2, b_data2)
@@ -181,15 +182,15 @@ def read_Lidar():
                     nb_errors +=1
                     if visualization:
                         label_errors.text = "errors: "+str(nb_errors)
-                    
+
                     # display the samples in an error state
                     update_view(index * 4 + 0, [0, 0x80, 0, 0])
                     update_view(index * 4 + 1, [0, 0x80, 0, 0])
                     update_view(index * 4 + 2, [0, 0x80, 0, 0])
                     update_view(index * 4 + 3, [0, 0x80, 0, 0])
-                    
+
                 init_level = 0 # reset and wait for the next packet
-                
+
             else: # default, should never happen...
                 init_level = 0
         except :
@@ -227,4 +228,4 @@ while True:
     if visualization:
         rate(60) # synchonous repaint at 60fps
         checkKeys()
-    
+
