@@ -25,6 +25,10 @@ from arcpy import env
 
 import openpyxl
 import win32com.client
+import io
+
+#enable garbage collection
+gc.enable()
 
 ################################################################################
 ##nodes_fc = r"C:\Google Drive\SiCr_Digitization\shadeOutput\nodes_fc.shp"
@@ -61,8 +65,18 @@ runName = arcpy.GetParameterAsText(1)
 saveName = r"C:\Google Drive\SiCr_Digitization\scripts\output.xlsx"
 saveName2 = r"C:\Google Drive\SiCr_Digitization\scripts\output2.xlsx"
 sheetName = "Main Menu"
-excel_shade = openpyxl.load_workbook(exel_filename)
-excel_output = openpyxl.load_workbook(exel_filename2)
+
+
+with open(exel_filename, "rb") as f:
+    in_mem_file1 = io.BytesIO(f.read())
+
+
+with open(exel_filename2, "rb") as f:
+    in_mem_file2 = io.BytesIO(f.read())
+
+excel_shade = openpyxl.load_workbook(in_mem_file1)
+excel_output = openpyxl.load_workbook(in_mem_file2)
+
 startDate = arcpy.GetParameterAsText(2)
 numberDays = arcpy.GetParameterAsText(3)
 lat = arcpy.GetParameterAsText(4)
@@ -147,8 +161,7 @@ def run_macro(pathName):
 
 ################################################################################
 
-#enable garbage collection
-gc.enable()
+
 
 try:
     arcpy.AddMessage("Step 6: Exporting Data to Excel")
@@ -179,19 +192,21 @@ try:
     CHANWIDTH = extractData(nodes_fc, 'CHANWIDTH')
     LEFT = extractData(nodes_fc, 'LEFT')
     RIGHT = extractData(nodes_fc, 'RIGHT')
-    ELEVATION = extractData(nodes_fc, 'ELEVATION')
 
-    #setting topographic angles less than 0 to 0 to avoid error in shadelator
+
     def setToZero(listName):
         ans =[]
         for row in listName:
             row = float(row)
-            if row <0:
+            if row < 0:
                 row = 0
             ans.append(row)
         return ans
 
+    #setting elevation less than 0 to 0 to avoid error in shadelator
+    ELEVATION = setToZero(extractData(nodes_fc, 'ELEVATION'))
 
+    #setting topographic angles less than 0 to 0 to avoid error in shadelator
     TOPO_W = setToZero(extractData(nodes_fc, 'TOPO_W'))
     TOPO_S = setToZero(extractData(nodes_fc, 'TOPO_S'))
     TOPO_E = setToZero(extractData(nodes_fc, 'TOPO_E'))
@@ -200,7 +215,10 @@ try:
     def offsetBy1(listName):
         ans =[]
         for row in listName:
-            ans.append(int(row)+1)
+            row = int(row)
+            if row < 0:
+                row = 0
+            ans.append(row+1)
         return ans
 
     LC_T1_S1 = offsetBy1(extractData(nodes_fc, 'LC_T1_S1'))
@@ -335,9 +353,11 @@ try:
 
     excel_shade.save(saveName)
     excel_shade.close()
+    excel_shade = None
 
     excel_output.save(saveName2)
     excel_output.close()
+    excel_output= None
 
     print("Data Exported To Excel")
     arcpy.AddMessage("Data Exported To Excel")
@@ -352,6 +372,8 @@ try:
     arcpy.AddMessage("Run Macros")
 
     run_macro(shadelatorPath)
+
+
 
     print("Shade-a-lator finished")
     arcpy.AddMessage("Shade-a-lator finished")

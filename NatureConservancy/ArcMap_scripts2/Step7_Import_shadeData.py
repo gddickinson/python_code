@@ -18,6 +18,7 @@ from math import radians, sin, cos, ceil, sqrt
 import arcpy
 from arcpy import env
 
+arcpy.env.workspace = r"C:\Google Drive\SiCr_Digitization\scripts\data"
 env.overwriteOutput = True
 
 # Local variables:
@@ -33,7 +34,9 @@ dataSheet = arcpy.GetParameterAsText(0)
 shade_fc = arcpy.GetParameterAsText(1)
 shade_fc_shp = arcpy.GetParameterAsText(2)
 
-dataSheet = dataSheet + "\\Sheet1$"
+#dataSheet2 = dataSheet + "\\Sheet1$"
+arcpy.ExcelToTable_conversion(dataSheet,"outdbf.dbf")
+
 shade_fc_shp = shade_fc_shp + "\\" + shade_fc + ".shp"
 
 arcpy.AddMessage(dataSheet)
@@ -51,10 +54,21 @@ try:
     startTime= time.time()
 
     # Process: Make XY Event Layer
-    arcpy.MakeXYEventLayer_management(dataSheet, "longitude", "latitude", shade_fc, "GEOGCS['GCS_North_American_1983',DATUM['D_North_American_1983',SPHEROID['GRS_1980',6378137.0,298.257222101]],PRIMEM['Greenwich',0.0],UNIT['Degree',0.0174532925199433]];-400 -400 1000000000;-100000 10000;-100000 10000;8.98315284119521E-09;0.001;0.001;IsHighPrecision", "")
+    arcpy.MakeXYEventLayer_management("outdbf.dbf", "longitude", "latitude", shade_fc, "GEOGCS['GCS_North_American_1983',DATUM['D_North_American_1983',SPHEROID['GRS_1980',6378137.0,298.257222101]],PRIMEM['Greenwich',0.0],UNIT['Degree',0.0174532925199433]];-400 -400 1000000000;-100000 10000;-100000 10000;8.98315284119521E-09;0.001;0.001;IsHighPrecision", "")
 
     # Process: Copy Features
     arcpy.CopyFeatures_management(shade_fc, shade_fc_shp, "", "0", "0", "0")
+
+    #Add feature class to map layer
+
+    mxd = arcpy.mapping.MapDocument("CURRENT")
+    df = mxd.activeDataFrame
+    newLayer = arcpy.mapping.Layer(shade_fc_shp)
+    arcpy.mapping.AddLayer(df,newLayer,"TOP")
+
+    arcpy.AddMessage("Shade featureclass added to map")
+    print("Shade featureclass added to map")
+
 
     endTime = time.time()
 
