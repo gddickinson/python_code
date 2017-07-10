@@ -517,6 +517,8 @@ class CameraConsole(QtWidgets.QDialog):
         self.recordFlag = 'OFF'
         self.playRecordingFlag = "OFF"
         self.framerate = 20.0
+        self.framerateMin = 1
+        self.framerateMax = 20.0
         self.channelFlag = 'BGR'
         self.channelList = ['BGR', 'Red Mask', 'Green Mask', 'Blue Mask']
         self.faceDetectFlag = "OFF"
@@ -540,6 +542,17 @@ class CameraConsole(QtWidgets.QDialog):
 
         self.filterBox = QtWidgets.QComboBox()
         self.filterBox.addItems(self.filterList)
+        
+        self.sld1 = QtWidgets.QSlider(QtCore.Qt.Horizontal)
+        self.sld1.setRange(self.framerateMin,self.framerateMax)
+        self.sld1.setTickPosition(QtWidgets.QSlider.TicksBelow)
+        self.sld1.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.sld1.setValue(self.framerate)
+        #self.sld1.setGeometry(30, 40, 100, 30)
+
+        self.SpinBox1=QtWidgets.QDoubleSpinBox()
+        self.SpinBox1.setRange(self.framerateMin,self.framerateMax)
+        self.SpinBox1.setValue(self.framerate)
 
         layout = QtWidgets.QGridLayout()
         
@@ -554,7 +567,9 @@ class CameraConsole(QtWidgets.QDialog):
         layout.addWidget(self.button9, 2, 2)
         
         layout.addWidget(self.channelBox, 0,3)
-        layout.addWidget(self.filterBox, 1,3)   
+        layout.addWidget(self.filterBox, 1,3)  
+        layout.addWidget(self.sld1, 3,0,3,3)  
+        layout.addWidget(self.SpinBox1, 3,3) 
      
         self.setLayout(layout)
         
@@ -570,6 +585,10 @@ class CameraConsole(QtWidgets.QDialog):
         
         self.connect(self.channelBox,SIGNAL("currentIndexChanged(QString)"),self.channelBox_select)         
         self.connect(self.filterBox,SIGNAL("currentIndexChanged(QString)"),self.filterBox_select) 
+        
+        self.connect(self.sld1,SIGNAL("valueChanged(int)"), self.slider_1)
+        self.connect(self.sld1,SIGNAL("valueChanged(int)"),self.SpinBox1.setValue)
+        
 
     def channelBox_select(self):
         self.channelFlag = self.channelBox.currentText()
@@ -904,6 +923,13 @@ class CameraConsole(QtWidgets.QDialog):
 
     def button_9(self):
         print("not implemented")        
+
+
+
+    def slider_1(self):
+            self.framerate = self.sld1.value()
+            print(self.framerate)
+
         
 class Console_Analysis(QtWidgets.QDialog):
     def __init__(self, parent = None):
