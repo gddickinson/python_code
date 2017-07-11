@@ -167,9 +167,9 @@ pCodes = getProjectCodes(path)
 
 finalList = np.array(['project']+searchWords+['totalNumber'],dtype='str')
 
-#ucomment to get list of all words in a project
+#uncomment to get list of all words in a project
 #projectCode = 'g4'
-#allWords = getProjectWordList(projectCode, path)
+#allWords, wordCount = getProjectWordList(projectCode, path)
 
 for code in pCodes:
     try:
