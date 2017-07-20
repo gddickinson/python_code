@@ -518,7 +518,7 @@ class CameraConsole(QtWidgets.QDialog):
         self.playRecordingFlag = "OFF"
         self.framerate = 20.0
         self.framerateMin = 1
-        self.framerateMax = 20.0
+        self.framerateMax = 40.0
         self.channelFlag = 'BGR'
         self.channelList = ['BGR', 'Red Mask', 'Green Mask', 'Blue Mask']
         self.faceDetectFlag = "OFF"
