@@ -54,10 +54,20 @@ def getProjectWordList(projectCode, path, searchWords=[]):
         for i in range(pages):
             contents = reader.getPage(i).extractText().split(' ')
             for line in contents:
-                for word in line.replace('\n', '').replace('(', '').replace(')', '').replace('[', '').replace(']','').replace('.', '').split(','):
+                line = line.encode('ascii', 'replace').decode('ascii') #replaces international symbols to get rid of problems with compatibility between unicode and strings
+                
+                for word in line.replace('\n', ' ').replace('(', ',').replace(')', ',').replace('{', ',').replace('}',',').replace('[', ',').replace(']',',').replace('"', ',').replace('\\', ',').replace('/', ',').replace('>', ',').replace('<', ',').replace(';', ',').replace('*', ',').replace('&', ',').replace('€', ',').replace('£', ',').replace('$', ',').replace(':', ',').replace('=', ',').replace('?', ',').replace('.', ',').split(','):
                     word = word.replace(' ','').lower()
-                    word = word.replace('{', '').replace('}','')
-                    word = ''.join([i for i in word if not i.isdigit()])
+                    word = ''.join([i for i in word if not i.isdigit()]) #strip out numbers
+                    try:
+                        if word[0] == '-':
+                            word = word.replace('-','')                        
+                        
+                        if word[-1] == '-':
+                            word = word.replace('-','')
+                    except:
+                        pass
+                    #word = ''.join([i for i in word])
                     if len(word) < 20:
                         parseList.append(word)
                                 
@@ -82,12 +92,19 @@ def getProjectWordList(projectCode, path, searchWords=[]):
                 print(file)
                 word_list, word_count = parsePDF(os.path.join(path,file))
 
-                if i == 0:
-                    projectList = word_list
-                else:
-                    for word in word_list:
-                        if word in projectList:
-                            projectList.append(word)
+
+#######  comment to only add words found in all projects
+                projectList = projectList + word_list
+
+
+
+######## uncomment to only add words found in all projects
+#                if i == 0:
+#                    projectList = word_list
+#                else:
+#                    for word in word_list:
+#                        if word in projectList: #only adds word if found in all files in project
+#                            projectList.append(word)
     
             except:
                 print('finished project')
@@ -105,7 +122,7 @@ def getProjectWordList(projectCode, path, searchWords=[]):
                 wc[w] = wc.get(w, 0) + 1
     
     projectFinalList = list(wc.items())
-    projectFinalList = [word for word in projectFinalList if word[1] >= 3]
+    projectFinalList = [word for word in projectFinalList if word[1] >= 3] #only includes words found more than 2 times
     projectFinalList.sort(key=lambda tup: tup[1])
     projectFinalList.reverse()
     
@@ -196,7 +213,7 @@ for code in pCodes:
         pass
     
 
-np.savetxt(path+r'\searchResult_percent_new'+'.txt',finalList, fmt="%s",delimiter=',')
+np.savetxt(path+r'\searchResult_percent_allWords'+'.txt',finalList, fmt="%s",delimiter=',')
 
 
 
