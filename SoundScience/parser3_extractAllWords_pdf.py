@@ -4,6 +4,7 @@ Created on Sat Mar 25 10:12:11 2017
 
 @author: George
 """
+from __future__ import (absolute_import, division,print_function, unicode_literals)
 import os
 import sys
 import numpy as np
@@ -12,6 +13,7 @@ from collections import Counter
 from collections import OrderedDict
 from matplotlib import pyplot as plt
 import glob
+import re
 
 
 def getWordList(filename, minWordLength = 2, maxWordLength = 30):
@@ -20,31 +22,49 @@ def getWordList(filename, minWordLength = 2, maxWordLength = 30):
     def parsePDF(filename):
         parseList = []
         wordList = []
-        
-        f = open(filename, 'rb')
-        reader = PdfFileReader(f)
-        pages = reader.numPages
-        
-        for i in range(pages):
-            contents = reader.getPage(i).extractText().split(' ')
-            for line in contents:
-                line = line.encode('ascii', 'replace').decode('ascii') #replaces international symbols to get rid of problems with compatibility between unicode and strings
 
-                for word in line.replace('\n', ' ').replace('(', ',').replace(')', ',').replace('{', ',').replace('}',',').replace('[', ',').replace(']',',').replace('"', ',').replace('\\', ',').replace('/', ',').replace('>', ',').replace('<', ',').replace(';', ',').replace('*', ',').replace('&', ',').replace('€', ',').replace('£', ',').replace('$', ',').replace(':', ',').replace('=', ',').replace('?', ',').replace('.', ',').split(','):
-                    #word = word.replace(' ','').lower()
-                    word = word.replace(' ','')
-                    word = ''.join([i for i in word if not i.isdigit()]) #strip out numbers
-                    try:
-                        if word[0] == '-':
-                            word = word.replace('-','')                        
-                        
-                        if word[-1] == '-':
-                            word = word.replace('-','')
-                    except:
-                        pass
-                    #word = ''.join([i for i in word])
-                    if len(word) < maxWordLength:
-                        parseList.append(word)
+
+#       #for pdf 
+#        f = open(filename, 'rb')#rb returns file in bytes
+#        reader = PdfFileReader(f)
+#        pages = reader.numPages
+#        
+#        for i in range(pages):
+#            contents = reader.getPage(i).extractText().split(' ')
+#            for line in contents:
+#                #line = line.encode('ascii', 'replace').decode('ascii') #replaces international symbols to get rid of problems with compatibility between unicode and strings
+#
+#                for word in line.replace('\n', ' ').replace('(', ',').replace(')', ',').replace('{', ',').replace('}',',').replace('[', ',').replace(']',',').replace('"', ',').replace('\\', ',').replace('/', ',').replace('>', ',').replace('<', ',').replace(';', ',').replace('*', ',').replace('&', ',').replace('€', ',').replace('£', ',').replace('$', ',').replace(':', ',').replace('=', ',').replace('?', ',').replace('.', ',').split(','):
+#                    #word = word.replace(' ','').lower()
+#                    word = word.replace(' ','')
+#                    word = ''.join([i for i in word if not i.isdigit()]) #strip out numbers
+#                    try:
+#                        if word[0] == '-':
+#                            word = word.replace('-','')                        
+#                        
+#                        if word[-1] == '-':
+#                            word = word.replace('-','')
+#                    except:
+#                        pass
+#                    word = ''.join([i for i in word])
+#                    if len(word) < maxWordLength:
+#                        parseList.append(word)
+        
+        
+        #for txt file
+        f = open(filename, 'r')#r returns file as str
+        data = f.readlines()
+        #data  = set(f.read().split()) #using set
+        f.close()
+        for line in data:
+            #line = line.encode('ascii', 'replace').decode('ascii') #replaces international symbols to get rid of problems with compatibility between unicode and strings
+
+            words = re.compile('\w+').findall(line)
+
+            for word in words:
+
+                if len(word) < maxWordLength and word.isalpha(): #remove short words and words containing numbers
+                    parseList.append(word)
                                 
         f.close()
         
@@ -53,7 +73,7 @@ def getWordList(filename, minWordLength = 2, maxWordLength = 30):
                 wordList.append(word)
 
         print('file parsed')
-        #print (wordList)
+        print (wordList)
         return wordList
     
     
@@ -106,10 +126,15 @@ def getWordList(filename, minWordLength = 2, maxWordLength = 30):
     return finalList, parselist
 
 
-path = r'C:\Users\George\Desktop\NatureConservancy'
-file = 'easlon & bloom_2014' 
+path = r'C:\Users\George\Desktop\SoundScience\Acronyms'
+file = 'CHD_REA_PHASE1_DRAFT_FINAL_071417' 
 
-filename = path + '\\' + file + '.pdf'
+##for pdf
+#filename = path + '\\' + file + '.pdf'
+
+#for txt file
+filename = path + '\\' + file + '.txt'
+
 
 wordList, parselist = getWordList(filename, minWordLength = 2, maxWordLength = 25) 
 
