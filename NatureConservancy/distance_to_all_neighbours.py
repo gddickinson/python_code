@@ -78,6 +78,7 @@ def distances(filename1, filename2, output):
             if dist < searchRadius:
                 answer.append(dist)
                 shadeList.append(abs(shade-searchSet[2][i]))
+                #print(shade, searchSet[2][i])
         #print(answer, shadeList)
         return answer, shadeList
     
@@ -113,7 +114,7 @@ def distances(filename1, filename2, output):
 
   
  
-filename1 = r"C:\Google Drive\SiCr_Digitization\Data\shadeData_for_analysis\boiseRiver_shade_50nodes_centerLine2.txt"
+filename1 = r"C:\Google Drive\SiCr_Digitization\Data\shadeData_for_analysis\boiseRiver_shade_50nodes_centerLine1.txt"
 filename2 = r"C:\Google Drive\SiCr_Digitization\Data\shadeData_for_analysis\luke_ShadeData.txt"
 output = r"C:\Google Drive\SiCr_Digitization\Data\shadeData_for_analysis\result.txt"
 
