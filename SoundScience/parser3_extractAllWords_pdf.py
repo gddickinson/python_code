@@ -126,8 +126,8 @@ def getWordList(filename, minWordLength = 2, maxWordLength = 30):
     return finalList, parselist
 
 
-path = r'C:\Users\George\Desktop\SoundScience\Acronyms'
-file = 'CHD_REA_PHASE1_DRAFT_FINAL_071417' 
+path = r'C:\Users\George\Desktop\SoundScience\Acronyms2'
+file = 'CHD_REA_PHASEII_DRAFT_FINAL_08302017' 
 
 ##for pdf
 #filename = path + '\\' + file + '.pdf'
