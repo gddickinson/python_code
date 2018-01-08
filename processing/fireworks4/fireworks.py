@@ -5,7 +5,7 @@ from characters import getRandomPointInLetter, getRandomPointInJPG
 class Firework(object):
     def __init__(self, singleColor=False, color=0, numberOfParticules=3, \
                       startPosition=0, setDirection=False, direction=0, directionLow=-2, directionHigh=2, setRocketVelocity = False, rocketVelocity = -8,\
-                          setLifespan = True, life=20, repeat = True, delay=100, detonation = 50,\
+                          setLifespan = True, life=20, repeat = True, delay=100, detonation = 50, flare = False, flareSize=20,\
                                   explosionsOn=True, setExplosionSize = False, explosionSize=30, explosionDuration = 15,\
                                       imageRocket = False, imageName = 'tree', characterRocket = False, character = "upper_A"): 
  
@@ -16,6 +16,9 @@ class Firework(object):
  
         self.imageRocket = imageRocket
         self.imageName = imageName
+ 
+        self.flare = flare
+        self.flareSize = flareSize
  
         self.setLifespan = setLifespan
         self.detonation = detonation
@@ -104,21 +107,25 @@ class Firework(object):
 
     def explodingCharacter(self,x,y,n,scaleFactor,character='upper_A'):
         sparkList = getRandomPointInLetter(x,y,n,scaleFactor,character)
+        driftX = randint(-1,1)
+        driftY = randint(-1,1)
         for spark in sparkList:
             r=randint(0,255)
             g=randint(0,255)
             b=randint(0,255)
             stroke(r,g,b) 
-            point(spark[0],spark[1])                                           
+            point(spark[0]+driftX,spark[1]+driftY)                                           
    
     def explodingImage(self,x,y,n,scaleFactor,imgName='tree'):
         sparkList = getRandomPointInJPG(x,y,n,scaleFactor,imgName)
+        driftX = randint(-6,6)
+        driftY = randint(-6,6)
         for spark in sparkList:
             r=randint(0,255)
             g=randint(0,255)
             b=randint(0,255)
             stroke(r,g,b) 
-            point(spark[0],spark[1])                                                                                                                                       
+            point((spark[0] + driftX),(spark[1] + driftY))                                                                                                                                       
 
     def getStatus(self):
         return self.dead        
@@ -144,6 +151,10 @@ class Firework(object):
                     stroke(0,255,255)
                                     
                 point(self.position[displayNumber+i][0] + 150, self.position[displayNumber+i][1] + 300)
+
+                if (self.flare):
+                    self.explosion(self.position[displayNumber+i][0] + 150,self.position[displayNumber+i][1] +300, randint(0,10),randint(0,(self.flareSize/((i+1)*2))))
+
 
         else:
             if (self.explosionDuration+self.detonation > self.count):

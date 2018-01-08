@@ -1,8 +1,10 @@
 from fireworks import Firework
+from random import randint
 
 def getList():
 
-    showList = ([[Firework(setRocketVelocity = True, rocketVelocity = -10, setExplosionSize = True, explosionSize=50, explosionDuration = 5, setDirection=True, direction=1, repeat=False),1],\
+    showList = ([\
+    [Firework(setRocketVelocity = True, rocketVelocity = -10, setExplosionSize = True, explosionSize=50, explosionDuration = 5, setDirection=True, direction=1, repeat=False),1],\
     [Firework(startPosition=-90,setDirection=True, direction=0, explosionsOn=False, explosionDuration = 15, characterRocket = True, setRocketVelocity = True, rocketVelocity = -10, character = "upper_H", repeat=False),2],\    
     [Firework(startPosition=-45,setDirection=True, direction=0, explosionsOn=False, explosionDuration = 10, characterRocket = True, setRocketVelocity = True, rocketVelocity = -9, character = "A", repeat=False),3],\ 
     [Firework(startPosition=0,setDirection=True, direction=0, explosionsOn=False, explosionDuration = 10, characterRocket = True, setRocketVelocity = True, rocketVelocity = -9, character = "P", repeat=False),4],\ 
@@ -21,7 +23,12 @@ def getList():
     [Firework(startPosition=0,setDirection=True, direction=0, explosionsOn=False, explosionDuration = 10, characterRocket = True, setRocketVelocity = True, rocketVelocity = -8, character = "S", repeat=False),140],\ 
     [Firework(startPosition=45,setDirection=True, direction=0, explosionsOn=False, explosionDuration = 10, characterRocket = True, setRocketVelocity = True, rocketVelocity = -9, character = "A", repeat=False),160],\ 
     [Firework(startPosition=90,setDirection=True, direction=0, explosionsOn=False, explosionDuration = 20, characterRocket = True, setRocketVelocity = True, rocketVelocity = -7, character = "N", repeat=False),180],\
-    [Firework(startPosition=-50,setDirection=True, direction=1, explosionsOn=False, explosionDuration = 20, characterRocket = False, imageRocket = True, setRocketVelocity = True, rocketVelocity = -9, imageName = "cake", repeat=False),250],\
+    [Firework(setRocketVelocity = True, rocketVelocity = -10, setExplosionSize = True, explosionSize=randint(0,20)+10, explosionDuration = 10, setDirection=True, direction=randint(0,2), repeat=True, flare = True),200],\
+    [Firework(startPosition=-90,setRocketVelocity = True, rocketVelocity = -10, setExplosionSize = True, explosionSize=randint(0,20)+30, explosionDuration = 10, setDirection=True, direction=randint(0,2), repeat=True, flare = True),200],\
+    [Firework(startPosition=-90,setRocketVelocity = True, rocketVelocity = -10, setExplosionSize = True, explosionSize=randint(0,20)+70, explosionDuration = 10, setDirection=True, direction=randint(0,2), repeat=True, flare = True),250],\
+    [Firework(startPosition=-90,setRocketVelocity = True, rocketVelocity = -10, setExplosionSize = True, explosionSize=randint(0,20)+50, explosionDuration = 10, setDirection=True, direction=randint(0,2), repeat=True, flare = True),250],\
+    [Firework(startPosition=-90,setRocketVelocity = True, rocketVelocity = -10, setExplosionSize = True, explosionSize=randint(0,20)+100, explosionDuration = 10, setDirection=True, direction=randint(0,2), repeat=True, flare = True),250],\
+    [Firework(startPosition=-50,setDirection=True, direction=1, explosionsOn=False, explosionDuration = 20, characterRocket = False, imageRocket = True, setRocketVelocity = True, rocketVelocity = -9, imageName = "cake", repeat=False, flare=True, flareSize =20),500],\
         ]) 
     
     return showList
