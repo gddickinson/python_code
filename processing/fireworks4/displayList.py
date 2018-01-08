@@ -28,7 +28,7 @@ def getList():
     [Firework(startPosition=-90,setRocketVelocity = True, rocketVelocity = -10, setExplosionSize = True, explosionSize=randint(0,20)+70, explosionDuration = 10, setDirection=True, direction=randint(0,2), repeat=True, flare = True),250],\
     [Firework(startPosition=-90,setRocketVelocity = True, rocketVelocity = -10, setExplosionSize = True, explosionSize=randint(0,20)+50, explosionDuration = 10, setDirection=True, direction=randint(0,2), repeat=True, flare = True),250],\
     [Firework(startPosition=-90,setRocketVelocity = True, rocketVelocity = -10, setExplosionSize = True, explosionSize=randint(0,20)+100, explosionDuration = 10, setDirection=True, direction=randint(0,2), repeat=True, flare = True),250],\
-    [Firework(startPosition=-50,setDirection=True, direction=1, explosionsOn=False, explosionDuration = 20, characterRocket = False, imageRocket = True, setRocketVelocity = True, rocketVelocity = -9, imageName = "cake", repeat=False, flare=True, flareSize =20),500],\
+    [Firework(startPosition=-50,setDirection=True,numberOfParticules=10, direction=1, explosionsOn=False, explosionDuration = 20, characterRocket = False, imageRocket = True, setRocketVelocity = True, rocketVelocity = -9, imageName = "cake", repeat=False, flare=True, flareSize =20),500],\
         ]) 
     
     return showList

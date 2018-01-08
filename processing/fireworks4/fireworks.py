@@ -104,11 +104,25 @@ class Firework(object):
         sparkList = getRandomPointInCircleBand(x,y,n,r+2) 
         for spark in sparkList:
             point(spark[0],spark[1])    
+            
+    def explosionBandDriftingDown(self,x,y,n,r):
+        driftX = randint(-10,1)
+        driftY = randint(0,1)        
+        stroke(255,255,255)  
+
+        sparkList = getRandomPointInCircleBand(x,y,n,r) 
+        for spark in sparkList:
+            point(spark[0]+driftX,spark[1]+driftY)
+        
+        stroke(255,0,255)        
+        sparkList = getRandomPointInCircleBand(x,y,n,r+2) 
+        for spark in sparkList:
+            point(spark[0]+driftX,spark[1]+driftY)            
 
     def explodingCharacter(self,x,y,n,scaleFactor,character='upper_A'):
         sparkList = getRandomPointInLetter(x,y,n,scaleFactor,character)
         driftX = randint(-1,1)
-        driftY = randint(-1,1)
+        driftY = randint(0,1)
         for spark in sparkList:
             r=randint(0,255)
             g=randint(0,255)
@@ -119,7 +133,7 @@ class Firework(object):
     def explodingImage(self,x,y,n,scaleFactor,imgName='tree'):
         sparkList = getRandomPointInJPG(x,y,n,scaleFactor,imgName)
         driftX = randint(-6,6)
-        driftY = randint(-6,6)
+        driftY = randint(-3,6)
         for spark in sparkList:
             r=randint(0,255)
             g=randint(0,255)
@@ -137,6 +151,7 @@ class Firework(object):
         if (self.count < self.detonation):
  
             for i in range(0, self.numberOfParticules):
+                #print(i)
                 if (self.singleColor == False):
                     self.color=i%5
                 if self.color==0:
@@ -159,8 +174,11 @@ class Firework(object):
         else:
             if (self.explosionDuration+self.detonation > self.count):
                 if (self.explosionsOn):
-                    self.explosionBand(self.position[displayNumber][0] + 150,self.position[displayNumber][1] +300, randint(0,20),randint(0,self.explosionSize+1))
+                    if randint(0,100)>50:
+                        self.explosionBandDriftingDown(self.position[displayNumber][0] + 150,self.position[displayNumber][1] +300, randint(0,20),randint(0,self.explosionSize+1))
                     self.explosion(self.position[displayNumber][0] + 150,self.position[displayNumber][1] +300, randint(0,20),randint(0,self.explosionSize))
+                    if randint(0,100)>50:
+                        self.explosionBand(self.position[displayNumber][0] + 150,self.position[displayNumber][1] +300, randint(0,20),randint(0,self.explosionSize+10))                                    
 
                 if (self.characterRocket):
                     self.explodingCharacter(self.position[displayNumber][0] + 150,self.position[displayNumber][1] +300, randint(0,20),self.scaleFactor,character=self.character)
@@ -198,7 +216,7 @@ class DisplayManager(object):
     def update(self):
         self.count +=1
         self.display()
-        print(self.count)
+        #print(self.count)
         pass
         
         
