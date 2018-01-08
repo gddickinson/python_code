@@ -7,12 +7,15 @@ class Firework(object):
                       startPosition=0, setDirection=False, direction=0, directionLow=-2, directionHigh=2, setRocketVelocity = False, rocketVelocity = -8,\
                           setLifespan = True, life=20, repeat = True, delay=100, detonation = 50,\
                                   explosionsOn=True, setExplosionSize = False, explosionSize=30, explosionDuration = 15,\
-                                      characterRocket = False, character = "upper_A"): 
+                                      imageRocket = False, imageName = 'tree', characterRocket = False, character = "upper_A"): 
  
         self.count = 0
         self.position = []       
         self.velocity = []
         self.life = life
+ 
+        self.imageRocket = imageRocket
+        self.imageName = imageName
  
         self.setLifespan = setLifespan
         self.detonation = detonation
@@ -150,7 +153,9 @@ class Firework(object):
 
                 if (self.characterRocket):
                     self.explodingCharacter(self.position[displayNumber][0] + 150,self.position[displayNumber][1] +300, randint(0,20),self.scaleFactor,character=self.character)
-                    #self.explodingImage(self.position[displayNumber][0] + 150,self.position[displayNumber][1] +300, randint(0,20),5,imgName="tree")
+       
+                if (self.imageRocket):
+                    self.explodingImage(self.position[displayNumber][0] + 150,self.position[displayNumber][1] +300, randint(0,500),10,imgName=self.imageName)
 
         self.count +=1
         
