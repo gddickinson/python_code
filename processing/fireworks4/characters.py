@@ -1,12 +1,8 @@
-#mac
-pathName = '/Users/george/Desktop/text/'
 
-#pc
-pathName = 'C:\\Google Drive\\text\\'
 
 def getRandomPointInLetter(x, y, n, scaleFactor,character = "upper_A"):
     ans = []
-    path = pathName + character + '.png'
+    path = '/Users/george/Desktop/text/' + character + '.png'
     img = loadImage(path)
     for i in range(n*10):
         imgX = int(random(img.width))
@@ -18,7 +14,7 @@ def getRandomPointInLetter(x, y, n, scaleFactor,character = "upper_A"):
         
 def getRandomPointInJPG(x, y, n, scaleFactor,imgName = "tree"):
     ans = []
-    path = pathName + imgName+ '.jpeg'
+    path = '/Users/george/Desktop/text/' + imgName+ '.jpeg'
     img = loadImage(path)
     for i in range(n*10):
         imgX = int(random(img.width))
