@@ -5,14 +5,20 @@ from characters import getRandomPointInLetter, getRandomPointInJPG
 class Firework(object):
     def __init__(self, singleColor=False, color=0, numberOfParticules=3, \
                       startPosition=0, setDirection=False, direction=0, directionLow=-2, directionHigh=2, setRocketVelocity = False, rocketVelocity = -8,\
-                          setLifespan = True, life=20, repeat = True, delay=100, detonation = 50,\
+                          setLifespan = True, life=20, repeat = True, delay=100, detonation = 50, flare = False, flareSize=20,\
                                   explosionsOn=True, setExplosionSize = False, explosionSize=30, explosionDuration = 15,\
-                                      characterRocket = False, character = "upper_A"): 
+                                      imageRocket = False, imageName = 'tree', characterRocket = False, character = "upper_A"): 
  
         self.count = 0
         self.position = []       
         self.velocity = []
         self.life = life
+ 
+        self.imageRocket = imageRocket
+        self.imageName = imageName
+ 
+        self.flare = flare
+        self.flareSize = flareSize
  
         self.setLifespan = setLifespan
         self.detonation = detonation
@@ -21,7 +27,9 @@ class Firework(object):
                                
         self.repeat = repeat
         self.delay = delay
- 
+
+        self.dead = False
+   
         self.characterRocket = characterRocket
         if self.characterRocket == True:
             self.character = character
@@ -99,23 +107,29 @@ class Firework(object):
 
     def explodingCharacter(self,x,y,n,scaleFactor,character='upper_A'):
         sparkList = getRandomPointInLetter(x,y,n,scaleFactor,character)
+        driftX = randint(-1,1)
+        driftY = randint(-1,1)
         for spark in sparkList:
             r=randint(0,255)
             g=randint(0,255)
             b=randint(0,255)
             stroke(r,g,b) 
-            point(spark[0],spark[1])                                           
+            point(spark[0]+driftX,spark[1]+driftY)                                           
    
     def explodingImage(self,x,y,n,scaleFactor,imgName='tree'):
         sparkList = getRandomPointInJPG(x,y,n,scaleFactor,imgName)
+        driftX = randint(-6,6)
+        driftY = randint(-6,6)
         for spark in sparkList:
             r=randint(0,255)
             g=randint(0,255)
             b=randint(0,255)
             stroke(r,g,b) 
-            point(spark[0],spark[1])                                                                                                                                       
-                                                                                                                                                                                                                                                                                                                                                                                                      
-                                                                                                                            
+            point((spark[0] + driftX),(spark[1] + driftY))                                                                                                                                       
+
+    def getStatus(self):
+        return self.dead        
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          
     def display(self):
  
         displayNumber = self.count
@@ -138,6 +152,10 @@ class Firework(object):
                                     
                 point(self.position[displayNumber+i][0] + 150, self.position[displayNumber+i][1] + 300)
 
+                if (self.flare):
+                    self.explosion(self.position[displayNumber+i][0] + 150,self.position[displayNumber+i][1] +300, randint(0,10),randint(0,(self.flareSize/((i+1)*2))))
+
+
         else:
             if (self.explosionDuration+self.detonation > self.count):
                 if (self.explosionsOn):
@@ -146,15 +164,42 @@ class Firework(object):
 
                 if (self.characterRocket):
                     self.explodingCharacter(self.position[displayNumber][0] + 150,self.position[displayNumber][1] +300, randint(0,20),self.scaleFactor,character=self.character)
-                    #self.explodingImage(self.position[displayNumber][0] + 150,self.position[displayNumber][1] +300, randint(0,20),5,imgName="tree")
+       
+                if (self.imageRocket):
+                    self.explodingImage(self.position[displayNumber][0] + 150,self.position[displayNumber][1] +300, randint(0,500),10,imgName=self.imageName)
 
         self.count +=1
         
         if (self.repeat):
             if (self.count > self.life + self.delay):
                 self.count = 0
-
+        else:
+            if (self.count > self.life + self.delay):
+                self.dead = True     
 
 class DisplayManager(object):
     def __init__(self):
+        self.count = 0        
+        self.displayList = []
+        
+    def addRocket(self, rocket, startTime):
+        self.displayList.append([rocket,startTime])    
+
+    def display(self):
+       for i in range(0,len(self.displayList)):
+           if (self.displayList[i][1] <= self.count):
+               self.displayList[i][0].display()     
+           
+           if (self.displayList[i][0].getStatus == False):
+               del self.displayList[i]
+                
+             
+               
+    def update(self):
+        self.count +=1
+        self.display()
+        print(self.count)
         pass
+        
+        
+        
