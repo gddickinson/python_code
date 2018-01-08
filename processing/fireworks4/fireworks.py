@@ -21,7 +21,9 @@ class Firework(object):
                                
         self.repeat = repeat
         self.delay = delay
- 
+
+        self.dead = False
+   
         self.characterRocket = characterRocket
         if self.characterRocket == True:
             self.character = character
@@ -114,8 +116,10 @@ class Firework(object):
             b=randint(0,255)
             stroke(r,g,b) 
             point(spark[0],spark[1])                                                                                                                                       
-                                                                                                                                                                                                                                                                                                                                                                                                      
-                                                                                                                            
+
+    def getStatus(self):
+        return self.dead        
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          
     def display(self):
  
         displayNumber = self.count
@@ -153,8 +157,33 @@ class Firework(object):
         if (self.repeat):
             if (self.count > self.life + self.delay):
                 self.count = 0
-
+        else:
+            if (self.count > self.life + self.delay):
+                self.dead = True     
 
 class DisplayManager(object):
     def __init__(self):
+        self.count = 0        
+        self.displayList = []
+        
+    def addRocket(self, rocket, startTime):
+        self.displayList.append([rocket,startTime])    
+
+    def display(self):
+       for i in range(0,len(self.displayList)):
+           if (self.displayList[i][1] <= self.count):
+               self.displayList[i][0].display()     
+           
+           if (self.displayList[i][0].getStatus == False):
+               del self.displayList[i]
+                
+             
+               
+    def update(self):
+        self.count +=1
+        self.display()
+        print(self.count)
         pass
+        
+        
+        
