@@ -21,8 +21,10 @@ except ImportError:
 #download_path = input("[+] Enter the download path in full: ")
 
 #url = r'https://www.lcrmscp.gov/steer_committee/work_tasks.html'
-url = r'https://www.lcrmscp.gov/crab/crab.html'
-file_path = r'/Users/george/Desktop/LCR_powerpoints2'
+#url = r'https://www.lcrmscp.gov/crab/crab.html'
+url = r'https://www.lcrmscp.gov/crtr/crtr.html'
+#file_path = r'/Users/george/Desktop/LCR_powerpoints'
+file_path = r'C:\Users\George\Desktop\LCR_Powerpoints'
 files_in_dir = os.listdir(file_path)
 number_files = len(files_in_dir)
 download = urllib.request.URLopener()

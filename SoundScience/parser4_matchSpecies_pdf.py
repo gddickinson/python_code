@@ -20,7 +20,8 @@ from shutil import copy2
 #test file
 #filename = r"/Users/george/Dropbox/SoundScience/LCR_webpages/CRAB-CRTR_powerpoints/CRTR/results/01_crtr12_five_years_mscp_olson.pdf"
 
-path = r"/Users/george/Dropbox/SoundScience/LCR_webpages/CRAB-CRTR_powerpoints/CRTR"
+#path = r"/Users/george/Dropbox/SoundScience/LCR_webpages/CRAB-CRTR_powerpoints/CRTR"
+path = r"C:\Users\George\Desktop\LCR_Powerpoints"
 #test path
 #path = r"/Users/george/Desktop/testing"
 files_in_dir = os.listdir(path)
