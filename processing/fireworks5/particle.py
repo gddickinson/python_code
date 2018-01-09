@@ -7,7 +7,7 @@ class Particle(object):
         self.lifespan = 255
         self.velocity = PVector()
         #partSize = random(10, 60)
-        partSize = random(5, 30)
+        partSize = random(2, 20)
         self.part = createShape()
         self.part.beginShape(QUAD)
         self.part.noStroke()
@@ -41,7 +41,9 @@ class Particle(object):
     def update(self):
         self.lifespan -= 1
         self.velocity.add(self.gravity)
-        #self.part.setTint(color(255, self.lifespan))
-        self.part.setTint(color(randint(200,255), self.lifespan))
+        self.part.setTint(color(255, self.lifespan))
+        r=randint(0,255)
+        g=randint(0,255)
+        b=randint(0,255)    
+        self.part.setTint(color(r,g,b,self.lifespan))   
         self.part.translate(self.velocity.x, self.velocity.y)
-
