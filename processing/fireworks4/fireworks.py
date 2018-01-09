@@ -1,13 +1,15 @@
 from random import randint
 from circle import getRandomPointInCircle, getRandomPointInCircleBand
 from characters import getRandomPointInLetter, getRandomPointInJPG
+import math
 
 class Firework(object):
     def __init__(self, singleColor=False, color=0, numberOfParticules=3, \
                       startPosition=0, setDirection=False, direction=0, directionLow=-2, directionHigh=2, setRocketVelocity = False, rocketVelocity = -8,\
                           setLifespan = True, life=20, repeat = True, delay=100, detonation = 50, flare = False, flareSize=20,\
                                   explosionsOn=True, setExplosionSize = False, explosionSize=30, explosionDuration = 15,\
-                                      imageRocket = False, imageName = 'tree', characterRocket = False, character = "upper_A"): 
+                                      imageRocket = False, imageName = 'tree', characterRocket = False, character = "upper_A",\
+                                          explosionTypeFlag=False, explosionType = 'firework'): 
  
         self.count = 0
         self.position = []       
@@ -23,6 +25,9 @@ class Firework(object):
         self.setLifespan = setLifespan
         self.detonation = detonation
     
+        self.explosionTypeFlag = explosionTypeFlag
+        self.explosionType = explosionType
+        
         self.explosionDuration = explosionDuration     
                                
         self.repeat = repeat
@@ -115,7 +120,7 @@ class Firework(object):
             point(spark[0]+driftX,spark[1]+driftY)
         
         stroke(255,0,255)        
-        sparkList = getRandomPointInCircleBand(x,y,n,r+2) 
+        sparkList = getRandomPointInCircleBand(x,y,n/2,r+2) 
         for spark in sparkList:
             point(spark[0]+driftX,spark[1]+driftY)            
 
@@ -140,6 +145,44 @@ class Firework(object):
             b=randint(0,255)
             stroke(r,g,b) 
             point((spark[0] + driftX),(spark[1] + driftY))                                                                                                                                       
+
+    def fakeParticle(self,x,y,n,scaleFactor,imgName='firework', sizeLimit=200):
+        position = []
+        velocity = []
+        
+        direction = randint(-15,15)
+        sparkVelocity = randint(-20,20)
+        
+        position.append([x,y])
+        velocity.append([direction, sparkVelocity])
+                          
+        for i in range(0, sizeLimit):
+            newX = position[i][0]+velocity[i][0]
+            newY = position[i][1]+velocity[i][1]   
+            newX2 = position[i][0]-velocity[i][0]
+            newY2 = position[i][1]-velocity[i][1]        
+            position.append([newX,newY])
+            position.append([newX2,newY2])           
+            #Add Gravity
+            newVelocity = velocity[i][1]+0.2
+            velocity.append([velocity[i][0],newVelocity])
+        
+                
+        for i in range(0,len(position)):
+            r=randint(0,255)
+            g=randint(0,255)
+            b=randint(0,255)
+            stroke(r,g,b) 
+            distance = math.sqrt( ((x-position[i][0])**2)+((y-position[i][1])**2) )
+            if (distance > 50):
+                stroke(255,255,255)
+            point((position[i][0]),(position[i][1])) 
+            
+
+
+            
+            
+
 
     def getStatus(self):
         return self.dead        
@@ -173,18 +216,24 @@ class Firework(object):
 
         else:
             if (self.explosionDuration+self.detonation > self.count):
-                if (self.explosionsOn):
-                    if randint(0,100)>50:
-                        self.explosionBandDriftingDown(self.position[displayNumber][0] + 150,self.position[displayNumber][1] +300, randint(0,20),randint(0,self.explosionSize+1))
-                    self.explosion(self.position[displayNumber][0] + 150,self.position[displayNumber][1] +300, randint(0,20),randint(0,self.explosionSize))
-                    if randint(0,100)>50:
-                        self.explosionBand(self.position[displayNumber][0] + 150,self.position[displayNumber][1] +300, randint(0,20),randint(0,self.explosionSize+10))                                    
+                
+                if (self.explosionTypeFlag):
+                    self.fakeParticle(self.position[displayNumber][0] + 150,self.position[displayNumber][1] +300, randint(0,500),1,imgName=self.explosionType)
 
-                if (self.characterRocket):
-                    self.explodingCharacter(self.position[displayNumber][0] + 150,self.position[displayNumber][1] +300, randint(0,20),self.scaleFactor,character=self.character)
-       
-                if (self.imageRocket):
-                    self.explodingImage(self.position[displayNumber][0] + 150,self.position[displayNumber][1] +300, randint(0,500),10,imgName=self.imageName)
+                    
+                else:    
+                    if (self.explosionsOn):
+                        if randint(0,100)>50:
+                            self.explosionBandDriftingDown(self.position[displayNumber][0] + 150,self.position[displayNumber][1] +300, randint(0,20),randint(0,self.explosionSize+1))
+                        self.explosion(self.position[displayNumber][0] + 150,self.position[displayNumber][1] +300, randint(0,20),randint(0,self.explosionSize))
+                        if randint(0,100)>50:
+                            self.explosionBand(self.position[displayNumber][0] + 150,self.position[displayNumber][1] +300, randint(0,20),randint(0,self.explosionSize+10))                                    
+    
+                    if (self.characterRocket):
+                        self.explodingCharacter(self.position[displayNumber][0] + 150,self.position[displayNumber][1] +300, randint(0,20),self.scaleFactor,character=self.character)
+        
+                    if (self.imageRocket):
+                        self.explodingImage(self.position[displayNumber][0] + 150,self.position[displayNumber][1] +300, randint(0,500),10,imgName=self.imageName)
 
         self.count +=1
         
