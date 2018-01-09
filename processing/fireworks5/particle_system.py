@@ -19,8 +19,7 @@ class ParticleSystem(object):
                 p.rebirth(x, y)
 
     def init(self,x,y):
-        for p in self.particles:
-            p.rebirth(x,y)
+        for p in self.particles:p.rebirth(x,y)
 
     def display(self):
         shape(self.particleShape)

@@ -12,7 +12,7 @@ def setup():
     global display1
     
     display1 = DisplayManager()
-    show = getList()                                                                                                                                
+    show = getList('show1')                                                                                                                                
                                                                                                                                                                                                                                                                                                                                                                                                             
     for rocket in show:
         display1.addRocket(rocket[0],rocket[1])
