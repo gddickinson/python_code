@@ -36,7 +36,7 @@ def getList(showWanted = "test"):
         return show1
     
     test = ([\      
-        [Firework(startPosition=-90,setDirection=True,numberOfParticules=10, direction=0, explosionsOn=False, explosionDuration = 30, explosionTypeFlag=True, setRocketVelocity = True, rocketVelocity = -9, repeat=False, flare=True, flareSize =20),1],\
+        [Firework(startPosition=0,setDirection=True,numberOfParticules=10, direction=0, explosionsOn=False, explosionDuration = 40, explosionTypeFlag=True, setRocketVelocity = True, rocketVelocity = -9, repeat=False, flare=True, flareSize =20),1],\
         ])
 
     if showWanted == "test":

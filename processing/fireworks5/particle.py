@@ -1,3 +1,5 @@
+from random import randint
+
 class Particle(object):
 
     def __init__(self, sprite):
@@ -38,6 +40,6 @@ class Particle(object):
     def update(self):
         self.lifespan -= 1
         self.velocity.add(self.gravity)
-        self.part.setTint(color(255, self.lifespan))
+        self.part.setTint(color(randint(0,255), self.lifespan))
         self.part.translate(self.velocity.x, self.velocity.y)
 
