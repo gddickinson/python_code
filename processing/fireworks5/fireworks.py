@@ -5,10 +5,10 @@ import math
 from particle_system import ParticleSystem
 
 #mac
-pathName = '/Users/george/Desktop/text/'
+#pathName = '/Users/george/Desktop/text/'
 
 #pc - google drive
-#pathName = 'C:\\Google Drive\\text\\'
+pathName = 'C:\\Google Drive\\text\\'
 
 class Firework(object):
     def __init__(self, singleColor=False, color=0, numberOfParticules=3, \
@@ -23,7 +23,8 @@ class Firework(object):
         self.velocity = []
         self.life = life
 
-        sprite = loadImage("/Users/george/Desktop/text/sprite.png")
+        path = pathName + "sprite.png"
+        sprite = loadImage(path)
         self.ps = ParticleSystem(100, sprite)
     
         self.imageRocket = imageRocket
@@ -227,13 +228,14 @@ class Firework(object):
             if (self.explosionDuration+self.detonation > self.count):
                         
                 if self.detonated == False:
-                    self.ps.init(self.position[displayNumber][0] + 150,self.position[displayNumber][1] +300) 
+                    self.ps.init(self.position[displayNumber+self.numberOfParticules][0] + 150,self.position[displayNumber+self.numberOfParticules][1] +300) 
                     self.detonated = True
                 
                 if (self.explosionTypeFlag):
                     #self.fakeParticle(self.position[displayNumber][0] + 150,self.position[displayNumber][1] +300, randint(0,500),1,imgName=self.explosionType)
- 
-                    self.ps.setEmitter(self.position[displayNumber][0] + 150,self.position[displayNumber][1] +300)    
+                    
+                    if self.detonated == False:
+                        self.ps.setEmitter(self.position[displayNumber+self.numberOfParticules][0] + 150,self.position[displayNumber+self.numberOfParticules][1] +300)    
                     self.ps.update()
                     self.ps.display()
                     
@@ -250,7 +252,11 @@ class Firework(object):
                     if (self.characterRocket):
                         self.explodingCharacter(self.position[displayNumber][0] + 150,self.position[displayNumber][1] +300, randint(0,20),self.scaleFactor,character=self.character)
         
-                    if (self.imageRocket):
+                    if (self.imageRocket):                    
+                        #self.ps.setEmitter(self.position[displayNumber+self.numberOfParticules][0] + 150,self.position[displayNumber+self.numberOfParticules][1] +300)
+                        #self.ps.update()
+                        #self.ps.display()
+                        
                         self.explodingImage(self.position[displayNumber][0] + 150,self.position[displayNumber][1] +300, randint(0,500),10,imgName=self.imageName)
 
         self.count +=1

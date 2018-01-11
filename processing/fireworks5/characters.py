@@ -1,8 +1,8 @@
 #mac
-pathName = '/Users/george/Desktop/text/'
+#pathName = '/Users/george/Desktop/text/'
 
 #pc - google drive
-#pathName = 'C:\\Google Drive\\text\\'
+pathName = 'C:\\Google Drive\\text\\'
 
 def getRandomPointInLetter(x, y, n, scaleFactor,character = "upper_A"):
     ans = []
