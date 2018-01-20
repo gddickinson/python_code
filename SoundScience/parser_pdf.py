@@ -177,7 +177,7 @@ locationWords = ['yume','inwr','hnwr','cvca','ahav','pratt','tooth','preserve','
 searchWords = organismWords + placeWords + technicalWords + chemicalWords + locationWords
 
 path = r'C:\Users\George\Desktop\SoundScience\report_no_dir'
-
+#path = r"C:\Users\George\Dropbox\SoundScience\LCR_webpages\report_no_dir_1"
 
 pCodes = getProjectCodes(path)
 #pCodes = ['b1','c8']
