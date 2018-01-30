@@ -226,7 +226,8 @@ def readCityData(fName, scale = False):
         
     #Continue processing lines in file, starting after comments
     for line in dataFile:
-        dataLine = string.split(line[:-1], ',') #remove newline; then split
+        #dataLine = string.split(line[:-1], ',') #remove newline; then split
+        dataLine = line[:-1].split(',')
         cityNames.append(dataLine[0])
         for i in range(numFeatures):
             featureVals[i].append(float(dataLine[i+1]))
@@ -262,7 +263,7 @@ def hCluster(points, linkage, numClusters, printHistory):
         merged = cS.mergeOne(linkage)
         history.append(merged)
     if printHistory:
-        print ''
+        print ('')
         for i in range(len(history)):
             names1 = []
             for p in history[i][0].members():
@@ -270,10 +271,10 @@ def hCluster(points, linkage, numClusters, printHistory):
             names2 = []
             for p in history[i][1].members():
                 names2.append(p.getName())
-            print 'Step', i, 'Merged', names1, 'with', names2
-            print ''
-    print 'Final set of clusters:'
-    print cS.toStr()
+            print ('Step', i, 'Merged', names1, 'with', names2)
+            print ('')
+    print ('Final set of clusters:')
+    print (cS.toStr())
     return cS
 
 
@@ -292,5 +293,5 @@ def test2(filename):
     hCluster(points, Cluster.averageLinkageDist, 4, False)
     hCluster(points, Cluster.mysteryLinkageDist, 3, False)
               
-#test('cityTemps.txt')
-test2('test2.txt')
+test('cityTemps.txt')
+#test2('test2.txt')
