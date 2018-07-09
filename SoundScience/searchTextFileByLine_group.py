@@ -9,8 +9,8 @@ import re
 import numpy as np
 from tqdm import tqdm
 
-fileName = r"C:\Users\George\Desktop\CEM_forSearch\searchDoc.txt"
-saveFile = r"C:\Users\George\Desktop\CEM_forSearch\result2.txt"
+fileName = r"C:\Users\George\Desktop\SoundScience\CEM_forSearch\searchDoc.txt"
+saveFile = r"C:\Users\George\Desktop\SoundScience\CEM_forSearch\result.txt"
 
 searchFile = open(fileName, "r")
 text = searchFile.read()

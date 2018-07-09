@@ -5,16 +5,16 @@ Created on Thu Aug  6 06:25:22 2015
 @author: george
 """
 
-from Tkinter import *
+from tkinter import *
 from tkFileDialog   import askopenfilename
 
 def NewFile():
-    print "New File!"
+    print ("New File!")
 def OpenFile():
     name = askopenfilename()
-    print name
+    print (name)
 def About():
-    print "This is a simple example of a menu"
+    print ("This is a simple example of a menu")
     
 root = Tk()
 menu = Menu(root)
