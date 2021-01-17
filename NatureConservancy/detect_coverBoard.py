@@ -328,7 +328,7 @@ def detect_board(filename):
     return
     
 #define path
-path = r"C:\Google Drive\Image_Interpretation\PVER Photos\DL006\\"
+path = r"C:\Users\George\Dropbox\NatureConservancy\Image_Interpretation\PVER Photos\DL006\\"
 file = r"IMG_2040.jpg"
 filename = path + file
 filename2 = path + "result_" + file

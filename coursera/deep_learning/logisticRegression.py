@@ -16,11 +16,12 @@ import glob
 
 num_px = 64
 
-trainList = glob.glob(r"C:\Users\George\Documents\Cat_data_labelled\train\train\*.jpg")
-testList = glob.glob(r"C:\Users\George\Documents\Cat_data_labelled\test1\test1\*.jpg")
+trainList_load = glob.glob(r"C:\Users\George\Documents\Cat_data_labelled\train\train\*.jpg")
+testList_load = glob.glob(r"C:\Users\George\Documents\Cat_data_labelled\test1\test1\*.jpg")
 
-trainList = np.concatenate((trainList[0:25],trainList[20000:20025]))
-testList = np.concatenate((testList[0:25],testList[10000:10025]))
+trainList = np.concatenate((trainList_load[0:100],trainList_load[20000:20100]))
+#testList = np.concatenate((testList[0:50],testList[10000:10050]))
+testList = np.concatenate((trainList_load[1001:1051],trainList_load[21001:21051]))
 
 def label(fileName):
     if "cat" in fileName:
@@ -45,10 +46,10 @@ classes = np.array(('non-cat','cat'), dtype="str")
 
 
 
-# Example of a picture
-index = 0
-plt.imshow(train_set_x_orig[index])
-print ("y = " + str(train_set_y[:, index]) + ", it's a '" + classes[np.squeeze(train_set_y[:, index])] +  "' picture.")
+## Example of a picture
+#index = 0
+#plt.imshow(train_set_x_orig[index])
+#print ("y = " + str(train_set_y[:, index]) + ", it's a '" + classes[np.squeeze(train_set_y[:, index])] +  "' picture.")
 
 ### START CODE HERE ### (≈ 3 lines of code)
 m_train = train_set_x_orig.shape[0]
@@ -341,7 +342,7 @@ def model(X_train, Y_train, X_test, Y_test, num_iterations = 2000, learning_rate
     return d
 
 
-d = model(train_set_x, train_set_y, test_set_x, test_set_y, num_iterations = 2000, learning_rate = 0.005, print_cost = True)
+d = model(train_set_x, train_set_y, test_set_x, test_set_y, num_iterations = 3000, learning_rate = 0.0031, print_cost = True)
 
 # Example of a picture that was wrongly classified.
 index = 1
@@ -359,24 +360,40 @@ plt.show()
 
 
 
-learning_rates = [0.01, 0.001, 0.0001]
-models = {}
-for i in learning_rates:
-    print ("learning rate is: " + str(i))
-    models[str(i)] = model(train_set_x, train_set_y, test_set_x, test_set_y, num_iterations = 1500, learning_rate = i, print_cost = False)
-    print ('\n' + "-------------------------------------------------------" + '\n')
-
-for i in learning_rates:
-    plt.plot(np.squeeze(models[str(i)]["costs"]), label= str(models[str(i)]["learning_rate"]))
-
-plt.ylabel('cost')
-plt.xlabel('iterations')
-
-legend = plt.legend(loc='upper center', shadow=True)
-frame = legend.get_frame()
-frame.set_facecolor('0.90')
-plt.show()
-
-
+#learning_rates = [0.01, 0.001, 0.0001]
+#models = {}
+#for i in learning_rates:
+#    print ("learning rate is: " + str(i))
+#    models[str(i)] = model(train_set_x, train_set_y, test_set_x, test_set_y, num_iterations = 1500, learning_rate = i, print_cost = False)
+#    print ('\n' + "-------------------------------------------------------" + '\n')
+#
+#for i in learning_rates:
+#    plt.plot(np.squeeze(models[str(i)]["costs"]), label= str(models[str(i)]["learning_rate"]))
+#
+#plt.ylabel('cost')
+#plt.xlabel('iterations')
+#
+#legend = plt.legend(loc='upper center', shadow=True)
+#frame = legend.get_frame()
+#frame.set_facecolor('0.90')
+#plt.show()
 
 
+def predictImage(file, path = r"C:\Users\George\Documents\Cat_data_labelled\test1\test1", fileType = ".jpg", num_px = 64):
+
+    fname = path + "\\" + str(file) + fileType
+    
+    #fname = r"C:\Users\George\Documents\Cat_data_labelled\test1\test1\10.jpg"   # change this to the name of your image file 
+    ## END CODE HERE ##
+    
+    # We preprocess the image to fit your algorithm.
+    #fname = "images/" + my_image
+    image = np.array(ndimage.imread(fname, flatten=False))
+    my_image = scipy.misc.imresize(image, size=(num_px,num_px)).reshape((1, num_px*num_px*3)).T
+    my_predicted_image = predict(d["w"], d["b"], my_image)
+    
+    plt.imshow(image)
+    print("y = " + str(np.squeeze(my_predicted_image)) + ", your algorithm predicts a \"" + classes[int(np.squeeze(my_predicted_image)),] +  "\" picture.")
+    return classes[int(np.squeeze(my_predicted_image)),]
+
+predictImage(5)

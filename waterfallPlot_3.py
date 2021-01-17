@@ -8,7 +8,7 @@ import copy
 
 #fileName = r"C:\Users\George\Desktop\US_elevation_profiles\state_EW_elevation_profiles_1000points.txt"
 #fileName = r"C:\Users\George\Desktop\US_elevation_profiles\texas2_EW_elevation_profiles_1000points.txt"
-fileName = r"C:\Users\George\Desktop\US_elevation_profiles\idaho_EW_elevation_profiles_1000points.txt"
+fileName = r"D:\US_elevation_profiles\idaho_EW_elevation_profiles_1000points.txt"
 
 
 df= pd.read_table(fileName, index_col =0)

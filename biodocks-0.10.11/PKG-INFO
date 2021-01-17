@@ -1,0 +1,10 @@
+Metadata-Version: 1.0
+Name: biodocks
+Version: 0.10.11
+Summary: Pyqtgraph based widgets for image analysis
+Home-page: http://github.com/brettjsettle/BioWidgets
+Author: Brett Settle
+Author-email: brettjsettle@gmail.com
+License: UCI
+Description: UNKNOWN
+Platform: UNKNOWN
