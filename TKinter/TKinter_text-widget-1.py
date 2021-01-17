@@ -10,7 +10,7 @@ Created on Thu Aug  6 05:55:15 2015
 #==============================================================================
 
 
-from Tkinter import *
+from tkinter import *
 
 root = Tk()
 T = Text(root, height=2, width=30)

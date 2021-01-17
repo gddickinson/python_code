@@ -5,9 +5,9 @@ Created on Wed Aug  5 20:46:33 2015
 @author: george
 """
 
-#http://www.python-course.eu/tkinter_buttons.php
 
-from Tkinter import *
+#from tkinter import Tk, Frame, BOTH
+from tkinter import *
 class App:
   def __init__(self, master):
     frame = Frame(master)
@@ -20,8 +20,9 @@ class App:
                          text="Hello",
                          command=self.write_slogan)
     self.slogan.pack(side=LEFT)
-  def write_slogan(self):
-    print "Tkinter is easy to use!"
+  
+    def write_slogan(self):
+    print ("Tkinter is easy to use!")
 
 root = Tk()
 app = App(root)

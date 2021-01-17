@@ -20,9 +20,8 @@ except ImportError:
 #url = input("[+] Enter the url: ")
 #download_path = input("[+] Enter the download path in full: ")
 
-#url = r'https://www.lcrmscp.gov/steer_committee/work_tasks.html'
-url = r'https://www.lcrmscp.gov/crtr/crtr.html'
-file_path = r'/Users/george/Desktop/LCR_powerpoints'
+url = r'https://www.lcrmscp.gov/steer_committee/work_tasks.html'
+file_path = r'C:\Users\working'
 files_in_dir = os.listdir(file_path)
 number_files = len(files_in_dir)
 download = urllib.request.URLopener()
@@ -64,9 +63,9 @@ try:
                     
                     print("\n[*] Download path: %s" % download_path)
         
-                    with open(download_path,'wb') as f:
-                        f.write(current.read())
-                        #output.write(f)
+        #            with open(download_path,'wb') as f:
+        #                f.write(current.read())
+        #                #output.write(f)
         #
         #            #f = open(download_path + "\\" +os.path.basename(tag['href']))
         #            #f.write(current.read())

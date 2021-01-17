@@ -5,7 +5,7 @@ Created on Thu Jan  7 09:09:53 2016
 @author: george
 """
 
-f# A simple limiter
+# A simple limiter
 
 from pyaudio import PyAudio, paContinue, paFloat32
 from time import sleep
@@ -26,8 +26,8 @@ block_length  = 1024    # samples
 #################### Generate quiet-loud-quiet noise signal ####################
 
 signal = array(random.rand(fs*signal_length)*2-1, dtype=dtype)
-signal[:signal_length*fs/3] *= 0.1
-signal[signal_length*fs*2/3:] *= 0.1
+signal[:int(signal_length*fs/3)] *= 0.1
+signal[int(signal_length*fs*2/3):] *= 0.1
 
 ############################# Implementation of Limiter ########################
 
