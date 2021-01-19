@@ -8,30 +8,6 @@ Created on Sun Mar 20 00:31:05 2016
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-"""
-ZetCode Tkinter tutorial
-
-This script shows a simple window
-on the screen.
-
-Author: Jan Bodnar
-Last modified: November 2015
-Website: www.zetcode.com
-"""
-
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
-
-"""
-ZetCode Tkinter tutorial
-
-This script centers a small
-window on the screen. 
-
-Author: Jan Bodnar
-Last modified: November 2015
-Website: www.zetcode.com
-"""
 
 from tkinter import Tk, Frame, BOTH
 
