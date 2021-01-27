@@ -14,6 +14,7 @@ import shutil
 import pandasql as ps
 from itertools import groupby
 from operator import itemgetter
+from tqdm import tqdm
 
 #picasso hdf5 format (without averaging): ['frame', 'x', 'y', 'photons', 'sx', 'sy', 'bg', 'lpx', 'lpy']
 #Column Name       |	Description                                                                                                                      |	C Data Type
@@ -41,8 +42,8 @@ yamlSavePath = filePath.split('.')[0] + '_filtered.yaml'
 locs = pd.read_hdf(filePath, '/locs')
 #check header
 headers = locs.dtypes.index
-print(headers)
-print(locs.head(n=1))
+#print(headers)
+#print(locs.head(n=1))
 
 #scatter plot
 #locs.plot.scatter(x='x',y='y',s=1)
@@ -164,60 +165,138 @@ searchArea = 0.04 * 0.04
 filteredLocs= pd.DataFrame()
 centroidList = centroids.tolist()
 
-for i in range(len(centroidList)):
+print('filtering site localizations')
+for i in tqdm(range(len(centroidList))):
     query = "SELECT * FROM locs WHERE (((locs.x - {})*(locs.x - {})) + ((locs.y - {})*(locs.y - {}))) <= ({})".format(centroidList[i][0], centroidList[i][0], centroidList[i][1], centroidList[i][1], searchArea)
     filtered = ps.sqldf(query,locals())
     filtered['bindingSite'] = i
     filteredLocs = filteredLocs.append(filtered)
-    print(i)
 
 #plot
-filteredLocs.plot.scatter(x='x',y='y',s=1)
+#filteredLocs.plot.scatter(x='x',y='y',s=1)
 
 #plot all binding sites against time
 #all origami
 #filteredLocs.plot.scatter(x='frame',y='photons',c='bindingSite',colormap='tab20b',s=0.5)
-#filter one origami
-origamiDF = filteredLocs.loc[filteredLocs['group'] == 0]
-#plot
-#origamiDF.plot.scatter(x='frame',y='photons')
 
-#plot trace for an origamis site position
-siteDF = origamiDF.loc[origamiDF['bindingSite'] == 0]
-siteDF.plot.scatter(x='frame',y='photons')
+amplitudes = []
+maxAmplitudes = []
+ONtimes = []
+OFFtimes = []
+nPeaks = []
 
-
-# group consecutive points into seperate peaks  
-peakList =[]
-peakOnlyData = []
-amplitudeList = []
-maxAmplitudeList = []
-ONtimeList = []
-OFFtimeList = []
-
-peakNumber = 0 
-
-indexes = siteDF['frame']
-
-
-for k,g in groupby(enumerate(indexes),lambda x:x[0]-x[1]):
-    group = (map(itemgetter(1),g))
-    group = list(map(int,group))
-    print(group)
-
-
+print('getting peak attributes')
+# loop through all origami
+for origamiIndex in tqdm(range(max(filteredLocs['group']))):
+    #filter by origami group
+    origamiDF = filteredLocs.loc[filteredLocs['group'] == origamiIndex]
+    #plot
+    #origamiDF.plot.scatter(x='frame',y='photons')
+    
+    # loop thorugh all binding sites
+    for siteIndex in np.unique(origamiDF['bindingSite']):
+        #filter by site position
+        siteDF = origamiDF.loc[origamiDF['bindingSite'] == siteIndex]
+        #siteDF.plot.scatter(x='frame',y='photons')
+        
+        #generate list of consecutive frames (peaks)
+        indexes = siteDF['frame']
+        consecutiveFrames = []
+        for k,g in groupby(enumerate(indexes),lambda x:x[0]-x[1]):
+            group = (map(itemgetter(1),g))
+            group = list(map(int,group))
+            consecutiveFrames.append(group)
+            
+        nPeaks.append([origamiIndex, siteIndex, len(consecutiveFrames )])
+        
+        # calculate peak attributes and append to lists         
+        # loop through peaks
+        for i in range(len(consecutiveFrames)):
+            peakDF = siteDF.loc[siteDF['frame'].isin(consecutiveFrames[i])]
+            amplitudes.append([origamiIndex, siteIndex, np.mean(peakDF['photons'])])
+            maxAmplitudes.append([origamiIndex, siteIndex, np.max(peakDF['photons'])])
+            ONtimes.append([origamiIndex, siteIndex, len(peakDF['frame'])])
+        
+        # seperate loop to get OFF times
+        OFFtimes.append([origamiIndex, siteIndex, consecutiveFrames[0][0]])
+        for i in range(1,len(consecutiveFrames)):
+            OFFtimes.append([origamiIndex, siteIndex, consecutiveFrames[i][0]-consecutiveFrames[i-1][-1]])
 
     
-    peakNumber += 1
+print('ROI analysis finished')
 
 
-# get OFF times
-OFFtimeList.append(peakList[0][0])
-for i in range(1,len(peakList)):
-    OFFtimeList.append(peakList[i][0]-peakList[i-1][-1])
-    #indexed
-    OFFtimeList_forMike.append([traceIndex,i, peakList[i][0]-peakList[i-1][-1]])
+# experiment stats- all sites combined
+amplitudes_ALL_mean = np.mean(np.array(amplitudes)[:,2])
+amplitudes_ALL_std = np.std(np.array(amplitudes)[:,2])
+maxAmplitudes_ALL_mean = np.mean(np.array(maxAmplitudes)[:,2])
+maxAmplitudes_ALL_std = np.std(np.array(maxAmplitudes)[:,2])
+ONtimes_ALL_mean = np.mean(np.array(ONtimes)[:,2])
+ONtimes_ALL_std = np.std(np.array(ONtimes)[:,2])
+OFFtimes_ALL_mean = np.mean(np.array(OFFtimes)[:,2])
+OFFtimes_ALL_std = np.std(np.array(OFFtimes)[:,2])
+nPeaks_ALL_mean = np.mean(np.array(nPeaks)[:,2])
+nPeaks_ALL_std = np.std(np.array(nPeaks)[:,2])
+ONtimes_ALL_median = np.median(np.array(ONtimes)[:,2])
+OFFtimes_ALL_median = np.median(np.array(OFFtimes)[:,2])
 
+# print out results
+print('----------')
+print('All results combined')
+print('mean amplitude: {0:.2f} photons +/- {1:.2f} std'.format(amplitudes_ALL_mean,amplitudes_ALL_std))
+print('mean MAX amplitude: {0:.2f} photons +/- {1:.2f} std'.format(maxAmplitudes_ALL_mean,maxAmplitudes_ALL_std))
+print('mean ON time: {0:.2f} frames +/- {1:.2f} std'.format(ONtimes_ALL_mean,ONtimes_ALL_std))
+print('median ON times: {0:.2f} frames +/- {1:.2f} std'.format(ONtimes_ALL_median,ONtimes_ALL_std))
+print('mean OFF time: {0:.2f} frames +/- {1:.2f} std'.format(OFFtimes_ALL_mean,OFFtimes_ALL_std))
+print('median OFF times: {0:.2f} frames +/- {1:.2f} std'.format(OFFtimes_ALL_median,OFFtimes_ALL_std))
+print('mean number of peaks: {0:.2f} +/- {0:.2f} std'.format(nPeaks_ALL_mean,nPeaks_ALL_std)) 
+print('total number of peaks: {}'.format(len(np.array(amplitudes)[:,2])))  
+print('number of ROIs: {}'.format(max(filteredLocs['group'])))  
+
+# plot histograms
+#mean amp
+ampHist = plt.figure(7)
+plt.hist(np.array(amplitudes)[:,2],50)
+plt.title('Mean Amplitudes')
+plt.xlabel('amplitude')
+plt.ylabel('number observed')
+
+#max amp
+ampHist = plt.figure(8)
+plt.hist(np.array(maxAmplitudes)[:,2],50)
+plt.title('Max Amplitudes')
+plt.xlabel('amplitude')
+plt.ylabel('number observed')
+
+#ON
+ONHist = plt.figure(9)
+plt.hist(np.array(ONtimes)[:,2],50)
+plt.title('ON times')
+plt.xlabel('ON time (frames)')
+plt.ylabel('number observed')
+
+#OFF
+OFFHist = plt.figure(10)
+plt.hist(np.array(OFFtimes)[:,2],50)
+plt.title('OFF times')
+plt.xlabel('OFF time (frames)')
+plt.ylabel('number observed')
+
+#ON log
+ONHist = plt.figure(9)
+plt.hist(np.array(ONtimes)[:,2],50)
+plt.title('ON times')
+plt.xlabel('ON time (frames)')
+plt.ylabel('number observed')
+plt.xscale('log')
+
+#OFF log
+OFFHist = plt.figure(10)
+plt.hist(np.array(OFFtimes)[:,2],100)
+plt.title('OFF times')
+plt.xlabel('OFF time (frames)')
+plt.ylabel('number observed')
+plt.xscale('log')
 
 
 
