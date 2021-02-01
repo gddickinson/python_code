@@ -34,10 +34,6 @@ filePath = r"C:\Users\g_dic\Documents\bsu\forMike\20190913_All-Matrices_syn2_pur
 
 #savePath = filePath.split('.')[0] + '_filtered.hdf5'
 
-#info data in yaml
-yamlPath = filePath.split('.')[0] + '.yaml'
-yamlSavePath = filePath.split('.')[0] + '_filtered.yaml'
-
 #open picasso hdf5 file as DF
 locs = pd.read_hdf(filePath, '/locs')
 #check header
@@ -206,13 +202,15 @@ for origamiIndex in tqdm(range(max(filteredLocs['group']))):
             group = (map(itemgetter(1),g))
             group = list(map(int,group))
             consecutiveFrames.append(group)
-            
+        
+        #append number of peaks seen at each site for each origami    
         nPeaks.append([origamiIndex, siteIndex, len(consecutiveFrames )])
         
         # calculate peak attributes and append to lists         
         # loop through peaks
         for i in range(len(consecutiveFrames)):
             peakDF = siteDF.loc[siteDF['frame'].isin(consecutiveFrames[i])]
+            #append every peaks amplitude and ON time to lists, include origami and site index
             amplitudes.append([origamiIndex, siteIndex, np.mean(peakDF['photons'])])
             maxAmplitudes.append([origamiIndex, siteIndex, np.max(peakDF['photons'])])
             ONtimes.append([origamiIndex, siteIndex, len(peakDF['frame'])])
@@ -299,4 +297,13 @@ plt.ylabel('number observed')
 plt.xscale('log')
 
 
+#export 
+import pandas as pd
+peakTable = pd.DataFrame(nPeaks)      # number of peaks at each site
+ONtimeTable = pd.DataFrame(ONtimes)   # ON times for each peak, indexed by origami and site
+OFFtimeTable = pd.DataFrame(OFFtimes) # OFF times for each peak, indexed by origami and site
 
+savePath = filePath.split('.')[0]
+peakTable.to_csv(savePath + '_peakTable.csv')
+ONtimeTable.to_csv(savePath + '_ONtimeTable.csv')
+OFFtimeTable.to_csv(savePath + '_OFFtimeTable.csv')
