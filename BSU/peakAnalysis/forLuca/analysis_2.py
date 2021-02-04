@@ -45,11 +45,11 @@ from operator import itemgetter
 start_flika()
 
 # import drift-corrected data
-data_path = r"C:\Users\g_dic\Dropbox\BSU\forLuca\20201119_Cal1site_20ms_lessdrift_driftCorrected.tif"
+data_path = r"C:\Users\georgedickinson\Desktop\forLuca\LPS3_3nM_20ms\20210129_Cal1site_LPS3_7_3nM_20ms__driftCorrected.tif"
 dataWin  = open_file(data_path)
 
 # load hand-picked rois
-roi_path = r"C:\Users\g_dic\Dropbox\BSU\forLuca\rois.txt"
+roi_path = r"C:\Users\georgedickinson\Desktop\forLuca\LPS3_3nM_20ms\rois.txt"
 rois = roi.open_rois(roi_path)
 
 # get traces for each roi
@@ -68,25 +68,35 @@ nPeaks_ALL = []
 ONtimeList_forMike = []
 OFFtimeList_forMike = []
 
-for traceIndex in range(len(traceList)):
+#All ROIs
+roisToExamine = range(len(traceList))
+#testing
+#roisToExamine = [0]
+
+for traceIndex in roisToExamine:
     x = traceList[traceIndex]
         
     # find trace baseline
     from peakutils import baseline
     base = baseline(x)
-    #fig1 = plt.figure(1)
-    #plt.plot(x, c='r');plt.plot(base, c='b')
-    #fig1.show()
+    fig1 = plt.figure(1)
+    plt.plot(x, c='r');plt.plot(base, c='b')
+    fig1.show()
     
     # subtract baseline
     x = x - base
     
-    # find points above noise threshold
-    thresholdNoise = 150
+    # find points above noise threshold    
+    #thresholdNoise = 150 #eyeballed from data
+    
+    #set threshold using stdev 
+    thresholdNoise = x.std()*3
+    
+    
     indexes = np.argwhere(x > thresholdNoise )
-    #fig2 =  plt.figure(2)
-    #plt.plot(indexes, x[indexes], "xr"); plt.plot(x)
-    #fig2.show()
+    fig2 =  plt.figure(2)
+    plt.plot(indexes, x[indexes], "xr"); plt.plot(x)
+    fig2.show()
     
     # group consecutive points into seperate peaks  
     peakList =[]
