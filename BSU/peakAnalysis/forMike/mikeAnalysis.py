@@ -30,9 +30,7 @@ from tqdm import tqdm
 
 
 #set filepath
-filePath = r"C:\Users\g_dic\Documents\bsu\forMike\20190913_All-Matrices_syn2_pure_Triangles_300msExp_Mid-9nt-3nM_MgCl2_18mM_PCA_12mM_PCD_TROLOX_1mM_10_38_52_substack_fixed_locs_render_DRIFT_3_filter_Matrix_05.hdf5"
-
-#savePath = filePath.split('.')[0] + '_filtered.hdf5'
+filePath = r"L:\Nano\Projects\NAM LAB\George D\DATA bright dark times\Length+_7_Picked\20210312_Cal1site_LPS3+7_3nm_20ms__fixed_PICKED500.hdf5"
 
 #open picasso hdf5 file as DF
 locs = pd.read_hdf(filePath, '/locs')
@@ -153,7 +151,7 @@ remap={  33:2,
 
 
 #plot centroids
-#plt.scatter(centroids[:,0],centroids[:,1],c='red')
+plt.scatter(centroids[:,0],centroids[:,1],c='red')
 
 #add site position to each localization
 #filter locs by centroid positions using SQL
@@ -169,11 +167,11 @@ for i in tqdm(range(len(centroidList))):
     filteredLocs = filteredLocs.append(filtered)
 
 #plot
-#filteredLocs.plot.scatter(x='x',y='y',s=1)
+filteredLocs.plot.scatter(x='x',y='y',s=1)
 
 #plot all binding sites against time
 #all origami
-#filteredLocs.plot.scatter(x='frame',y='photons',c='bindingSite',colormap='tab20b',s=0.5)
+filteredLocs.plot.scatter(x='frame',y='photons',c='bindingSite',colormap='tab20b',s=0.5)
 
 amplitudes = []
 maxAmplitudes = []
