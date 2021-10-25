@@ -22,6 +22,7 @@ def setup():
 def draw():
     background(0)
     display1.update()
+    saveFrame("output\\frame_####.png")
 
 def keyPressed():
     exit()

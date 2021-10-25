@@ -257,7 +257,7 @@ class Firework(object):
                         #self.ps.update()
                         #self.ps.display()
                         
-                        self.explodingImage(self.position[displayNumber][0] + 150,self.position[displayNumber][1] +300, randint(0,500),10,imgName=self.imageName)
+                        self.explodingImage(self.position[displayNumber][0] + 150,self.position[displayNumber][1] +300, randint(0,500),3,imgName=self.imageName)
 
         self.count +=1
         
@@ -290,6 +290,7 @@ class DisplayManager(object):
         self.count +=1
         self.display()
         #print(self.count)
+        
         pass
         
         
