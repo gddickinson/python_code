@@ -1,0 +1,23 @@
+Traceback (most recent call last):
+  File "C:\Python34\lib\site-packages\spyderlib\pygments_patch.py", line 25, in apply
+    from IPython.qt.console.pygments_highlighter import RegexLexer
+ImportError: No module named 'IPython.qt.console.pygments_highlighter'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Python34\lib\site-packages\spyderlib\spyder.py", line 2336, in main
+    mainwindow = run_spyder(app, options, args)
+  File "C:\Python34\lib\site-packages\spyderlib\spyder.py", line 2220, in run_spyder
+    main.setup()
+  File "C:\Python34\lib\site-packages\spyderlib\spyder.py", line 766, in setup
+    from spyderlib.plugins.inspector import ObjectInspector
+  File "C:\Python34\lib\site-packages\spyderlib\plugins\inspector.py", line 41, in <module>
+    from spyderlib.widgets.ipython import IPythonControlWidget
+  File "C:\Python34\lib\site-packages\spyderlib\widgets\ipython.py", line 28, in <module>
+    pygments_patch.apply()
+  File "C:\Python34\lib\site-packages\spyderlib\pygments_patch.py", line 27, in apply
+    from IPython.frontend.qt.console.pygments_highlighter import RegexLexer
+  File "C:\Python34\lib\site-packages\IPython\utils\shimmodule.py", line 72, in __spec__
+    return __import__(self._mirror).__spec__
+ImportError: No module named 'qtconsole'
