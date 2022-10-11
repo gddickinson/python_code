@@ -1,0 +1,62 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Fri Sep  9 14:51:14 2022
+
+@author: george
+"""
+
+import numpy as np
+import pandas as pd
+import glob, os
+from matplotlib import pyplot as plt
+
+%matplotlib qt 
+
+path = '/Users/george/Desktop/from_Gabby/thunderstorm/MSD'
+
+#pixelSize = 108
+#dim,bright split by mean
+
+#get track files
+fileList = [f for f in glob.glob(path + "**/*.txt", recursive=True)]
+
+fileList = sorted(fileList)
+
+#print(fileList)
+
+def makeDF(fileList):
+    df = pd.DataFrame()
+    for file in fileList:
+        name = os.path.basename(file).split('_')
+        rowName = str(name[0] + ' ' + name[1])
+        df[rowName] = pd.read_csv(file)
+    return df
+
+
+        
+df= makeDF(fileList)
+dfSqr = np.square(df)
+
+axarr = df.hist(sharex=True,sharey=False,layout=(6,3),bins=100, figsize=(6,9))
+plt.suptitle('lag distribution') 
+
+for ax in axarr.flatten():
+    ax.set_xlabel("lag length (microns)")
+    ax.set_ylabel("# of lags")
+
+
+axarr = df.hist(sharex=True,sharey=False,layout=(6,3),bins=100, figsize=(6,9), cumulative=True)
+plt.suptitle('lag cumulative distribution') 
+
+for ax in axarr.flatten():
+    ax.set_xlabel("lag length (microns)")
+    ax.set_ylabel("# of lags")
+
+axarr = dfSqr.hist(sharex=True,sharey=False,layout=(6,3),bins=100, figsize=(6,9), cumulative=True)
+plt.suptitle('lag squared cumulative distribution') 
+
+for ax in axarr.flatten():
+    ax.set_xlabel("lag length (micron squared)")
+    ax.set_ylabel("# of lags")
+

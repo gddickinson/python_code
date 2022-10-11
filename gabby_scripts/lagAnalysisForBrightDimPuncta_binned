@@ -1,0 +1,39 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Sep 27 12:19:03 2022
+
+@author: george
+"""
+
+import numpy as np
+import pandas as pd
+import glob, os
+from matplotlib import pyplot as plt
+
+%matplotlib qt 
+
+#raw
+filePath = '/Users/george/Desktop/from_Gabby/binnedFiles/lagsHisto'
+
+fileList = [f for f in glob.glob(filePath + "**/*", recursive=True)]
+
+#sort list
+fileList = sorted(fileList)
+
+wt = pd.DataFrame()
+wt_fixed = pd.DataFrame()
+
+for file in fileList:
+    name = os.path.basename(file).split('_')
+    rowName = str(name[0] + ' ' + name[1] + ' ' + name[2])
+    if str(name[0]) == 'WT':
+        wt[rowName] = pd.read_csv(file)
+    elif str(name[0]) == 'WT-Fixed':
+        wt_fixed[rowName] = pd.read_csv(file)       
+
+
+
+wt.hist(bins=50)
+wt_fixed.hist(bins=50)
+

@@ -1,0 +1,341 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Jul 27 20:32:36 2022
+
+@author: george
+"""
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from matplotlib.widgets import Slider
+from sklearn.neighbors import KDTree
+import random
+from tqdm import tqdm
+import os
+from skimage import io
+from skimage.transform import resize
+
+%matplotlib qt 
+
+from distutils.version import StrictVersion
+import flika
+from flika import global_vars as g
+from flika.window import Window
+from flika.process.file_ import save_file_gui, open_file_gui
+
+from qtpy.QtGui import QColor
+
+flika_version = flika.__version__
+if StrictVersion(flika_version) < StrictVersion('0.2.23'):
+    from flika.process.BaseProcess import BaseProcess, WindowSelector, SliderLabel, CheckBox
+else:
+    from flika.utils.BaseProcess import BaseProcess, WindowSelector, SliderLabel, CheckBox
+
+from flika import *
+%gui qt
+
+
+
+def loadPointData(pointFile,xMin,xMax,yMin,yMax,crop=True, dataType='elements', lagFile=False):   
+    #set savepath
+    savePath = os.path.splitext(pointFile)[0]
+    
+    if dataType == 'elements':
+        ######## load GABBY's data into DF #################
+        pointsDF = pd.read_excel(pointFile)
+        #tracksDF = pd.read_excel(trackFile)
+        
+        #rename ND.t to frame
+        pointsDF = pointsDF.rename(columns={"ND.T": "frame"})
+        #set first frame to zero to match image stack
+        pointsDF["frame"] = pointsDF["frame"]-1
+        
+
+    elif dataType == 'thunderstorm':    
+        ######### load ThunderSTORM data into DF ############
+        pointsDF = pd.read_csv(pointFile)
+        pointsDF['frame'] = pointsDF['frame'].astype(int) -1
+        pointsDF['PositionX [µm]'] = pointsDF['x [nm]'] / 1000
+        pointsDF['PositionY [µm]'] = pointsDF['y [nm]'] / 1000
+        pointsDF['Tree ID'] = 0
+        pointsDF['Seg.Length [µm]'] = 0
+
+ 
+    elif dataType == 'flika':    
+        ######### load FLIKA pyinsight data into DF ############
+        pointsDF = pd.read_csv(pointFile)
+        lagDF = pd.read_csv(lagFile,names=['lag'])
+        pointsDF['frame'] = pointsDF['frame'].astype(int)
+        pointsDF['PositionX [µm]'] = pointsDF['x'] * pixelSize
+        pointsDF['PositionY [µm]'] = pointsDF['y'] * pixelSize
+        pointsDF['Tree ID'] = pointsDF['track_number']
+        pointsDF['Seg.Length [µm]'] = lagDF['lag']
+
+    if crop == True:
+        #CROP
+        pointsDF = pointsDF[(pointsDF['PositionX [µm]'] > xMin) & (pointsDF['PositionX [µm]'] < xMax)]
+        pointsDF = pointsDF[(pointsDF['PositionY [µm]'] > yMin) & (pointsDF['PositionY [µm]'] < yMax)]
+        
+    #get number of tracks
+    nTracks = np.max(pointsDF['Tree ID'])
+    
+    #keep x,y,time values
+    points = pointsDF[['PositionX [µm]', 'PositionY [µm]', 'frame', 'Tree ID']]
+
+    #get distribution of segment length from tracks
+    segLengths = pointsDF['Seg.Length [µm]'].tolist()
+    #remove nans
+    segLengths = [x for x in segLengths if np.isnan(x) == False]
+    
+    maxTime = np.max(pointsDF['frame'])
+
+    return points, nTracks, segLengths, maxTime, savePath
+
+
+def loadImgData(tiffFile, crop=True, transpose=False, rotateflip=True):
+    #load image data
+    img = io.imread(tiffFile) 
+    
+    if transpose == True:
+        #reshape to x,y,t
+        img = np.transpose(img,(1,2,0))
+    
+    if crop == True:
+        #img = img[int(xMin/pixelSize) : int(xMax/pixelSize), int(yMin/pixelSize) : int(yMax/pixelSize), :]
+        img = img[:, int(yMin/pixelSize) : int(yMax/pixelSize), int(xMin/pixelSize) : int(xMax/pixelSize)] 
+    
+    if rotateflip == True:
+        #rotate and flip for flika
+        img = img[:,:,::-1]
+        img = np.rot90(img, k=1, axes=(1,2))
+    
+    return img
+
+def plotLagHist(segLengths, bins=100, savePath = 'None', exptName = ''):
+    #plot histogram of lag times
+    fig0, ax0 = plt.subplots(figsize=(12,4),)
+    ax0.hist(segLengths, bins = bins)
+    ax0.set_title("Segment Lengths")    
+    ax0.set(ylabel='# of observations')
+    ax0.set(xlabel='length [µm]')
+    
+    #save analysis
+    if savePath != "None":
+        saveName = savePath + '_Lags_data.csv'
+        df = pd.DataFrame(segLengths,
+                       columns =[exptName + '_lags'])
+        df.to_csv(saveName)
+    return
+
+def plotDataOnStack(img, points, pixelSize, crop=True):
+    #plot point data on tiff stack
+    
+    pointWindow = Window(img)
+        
+    points_byFrame = points[['frame','PositionX [µm]','PositionY [µm]']]
+    points_byFrame['PositionX [µm]'] = points_byFrame['PositionX [µm]'] * (1/pixelSize)
+    points_byFrame['PositionY [µm]'] = points_byFrame['PositionY [µm]'] * (1/pixelSize)
+    #points_byFrame['point_color'] = QColor(g.m.settings['point_color'])
+    #points_byFrame['point_size'] = g.m.settings['point_size']
+    pointArray = points_byFrame.to_numpy()
+    
+    pointWindow.scatterPoints = [[] for _ in np.arange(pointWindow.mt)]
+    
+    if crop == True:
+        #for cropped image
+        offsetX = xMin * (1/pixelSize)
+        offsetY = yMin * (1/pixelSize)
+
+    else:
+        #no offset for FLIKA data
+        offsetX = 0
+        offsetY = 0
+    
+    for pt in pointArray:
+        t = int(pt[0])
+        if pointWindow.mt == 1:
+            t = 0
+        pointSize = g.m.settings['point_size']
+        pointColor = QColor(g.m.settings['point_color'])
+        #position = [pt[1]+(.5* (1/pixelSize)), pt[2]+(.5* (1/pixelSize)), pointColor, pointSize]
+        position = [pt[1]-offsetX, pt[2]-offsetY, pointColor, pointSize]    
+        pointWindow.scatterPoints[t].append(position)
+    pointWindow.updateindex()
+
+def plotTracks(points, xMin,xMax,yMin,yMax, crop=True, overlay = False, img = None, expt=''):
+    fig1, ax1 = plt.subplots(1, 1, sharex=True, sharey=True)
+
+
+    if overlay:
+        #TODO add cropping
+        if crop:
+            img = img[xMin:xMax,yMin:yMax]
+        
+        ax1.imshow(img, vmin=250, vmax=2000)
+
+
+    if crop == True:
+        #CROP
+        points = points[(points['PositionX [µm]'] > xMin*pixelSize) & (points['PositionX [µm]'] < xMax*pixelSize)]
+        points = points[(points['PositionY [µm]'] > yMin*pixelSize) & (points['PositionY [µm]'] < yMax*pixelSize)]
+
+    
+    points_points  = points.rename(columns={"PositionX [µm]": "x", "PositionY [µm]": "y", "Tree ID": "ID", "Time [s]": "time"})
+        
+    
+    groups_points = points_points.groupby('ID')
+    for name, group in groups_points:
+        ax1.plot(group.x * (1/pixelSize), group.y * (1/pixelSize), marker='.', linestyle='-', markersize=3, label=name)
+    
+    ax1.set_title(expt)
+    
+    xaxisMin = int(np.min([points['PositionX [µm]'], points['PositionY [µm]']])* (1/pixelSize))
+    xaxisMax = int(np.max([points['PositionX [µm]'], points['PositionY [µm]']])* (1/pixelSize))
+    yaxisMin = int(np.min([points['PositionX [µm]'], points['PositionY [µm]']])* (1/pixelSize))
+    yaxisMax = int(np.max([points['PositionX [µm]'], points['PositionY [µm]']])* (1/pixelSize))
+
+
+    if crop == True:
+        xaxisMin = xaxisMin - (xMin * (1/pixelSize))
+        xaxisMax = xaxisMax - (xMin * (1/pixelSize))
+        yaxisMin = yaxisMin - (yMin * (1/pixelSize))
+        yaxisMax = yaxisMax - (yMin * (1/pixelSize))
+    
+    ax1.set_xlim(xaxisMin,xaxisMax)
+    ax1.set_ylim(yaxisMin,yaxisMax)
+
+    ax1.invert_yaxis()
+
+        
+    ax1.set(xlabel='PositionX [pixels]')
+    ax1.set(ylabel='PositionY [pixels]')
+
+    #plt.show()
+
+def plotPoints(points,img,expt='', size=0.5):
+    fig, axs = plt.subplots(1, 2, sharex=True, sharey=True)
+    axs[0].imshow(img, vmin=250, vmax=2000)
+    axs[1].imshow(img, vmin=250, vmax=2000)
+    axs[1].scatter(points['PositionX [µm]']/pixelSize , points['PositionY [µm]']/pixelSize  , s=size, c='r', marker=".", label=expt)
+
+    #ax1.invert_yaxis()
+    plt.legend(loc='upper left');
+    plt.show()
+    
+
+
+#recording options
+pixelSize = 0.108
+#cropping
+xMin,xMax,yMin,yMax = [0,1000,0,1000]
+
+###############   RUN ANALYSIS   #####################
+# =============================================================================
+# #Non-BAPTA - Wildtype
+# pointFile = '/Users/george/Desktop/from_Gabby/filesForAnalysis/Non-BAPTA/WithActinStain/Wild Type/raw/GB_199_2022_09_01_HTEndothelial_NonBAPTA_plate1_5_MMStack_Default_locs_tracks.csv'
+# tiffFile = '/Users/george/Desktop/from_Gabby/filesForAnalysis/Non-BAPTA/WithActinStain/Wild Type/raw/GB_199_2022_09_01_HTEndothelial_NonBAPTA_plate1_5_MMStack_Default.ome.tif'
+# lagFile = '/Users/george/Desktop/from_Gabby/filesForAnalysis/Non-BAPTA/WithActinStain/Wild Type/raw/GB_199_2022_09_01_HTEndothelial_NonBAPTA_plate1_5_MMStack_Default_locs_lagHisto.txt'
+# exptName = 'wildtype'
+# imageFile = '/Users/george/Desktop/from_Gabby/filesForAnalysis/Non-BAPTA/WithActinStain/Wild Type/GB_199_2022_09_01_HTEndothelial_NonBAPTA_plate1_5_Actin.tif'
+# 
+# ##### load data
+# points, nTracks, segLengths, maxTime, savePath = loadPointData(pointFile, xMin,xMax,yMin,yMax,crop=False, dataType='flika', lagFile=lagFile)
+# img= loadImgData(tiffFile, crop=False, transpose=False, rotateflip=True)
+# cellImage = io.imread(imageFile)
+# 
+# ##### plots
+# #plotLagHist(segLengths, bins=100, savePath = savePath, exptName = exptName)
+# 
+# #start_flika()
+# #plotDataOnStack(img, points, pixelSize, crop=False)
+# 
+# #points
+# plotPoints(points,cellImage,expt=exptName)
+# 
+# #tracks
+# plotTracks(points,xMin,xMax,yMin,yMax,crop=False, overlay=True, img=cellImage, expt=exptName)
+# =============================================================================
+
+
+
+#Non-BAPTA - GOF
+pointFile = '/Users/george/Desktop/from_Gabby/filesForAnalysis/Non-BAPTA/WithActinStain/Gain of Function/GB_199_2022_09_01_HTEndothelial_NonBAPTA_plate2_GoF_8_MMStack_Default.ome - Denoised.tif.ome_locs_tracks.csv'
+tiffFile = '/Users/george/Desktop/from_Gabby/filesForAnalysis/Non-BAPTA/WithActinStain/Gain of Function/GB_199_2022_09_01_HTEndothelial_NonBAPTA_plate2_GoF_8_MMStack_Default.ome - Denoised.tif.ome.tif'
+lagFile = '/Users/george/Desktop/from_Gabby/filesForAnalysis/Non-BAPTA/WithActinStain/Gain of Function/GB_199_2022_09_01_HTEndothelial_NonBAPTA_plate2_GoF_8_MMStack_Default.ome - Denoised.tif.ome_locs_lagHisto'
+exptName = 'GOF'
+imageFile = '/Users/george/Desktop/from_Gabby/filesForAnalysis/Non-BAPTA/WithActinStain/Gain of Function/GB_199_2022_09_01_HTEndothelial_NonBAPTA_plate2_GoF_8_Actin.tif'
+
+##### load data
+points, nTracks, segLengths, maxTime, savePath = loadPointData(pointFile, xMin,xMax,yMin,yMax,crop=False, dataType='flika', lagFile=lagFile)
+img= loadImgData(tiffFile, crop=False, transpose=False, rotateflip=True)
+cellImage = io.imread(imageFile)
+
+##### plots
+#plotLagHist(segLengths, bins=100, savePath = savePath, exptName = exptName)
+
+start_flika()
+plotDataOnStack(img, points, pixelSize, crop=False)
+
+#points
+plotPoints(points,cellImage,expt=exptName)
+
+#tracks
+#plotTracks(points,xMin,xMax,yMin,yMax,crop=False, overlay=True, img=cellImage, expt=exptName)
+
+
+
+# =============================================================================
+# #Non-BAPTA - GOF + YODA1
+# pointFile = '/Users/george/Desktop/from_Gabby/filesForAnalysis/Non-BAPTA/WithActinStain/Gain of Function + 2uM Yoda1/GB_199_2022_09_01_HTEndothelial_NonBAPTA_plate2_GoF_2uMyoda1_6_MMStack_Default.ome - Denoised_tracks.csv'
+# tiffFile = '/Users/george/Desktop/from_Gabby/filesForAnalysis/Non-BAPTA/WithActinStain/Gain of Function + 2uM Yoda1/GB_199_2022_09_01_HTEndothelial_NonBAPTA_plate2_GoF_2uMyoda1_6_MMStack_Default.ome - Denoised.tif.ome.tif'
+# lagFile = '/Users/george/Desktop/from_Gabby/filesForAnalysis/Non-BAPTA/WithActinStain/Gain of Function + 2uM Yoda1/GB_199_2022_09_01_HTEndothelial_NonBAPTA_plate2_GoF_2uMyoda1_6_MMStack_Default.ome - Denoised.tif.ome_locs_lagHisto'
+# exptName = 'GOF+YODA1'
+# imageFile = '/Users/george/Desktop/from_Gabby/filesForAnalysis/Non-BAPTA/WithActinStain/Gain of Function + 2uM Yoda1/GB_199_2022_09_01_HTEndothelial_NonBAPTA_plate2_GoF_2uMyoda1_6_Actin.tif'
+# 
+# ##### load data
+# points, nTracks, segLengths, maxTime, savePath = loadPointData(pointFile, xMin,xMax,yMin,yMax,crop=False, dataType='flika', lagFile=lagFile)
+# img= loadImgData(tiffFile, crop=False, transpose=False, rotateflip=True)
+# cellImage = io.imread(imageFile)
+# 
+# ##### plots
+# #plotLagHist(segLengths, bins=100, savePath = savePath, exptName = exptName)
+# 
+# #start_flika()
+# #plotDataOnStack(img, points, pixelSize, crop=False)
+# 
+# #points
+# plotPoints(points,cellImage,expt=exptName)
+# 
+# #tracks
+# #plotTracks(points,xMin,xMax,yMin,yMax,crop=False, overlay=True, img=cellImage, expt=exptName)
+# =============================================================================
+
+
+
+# =============================================================================
+# #Non-BAPTA - YODA1
+# pointFile = '/Users/george/Desktop/from_Gabby/filesForAnalysis/Non-BAPTA/WithActinStain/Wild Type + 2uM Yoda1 /GB_199_2022_09_01_HTEndothelial_NonBAPTA_plate1_2uMyoda1_4_MMStack_Default.ome - Denoised.tif.ome_locs_tracks.csv'
+# tiffFile = '/Users/george/Desktop/from_Gabby/filesForAnalysis/Non-BAPTA/WithActinStain/Wild Type + 2uM Yoda1 /GB_199_2022_09_01_HTEndothelial_NonBAPTA_plate1_2uMyoda1_4_MMStack_Default.ome - Denoised.tif.ome.tif'
+# lagFile = '/Users/george/Desktop/from_Gabby/filesForAnalysis/Non-BAPTA/WithActinStain/Wild Type + 2uM Yoda1 /GB_199_2022_09_01_HTEndothelial_NonBAPTA_plate1_2uMyoda1_4_MMStack_Default.ome - Denoised.tif.ome_locs_lagHisto'
+# exptName = 'YODA1'
+# imageFile = '/Users/george/Desktop/from_Gabby/filesForAnalysis/Non-BAPTA/WithActinStain/Wild Type + 2uM Yoda1 /GB_199_2022_09_01_HTEndothelial_NonBAPTA_plate1_2uMyoda1_4_Actin.tif'
+# 
+# ##### load data
+# points, nTracks, segLengths, maxTime, savePath = loadPointData(pointFile, xMin,xMax,yMin,yMax,crop=False, dataType='flika', lagFile=lagFile)
+# img= loadImgData(tiffFile, crop=False, transpose=False, rotateflip=True)
+# cellImage = io.imread(imageFile)
+# 
+# ##### plots
+# #plotLagHist(segLengths, bins=100, savePath = savePath, exptName = exptName)
+# 
+# #start_flika()
+# #plotDataOnStack(img, points, pixelSize, crop=False)
+# 
+# #points
+# plotPoints(points,cellImage,expt=exptName)
+# 
+# #tracks
+# #plotTracks(points,xMin,xMax,yMin,yMax,crop=True, overlay=True, img=cellImage, expt=exptName)
+# =============================================================================

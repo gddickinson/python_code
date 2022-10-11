@@ -1,0 +1,140 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Aug 23 14:09:27 2022
+
+@author: george
+"""
+
+import numpy as np
+import pandas as pd
+import glob, os
+from matplotlib import pyplot as plt
+
+%matplotlib qt 
+
+#analysis types
+analysisTypes = ['ALL-Distances_AllFrames',
+                 'Lags',
+                 'NN-Distances_AllFrames',
+                 'NN-Distances']
+
+#unfiltered
+nameList = ['Simulated_70',
+            'Control',
+            'Yoda1',
+            'GoF',
+            'GoF_Yoda1']
+
+
+
+colourList = ['b','g','r','c','k']
+
+#get all filenames containing '*_[ANALYSIS]_data.csv' in folder
+def getData(path, analysis=''):
+    analysisName = analysis + '_data.csv'
+    fileList = [f for f in glob.glob(path + "**/*" + analysisName, recursive=True)]
+    
+    df = pd.read_csv(fileList[0])
+    
+    for file in fileList[1:]:
+        df = df.append(pd.read_csv(file))
+    
+    return df.drop(columns=['Unnamed: 0'])
+
+
+def combineLists_alternating(list1,list2):
+    result = [None]*(len(list1)+len(list2))
+    result[::2] = list1
+    result[1::2] = list2
+    return result
+
+
+def plotCumHist(df,randomList,pointList, xlim, title, xlabel, ylabel, colourList):
+    for i, random in enumerate(randomList):
+        plt.hist(df[random],cumulative=True, density=1, bins=1000, histtype='step', label=random, ls=':', color=colourList[i])
+    for i, point in enumerate(pointList):
+        plt.hist(df[point],cumulative=True, density=1, bins=1000, histtype='step', label=point, lw = '2.0', ls='-', color=colourList[i])
+        
+    plt.xlim(xlim)
+    plt.title(title)
+    plt.legend(loc='lower right')
+
+    plt.show()
+
+
+
+
+####    PATHS    ####
+
+#unflitered
+#path = '/Users/george/Desktop/from_Gabby/thunderstorm/croppedStacks/data'
+#exptList = [x for x in nameList]
+
+#bright
+path = '/Users/george/Desktop/from_Gabby/thunderstorm/croppedFiltered/data/bright'
+exptList = [x +'_bright' for x in nameList]
+
+#dim
+path = '/Users/george/Desktop/from_Gabby/thunderstorm/croppedFiltered/data/dim'
+exptList = [x +'_dim' for x in nameList]
+
+####    ANALYSIS    ####
+
+ALL_Distances_AllFrames_df = getData(path, analysis = analysisTypes[0])
+Lags_df = getData(path, analysis = analysisTypes[1])
+NN_Distances_AllFrames_df = getData(path, analysis = analysisTypes[2])
+NN_Distances_df = getData(path, analysis = analysisTypes[3])
+
+#get Col names
+#colNames = list(ALL_Distances_AllFrames_df.columns)
+#print(colNames)
+
+#get names of columns to plot
+rWalkCols = [x + '_RandomWalk' for x in exptList]
+pointsCols = [x + '_Points' for x in exptList]
+names = combineLists_alternating(rWalkCols, pointsCols)
+
+#NN-distances 
+NN_distHist_fig = NN_Distances_df.hist(bins=1000, sharex=True, layout=(5,2), column=names, grid=False)
+plt.xlim((0,0.1))
+plt.suptitle('NN distances')
+
+
+#culmulative
+#NN_Distances_series = NN_Distances_df.squeeze()
+#NN_Distances_series.hist(cumulative=True, density=1, bins=1000, sharex=True, layout=(5,2), column=names, grid=False, histtype='step')
+#plt.xlim((0,0.1))
+plt.figure()
+NNdist_fig = plotCumHist(NN_Distances_df,rWalkCols,pointsCols, (0,0.1), 'NN-distances cumulative', "distances (µm)", "# of observations", colourList)
+
+#NN-distances - all frames
+NN_distAllframes_fig = NN_Distances_AllFrames_df.hist(bins=1000, sharex=True, layout=(5,2), column=names, grid=False)
+plt.suptitle('NN-distances All-frames')
+
+#culmulative
+#NN_Distances_AllFrames_series = NN_Distances_AllFrames_df.squeeze()
+#NN_Distances_AllFrames_series.hist(cumulative=True, density=1, bins=1000, sharex=True, layout=(5,2), column=names, grid=False, histtype='step')
+#plt.xlim((0,3))
+plt.figure()
+NNdist_AllFrames_fig = plotCumHist(NN_Distances_AllFrames_df,rWalkCols,pointsCols, (0,3), 'NN-distances All-frames cumulative', "distances (µm)", "# of observations", colourList)
+
+#All distances - all frames
+ALL_distHist_fig = ALL_Distances_AllFrames_df.hist(bins=1000, sharex=True, layout=(5,2), column=names, grid=False)
+plt.suptitle('All-distances All-frames')
+
+
+#culmulative
+#ALL_Distances_AllFrames_series = ALL_Distances_AllFrames_df.squeeze()
+#ALL_Distances_AllFrames_series.hist(cumulative=True, density=1, bins=1000, sharex=True, layout=(5,2), column=names, grid=False, histtype='step')
+#plt.xlim((0,17))
+plt.figure()
+ALLdist_AllFrames_fig = plotCumHist(ALL_Distances_AllFrames_df,rWalkCols,pointsCols, (0,17), 'All-distances All-frames cumulative', "distances (µm)", "# of observations", colourList)
+
+#Lags
+lagCols = [x + '_lags' for x in exptList]
+lagsHist = Lags_df.hist(bins=100, sharex=True, layout=(5,1), column=lagCols, grid=False)
+plt.xlim((0,0.3))
+plt.suptitle('Lags')
+
+

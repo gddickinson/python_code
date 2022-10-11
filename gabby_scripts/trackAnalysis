@@ -1,0 +1,463 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Jul 27 20:32:36 2022
+
+@author: george
+"""
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from matplotlib.widgets import Slider
+from sklearn.neighbors import KDTree
+import random
+from tqdm import tqdm
+import os
+from skimage import io
+from skimage.transform import resize
+from scipy.spatial import distance_matrix
+
+%matplotlib qt 
+
+from distutils.version import StrictVersion
+import flika
+from flika import global_vars as g
+from flika.window import Window
+from flika.process.file_ import save_file_gui, open_file_gui
+
+from qtpy.QtGui import QColor
+
+flika_version = flika.__version__
+if StrictVersion(flika_version) < StrictVersion('0.2.23'):
+    from flika.process.BaseProcess import BaseProcess, WindowSelector, SliderLabel, CheckBox
+else:
+    from flika.utils.BaseProcess import BaseProcess, WindowSelector, SliderLabel, CheckBox
+
+from flika import *
+%gui qt
+
+#recording options
+pixelSize = 0.108
+
+def loadPointData(pointFile,xMin,xMax,yMin,yMax,crop=True, dataType='elements', lagFile=False):   
+    #set savepath
+    savePath = os.path.splitext(pointFile)[0]
+    
+    if dataType == 'elements':
+        ######## load GABBY's data into DF #################
+        pointsDF = pd.read_excel(pointFile)
+        #tracksDF = pd.read_excel(trackFile)
+        
+        #rename ND.t to frame
+        pointsDF = pointsDF.rename(columns={"ND.T": "frame"})
+        #set first frame to zero to match image stack
+        pointsDF["frame"] = pointsDF["frame"]-1
+        
+
+    elif dataType == 'thunderstorm':    
+        ######### load ThunderSTORM data into DF ############
+        pointsDF = pd.read_csv(pointFile)
+        pointsDF['frame'] = pointsDF['frame'].astype(int) -1
+        pointsDF['PositionX [µm]'] = pointsDF['x [nm]'] / 1000
+        pointsDF['PositionY [µm]'] = pointsDF['y [nm]'] / 1000
+        pointsDF['Tree ID'] = 0
+        pointsDF['Seg.Length [µm]'] = 0
+
+ 
+    elif dataType == 'flika':    
+        ######### load FLIKA pyinsight data into DF ############
+        pointsDF = pd.read_csv(pointFile)
+        lagDF = pd.read_csv(lagFile,names=['lag'])
+        pointsDF['frame'] = pointsDF['frame'].astype(int)
+        pointsDF['PositionX [µm]'] = pointsDF['x'] * pixelSize
+        pointsDF['PositionY [µm]'] = pointsDF['y'] * pixelSize
+        pointsDF['Tree ID'] = pointsDF['track_number']
+        pointsDF['Seg.Length [µm]'] = lagDF['lag']
+
+    if crop == True:
+        #CROP
+        pointsDF = pointsDF[(pointsDF['PositionX [µm]'] > xMin) & (pointsDF['PositionX [µm]'] < xMax)]
+        pointsDF = pointsDF[(pointsDF['PositionY [µm]'] > yMin) & (pointsDF['PositionY [µm]'] < yMax)]
+        
+    #get number of tracks
+    nTracks = np.max(pointsDF['Tree ID'])
+    
+    #keep x,y,time values
+    points = pointsDF[['PositionX [µm]', 'PositionY [µm]', 'frame', 'Tree ID', 'intensities']]
+
+    #get distribution of segment length from tracks
+    segLengths = pointsDF['Seg.Length [µm]'].tolist()
+    #remove nans
+    segLengths = [x for x in segLengths if np.isnan(x) == False]
+    
+    maxTime = np.max(pointsDF['frame'])
+
+    return points, nTracks, segLengths, maxTime, savePath
+
+
+def loadImgData(tiffFile, crop=True, transpose=False, rotateflip=True):
+    #load image data
+    img = io.imread(tiffFile) 
+    
+    if transpose == True:
+        #reshape to x,y,t
+        img = np.transpose(img,(1,2,0))
+    
+    if crop == True:
+        #img = img[int(xMin/pixelSize) : int(xMax/pixelSize), int(yMin/pixelSize) : int(yMax/pixelSize), :]
+        img = img[:, int(yMin/pixelSize) : int(yMax/pixelSize), int(xMin/pixelSize) : int(xMax/pixelSize)] 
+    
+    if rotateflip == True:
+        #rotate and flip for flika
+        img = img[:,:,::-1]
+        img = np.rot90(img, k=1, axes=(1,2))
+    
+    return img
+
+
+def plotDataOnStack(img, points, pixelSize, crop=True):
+    #plot point data on tiff stack
+    
+    pointWindow = Window(img)
+        
+    points_byFrame = points[['frame','x','y']]
+    points_byFrame['x'] = points_byFrame['x'] * (1/pixelSize)
+    points_byFrame['y'] = points_byFrame['y'] * (1/pixelSize)
+    #points_byFrame['point_color'] = QColor(g.m.settings['point_color'])
+    #points_byFrame['point_size'] = g.m.settings['point_size']
+    pointArray = points_byFrame.to_numpy()
+    
+    pointWindow.scatterPoints = [[] for _ in np.arange(pointWindow.mt)]
+    
+    if crop == True:
+        #for cropped image
+        offsetX = xMin * (1/pixelSize)
+        offsetY = yMin * (1/pixelSize)
+
+    else:
+        #no offset for FLIKA data
+        offsetX = 0
+        offsetY = 0
+    
+    for pt in pointArray:
+        t = int(pt[0])
+        if pointWindow.mt == 1:
+            t = 0
+        pointSize = g.m.settings['point_size']
+        pointColor = QColor(g.m.settings['point_color'])
+        #position = [pt[1]+(.5* (1/pixelSize)), pt[2]+(.5* (1/pixelSize)), pointColor, pointSize]
+        position = [pt[1]-offsetX, pt[2]-offsetY, pointColor, pointSize]    
+        pointWindow.scatterPoints[t].append(position)
+    pointWindow.updateindex()
+
+def getSortedTrackIDs(df):
+    df = df.groupby(['Tree ID'], as_index=True)['intensities'].mean() 
+    df = df.to_frame().sort_values('intensities')
+    return df
+
+
+def getCentroids(trackDF, selection='all'):
+    if selection == 'all':
+        return trackDF[["PositionX [µm]", "PositionY [µm]"]].values.tolist()
+    else:
+        #split to bright and dim based on mean
+        meanIntensity = np.mean(trackDF['intensities'])
+        df_bright = trackDF[trackDF['intensities'] > meanIntensity]
+        df_dim = trackDF[trackDF['intensities'] < meanIntensity]
+    if selection == 'dim':
+        return df_dim[["PositionX [µm]", "PositionY [µm]"]].values.tolist()
+    if selection == 'bright':
+        return df_bright[["PositionX [µm]", "PositionY [µm]"]].values.tolist()
+  
+
+def getNearestNeighbors(train,test,k=2):
+    tree = KDTree(train, leaf_size=5)   
+    dist, ind = tree.query(test, k=k)
+    #dist.reshape(np.size(dist),)     
+    return dist, ind
+
+def getAllDistances(train,test, k):
+    tree = KDTree(train, leaf_size=5)   
+    dist, ind = tree.query(test, k=k)
+    #dist.reshape(np.size(dist),)     
+    return dist, ind
+
+def flatten(l):
+    return [item for sublist in l for item in sublist]
+
+class track_calc:
+    def __init__(self, track_df, exptName):
+        # Confirm input is of type pd.DataFrame()
+        if not isinstance(track_df, pd.DataFrame):
+            raise TypeError("Input must be of type pandas.DataFrame()")
+        self.track_df = track_df.rename(columns={"PositionX [µm]": "x", "PositionY [µm]": "y", "Tree ID": "ID", "Time [s]": "time", "intensities": "intensity"})
+        self.analysisTracks_df = pd.DataFrame()
+        self.centerTrack_df = pd.DataFrame()
+        self.radius = 5
+        self.centerRadius = 0.1
+        self.exptName = exptName
+        self.xaxisMin = np.min(self.track_df['x'])/pixelSize
+        self.xaxisMax = np.max(self.track_df['x'])/pixelSize
+        self.yaxisMin = np.min(self.track_df['y'])/pixelSize
+        self.yaxisMax = np.max(self.track_df['y'])/pixelSize
+
+    def filterTracksOnID(self, df, trackNumber):
+        return df[df['ID'] == trackNumber]
+
+    def filterTracksOnDistance(self, df, center_df, radius):
+        dist_mat = distance_matrix(df[['x','y']], center_df[['x','y']])
+        pointdf = df[np.min(dist_mat,axis=1)<radius]
+        idList = pointdf.ID.unique()
+        return df[df['ID'].isin(idList)]
+    
+    def excludeTracksWithinDistance(self, df, center_df, radius):
+        dist_mat = distance_matrix(df[['x','y']], center_df[['x','y']])
+        pointdf = df[np.min(dist_mat,axis=1)<radius]
+        idList = pointdf.ID.unique()
+        return df[~df['ID'].isin(idList)]
+
+    # def runAnalysis(self, centerTrackID, radius=5):
+    #     self.centerTrackID = centerTrackID
+    #     self.radius = radius
+        
+    #     #make df with just center track
+    #     self.centerTrack_df = self.filterTracksOnID(self.track_df, self.centerTrackID)
+    #     #check number of points in center track
+    #     print('Number of points in center track = : ' + str(len(self.centerTrack_df )))
+        
+    #     #calculate mean x and y for center track
+    #     self.centerX = np.mean(self.centerTrack_df['x'])
+    #     self.centerY = np.mean(self.centerTrack_df['y'])   
+    #     print('Center X = {:.2f}, Center Y = {:.2f} '.format(self.centerX , self.centerY))       
+        
+    #     #get tracks around center point
+    #     self.analysisTracks_df = self.filterTracksOnDistance(self.track_df, self.centerTrack_df, self.radius)
+        
+    #     #remove any tracks too close to center
+    #     self.analysisTracks_df = self.excludeTracksWithinDistance(self.analysisTracks_df, self.centerTrack_df, self.centerRadius)
+
+    def getNearestNeighbours(self, centerDF, neigboursDF):
+        '''Get NN of all points in stack to center position'''
+        #select columns
+        testData_df = neigboursDF[['x','y']]
+        trainData_df = centerDF[['x','y']]        
+        #nearest neighbour
+        distances, trainData_indexes = getNearestNeighbors(trainData_df.to_numpy(),testData_df.to_numpy(), k=1)        
+        return distances
+
+    def getResults(self):
+        nnAsList = [arr.tolist() for arr in self.nearestNeighbourDistances ]
+        return flatten(nnAsList)
+
+    def runAnalysis(self, centroid, radius=5):
+        self.centerX = centroid[0]
+        self.centerY = centroid[1]
+        self.radius = radius
+        
+        #make df with just centroid position
+        data = {'x': [self.centerX*pixelSize], 'y' : [self.centerY*pixelSize]}
+        self.centerTrack_df = pd.DataFrame(data)
+        
+        #get tracks around center point
+        self.analysisTracks_df = self.filterTracksOnDistance(self.track_df, self.centerTrack_df, self.radius)
+        
+        #remove any tracks too close to center
+        self.analysisTracks_df = self.excludeTracksWithinDistance(self.analysisTracks_df, self.centerTrack_df, self.centerRadius)
+        
+        #get NN
+        self.nearestNeighbourDistances = self.getNearestNeighbours(self.centerTrack_df,self.analysisTracks_df)
+        
+        
+    def plotTracks(self):
+        self.fig1,self.ax1 = plt.subplots(1, 1, sharex=True, sharey=True)
+                   
+        groups_points = self.analysisTracks_df.groupby('ID')
+        for name, group in groups_points:
+            self.ax1.plot(group.x /pixelSize, group.y /pixelSize, marker='.', linestyle='-', markersize=3, label=name)
+        
+        self.ax1.set_title(self.exptName)    
+        
+        self.ax1.set_xlim(self.xaxisMin,self.xaxisMax)
+        self.ax1.set_ylim(self.yaxisMin,self.yaxisMax)
+        
+        self.ax1.invert_yaxis()                
+        self.ax1.set(xlabel='PositionX [pixels]')
+        self.ax1.set(ylabel='PositionY [pixels]')
+    
+        plt.show()          
+
+    def plotArrows(self):
+        self.fig2,self.ax2 = plt.subplots(1, 1, sharex=True, sharey=True)
+                   
+        groups_points = self.analysisTracks_df.groupby('ID')
+        for name, group in groups_points:
+
+            x = group['x']
+            y = group['y']
+            # calculate position and direction vectors:
+            x0 = x.iloc[range(len(x)-1)].values
+            x1 = x.iloc[range(1,len(x))].values
+            y0 = y.iloc[range(len(y)-1)].values
+            y1 = y.iloc[range(1,len(y))].values
+            xpos = (x0+x1)/2
+            ypos = (y0+y1)/2
+            xdir = x1-x0
+            ydir = y1-y0
+            
+            #generate a random rgba color code
+            color = list(np.random.random(size=3))
+
+            #self.ax2.scatter(x,y)
+            self.ax2.plot(x,y, marker='.', linestyle='-', markersize=1, color=color)
+            # plot arrow on each line:
+            for X,Y,dX,dY in zip(xpos, ypos, xdir, ydir):
+                self.ax2.annotate("", xytext=(X,Y),xy=(X+0.001*dX,Y+0.001*dY), 
+                arrowprops=dict(arrowstyle="->", color=color), size = 20)     
+
+
+    def plotHistoNearestNeighbours(self,nBins =100):
+        self.fig3, (self.ax3,self.ax4) = plt.subplots(2, 1, figsize=(5,4), sharex=True)
+        self.fig3.suptitle('Nearest Neighbour Distances')
+        
+        self.ax3.hist(self.nearestNeighbourDistances, bins=nBins, label=self.exptName)
+        self.ax4.hist(self.nearestNeighbourDistances, bins=nBins, density=True, histtype='step',
+                                   cumulative=True, label=self.exptName)
+        
+        self.ax3.set_title("Histogram")
+        self.ax4.set_title("Cumulative")
+        
+        self.ax3.set(ylabel = "# of observations")
+        self.ax4.set(xlabel="distances (µm)", ylabel = "# of observations")
+        
+        #self.ax3.set_yscale('log')
+        #self.ax4.set_yscale('log')
+        #self.ax4.set_ylim([0,300])
+        
+        plt.show()
+
+    def getAnalysisTracks(self):
+        return self.analysisTracks_df 
+ 
+
+##### make loop for differnt analysis types
+def loopThroughAnalysis(tracksDF , analysisTypes = ['puncta','dim', 'bright'], sampleN = 500, radiusFromCentroid =1, puncta=[], exptName=''):
+
+    #load track file into analysis routine
+    trackAnalysis = track_calc(tracksDF, exptName)   
+    
+    #define centeroid to assess
+    dimCentroids = getCentroids(tracksDF,'dim')
+    brightCentroids = getCentroids(tracksDF,'bright')
+    
+    nn_Result_df = pd.DataFrame()
+    
+    #loop through points on lists - save results to df   
+    for analysis in analysisTypes:
+        distances = []
+        if analysis == 'puncta':
+            centroidList = puncta
+        elif analysis == 'dim':
+            centroidList = random.sample(dimCentroids, sampleN)
+        elif analysis == 'bright':
+            centroidList = random.sample(brightCentroids, sampleN)
+        
+
+        for centroid in centroidList:    
+            #trackAnalysis.runAnalysis(trackIDs.index[500])
+            trackAnalysis.runAnalysis(centroid, radius = radiusFromCentroid)
+            distances.extend(trackAnalysis.getResults())
+                            
+        #add results to df
+        resultDF = pd.DataFrame({analysis: distances})
+        nn_Result_df = pd.concat([nn_Result_df,resultDF])
+        
+    return nn_Result_df, trackAnalysis       
+            
+if __name__ == '__main__':
+    ##### RUN ANALYSIS
+    
+    #Non-BAPTA - Wildtype
+    pointFile = '/Users/george/Desktop/from_Gabby/filesForAnalysis/Non-BAPTA/WithActinStain/Wild Type/raw/GB_199_2022_09_01_HTEndothelial_NonBAPTA_plate1_5_MMStack_Default_locs_tracks.csv'
+    tiffFile = '/Users/george/Desktop/from_Gabby/filesForAnalysis/Non-BAPTA/WithActinStain/Wild Type/raw/GB_199_2022_09_01_HTEndothelial_NonBAPTA_plate1_5_MMStack_Default.ome.tif'
+    lagFile = '/Users/george/Desktop/from_Gabby/filesForAnalysis/Non-BAPTA/WithActinStain/Wild Type/raw/GB_199_2022_09_01_HTEndothelial_NonBAPTA_plate1_5_MMStack_Default_locs_lagHisto.txt'
+    exptName = 'wildtype'
+    imageFile = '/Users/george/Desktop/from_Gabby/filesForAnalysis/Non-BAPTA/WithActinStain/Wild Type/GB_199_2022_09_01_HTEndothelial_NonBAPTA_plate1_5_Actin.tif'
+    #croppping
+    xMin,xMax,yMin,yMax = [0,1000,0,1000]
+    
+    ##### load data
+    tracksDF, nTracks, segLengths, maxTime, savePath = loadPointData(pointFile, xMin,xMax,yMin,yMax,crop=False, dataType='flika', lagFile=lagFile)
+    img= loadImgData(tiffFile, crop=False, transpose=False, rotateflip=True)
+    cellImage = io.imread(imageFile)
+       
+    #get list of track IDs
+    #trackIDs = getSortedTrackIDs(tracksDF)
+
+    #stationay puncta positions derived by eye
+    puncta = [
+            [149,372],
+             [122,289],
+             [132,227],
+             [198,136],
+             [392,386],
+             [293,339],
+             [450,94],
+             [419,327],
+             [264,167],
+             [436,254],
+             [330,176],
+             [101,365],
+             [149,218],
+             [150,166],
+             [398,41],
+             [487,377],
+             [57,270],
+             [278,75],
+             [118,270]
+        ]
+    
+    #run analysis for each analysis type - get NN-distances to centroid   
+    nonBAPTA_WT_distances, nonBAPTA_WT_analysis = loopThroughAnalysis(tracksDF, puncta=puncta, exptName=exptName)
+
+    #plot histogram
+    nonBAPTA_WT_distances.hist(bins=100, layout=(1,3))
+    plt.suptitle(exptName)        
+    
+
+
+    #Non-BAPTA - GOF + YODA1
+    pointFile_GOFY = '/Users/george/Desktop/from_Gabby/filesForAnalysis/Non-BAPTA/WithActinStain/Gain of Function + 2uM Yoda1/GB_199_2022_09_01_HTEndothelial_NonBAPTA_plate2_GoF_2uMyoda1_6_MMStack_Default.ome - Denoised_tracks.csv'
+    tiffFile_GOFY = '/Users/george/Desktop/from_Gabby/filesForAnalysis/Non-BAPTA/WithActinStain/Gain of Function + 2uM Yoda1/GB_199_2022_09_01_HTEndothelial_NonBAPTA_plate2_GoF_2uMyoda1_6_MMStack_Default.ome - Denoised.tif.ome.tif'
+    lagFile_GOFY = '/Users/george/Desktop/from_Gabby/filesForAnalysis/Non-BAPTA/WithActinStain/Gain of Function + 2uM Yoda1/GB_199_2022_09_01_HTEndothelial_NonBAPTA_plate2_GoF_2uMyoda1_6_MMStack_Default.ome - Denoised.tif.ome_locs_lagHisto'
+    exptName_GOFY = 'GOF+YODA1'
+    imageFile_GOFY = '/Users/george/Desktop/from_Gabby/filesForAnalysis/Non-BAPTA/WithActinStain/Gain of Function + 2uM Yoda1/GB_199_2022_09_01_HTEndothelial_NonBAPTA_plate2_GoF_2uMyoda1_6_Actin.tif'
+    
+    ##### load data
+    tracks_GOFY, nTracks_GOFY, segLengths_GOFY, maxTime_GOFY, savePath_GOFY = loadPointData(pointFile_GOFY, xMin,xMax,yMin,yMax,crop=False, dataType='flika', lagFile=lagFile_GOFY)
+    img_GOFY= loadImgData(tiffFile_GOFY, crop=False, transpose=False, rotateflip=True)
+    cellImage_GOFY = io.imread(imageFile_GOFY)
+
+    puncta_GOFY=[[363,329],
+                 [116,280],
+                 [475,77],
+                 [313,271],
+                 [180,374],
+                 [362,329],
+                 [211,110],
+                 [519,125],
+                 [521,102],
+                 [41,83]
+                 
+                 ]
+
+
+    #run analysis for each analysis type - get NN-distances to centroid   
+    nonBAPTA_GOFY_distances, nonBAPTA_GOFY_analysis = loopThroughAnalysis(tracks_GOFY, puncta=puncta_GOFY, exptName=exptName_GOFY)
+
+    #plot histogram
+    nonBAPTA_GOFY_distances.hist(bins=100, layout=(1,3))
+    plt.suptitle(exptName_GOFY)   
+    
+start_flika()
+plotDataOnStack(img_GOFY, nonBAPTA_GOFY_analysis.getAnalysisTracks(), pixelSize, crop=False)    

@@ -1,0 +1,225 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Sep 27 12:19:03 2022
+
+@author: george
+"""
+
+import numpy as np
+import pandas as pd
+import glob, os
+from matplotlib import pyplot as plt
+
+%matplotlib qt 
+
+#denoised
+filePath = '/Users/george/Documents/GabbyAnalysis/lagsHisto_renamed'
+#raw
+#filePath = '/Users/george/Documents/GabbyAnalysis/lagsHisto_raw_renamed'
+
+fileList = [f for f in glob.glob(filePath + "**/*", recursive=True)]
+
+wt_all = pd.DataFrame()
+wt_dim = pd.DataFrame()
+wt_bright = pd.DataFrame()
+
+yoda_all = pd.DataFrame()
+yoda_dim = pd.DataFrame()
+yoda_bright = pd.DataFrame()
+
+gof_all = pd.DataFrame()
+gof_dim = pd.DataFrame()
+gof_bright = pd.DataFrame()
+
+gofYoda_all = pd.DataFrame()
+gofYoda_dim = pd.DataFrame()
+gofYoda_bright = pd.DataFrame()
+
+
+for file in fileList:
+    name = os.path.basename(file).split('_')
+    rowName = str(name[0] + ' ' + name[1] + ' ' + name[2])
+    if name[0] == 'WT':
+        if name[2] == 'all':
+            wt_all[rowName] = pd.read_csv(file)
+        elif name[2] == 'dim':
+            wt_dim[rowName] = pd.read_csv(file)
+        elif name[2] == 'bright':
+            wt_bright[rowName] = pd.read_csv(file)
+            
+    if name[0] == 'YODA':
+        if name[2] == 'all':
+            yoda_all[rowName] = pd.read_csv(file)
+        elif name[2] == 'dim':
+            yoda_dim[rowName] = pd.read_csv(file)
+        elif name[2] == 'bright':
+            yoda_bright[rowName] = pd.read_csv(file)
+
+    if name[0] == 'GoF':
+        if name[2] == 'all':
+            gof_all[rowName] = pd.read_csv(file)
+        elif name[2] == 'dim':
+            gof_dim[rowName] = pd.read_csv(file)
+        elif name[2] == 'bright':
+            gof_bright[rowName] = pd.read_csv(file)
+
+    if name[0] == 'GoF-YODA':
+        if name[2] == 'all':
+            gofYoda_all[rowName] = pd.read_csv(file)
+        elif name[2] == 'dim':
+            gofYoda_dim[rowName] = pd.read_csv(file)
+        elif name[2] == 'bright':
+            gofYoda_bright[rowName] = pd.read_csv(file)
+
+
+def getHistData(df,bins=100,name='', cumulative=False):
+    hist_df = pd.DataFrame()
+    #plt.Figure()
+    plt.suptitle(name)
+    for (columnName, columnData) in df.iteritems():
+        counts,bins,bars = plt.hist(columnData, density=True, bins=bins,label=columnName, cumulative=cumulative)
+        hist_df[columnName] = counts
+    colNames = list(hist_df.columns)
+    hist_df['mean'] = np.mean(hist_df[colNames],axis=1)
+    hist_df['sd'] = np.std(hist_df[colNames],axis=1)
+    binCenter = [patch.get_xy()[0] for patch in bars]
+    hist_df['binCenter'] = binCenter
+    plt.legend(loc='upper right')
+    return hist_df
+
+  
+
+
+bins = 100
+
+cumulative=True
+
+wt_all_hist = getHistData(wt_all, bins,name='WT ALL', cumulative=cumulative)
+wt_bright_hist = getHistData(wt_bright, bins,name='WT BRIGHT', cumulative=cumulative)
+wt_dim_hist = getHistData(wt_dim, bins,name='WT DIM', cumulative=cumulative)
+
+yoda_all_hist = getHistData(yoda_all, bins,name='YODA ALL', cumulative=cumulative)
+yoda_bright_hist = getHistData(yoda_bright, bins,name='YODA BRIGHT', cumulative=cumulative)
+yoda_dim_hist = getHistData(yoda_dim, bins,name='YODA DIM', cumulative=cumulative)
+
+gof_all_hist = getHistData(gof_all, bins,name='GOF ALL', cumulative=cumulative)
+gof_bright_hist = getHistData(gof_bright, bins,name='GOF BRIGHT', cumulative=cumulative)
+gof_dim_hist = getHistData(gof_dim, bins,name='GOF DIM', cumulative=cumulative)
+    
+gofYoda_all_hist = getHistData(gofYoda_all, bins,name='GOF-YODA ALL', cumulative=cumulative)
+gofYoda_bright_hist = getHistData(gofYoda_bright, bins,name='GOF-YODA BRIGHT', cumulative=cumulative)
+gofYoda_dim_hist = getHistData(gofYoda_dim, bins,name='GPF-YODA DIM', cumulative=cumulative)
+
+##plot all results 
+fig,axs = plt.subplots(4,2, sharex=True, figsize=(10,8))
+fig.suptitle('Lag Distributions')
+pointSize = 2
+axs[0,0].scatter(wt_all_hist['binCenter'],wt_all_hist['mean'], s=pointSize)
+axs[0,0].errorbar(wt_all_hist['binCenter'],wt_all_hist['mean'], yerr=wt_all_hist['sd'], fmt=".")
+
+axs[0,1].scatter(wt_bright_hist['binCenter'],wt_bright_hist['mean'], s=pointSize, label='bright')
+axs[0,1].errorbar(wt_bright_hist['binCenter'],wt_bright_hist['mean'], yerr=wt_bright_hist['sd'], fmt=".")
+
+axs[0,1].scatter(wt_dim_hist['binCenter'],wt_dim_hist['mean'], s=pointSize, label='dim')
+axs[0,1].errorbar(wt_dim_hist['binCenter'],wt_dim_hist['mean'], yerr=wt_dim_hist['sd'], fmt=".")
+
+axs[1,0].scatter(gof_all_hist['binCenter'],gof_all_hist['mean'], s=pointSize)
+axs[1,0].errorbar(gof_all_hist['binCenter'],gof_all_hist['mean'], yerr=gof_all_hist['sd'], fmt=".")
+
+axs[1,1].scatter(gof_bright_hist['binCenter'],gof_bright_hist['mean'], s=pointSize, label='bright')
+axs[1,1].errorbar(gof_bright_hist['binCenter'],gof_bright_hist['mean'], yerr=gof_bright_hist['sd'], fmt=".")
+
+axs[1,1].scatter(gof_dim_hist['binCenter'],gof_dim_hist['mean'], s=pointSize, label='dim')
+axs[1,1].errorbar(gof_dim_hist['binCenter'],gof_dim_hist['mean'], yerr=gof_dim_hist['sd'], fmt=".")
+
+axs[2,0].scatter(yoda_all_hist['binCenter'],yoda_all_hist['mean'], s=pointSize)
+axs[2,0].errorbar(yoda_all_hist['binCenter'],yoda_all_hist['mean'], yerr=yoda_all_hist['sd'], fmt=".")
+
+axs[2,1].scatter(yoda_bright_hist['binCenter'],yoda_bright_hist['mean'], s=pointSize, label='bright')
+axs[2,1].errorbar(yoda_bright_hist['binCenter'],yoda_bright_hist['mean'], yerr=yoda_bright_hist['sd'], fmt=".")
+
+axs[2,1].scatter(yoda_dim_hist['binCenter'],yoda_dim_hist['mean'], s=pointSize, label='dim')
+axs[2,1].errorbar(yoda_dim_hist['binCenter'],yoda_dim_hist['mean'], yerr=yoda_dim_hist['sd'], fmt=".")
+
+axs[3,0].scatter(gofYoda_all_hist['binCenter'],gofYoda_all_hist['mean'], s=pointSize)
+axs[3,0].errorbar(gofYoda_all_hist['binCenter'],gofYoda_all_hist['mean'], yerr=gofYoda_all_hist['sd'], fmt=".")
+
+axs[3,1].scatter(gofYoda_bright_hist['binCenter'],gofYoda_bright_hist['mean'], s=pointSize, label='bright')
+axs[3,1].errorbar(gofYoda_bright_hist['binCenter'],gofYoda_bright_hist['mean'], yerr=gofYoda_bright_hist['sd'], fmt=".")
+
+axs[3,1].scatter(gofYoda_dim_hist['binCenter'],gofYoda_dim_hist['mean'], s=pointSize, label='dim')
+axs[3,1].errorbar(gofYoda_dim_hist['binCenter'],gofYoda_dim_hist['mean'], yerr=gofYoda_dim_hist['sd'], fmt=".")
+
+axs[0,0].set_title('WT - All')
+axs[0,1].set_title('WT - Bright & Dim')
+axs[1,0].set_title('GoF - All')
+axs[1,1].set_title('GoF - Bright & Dim')
+axs[2,0].set_title('Yoda1 - All')
+axs[2,1].set_title('Yoda1 - Bright & Dim')
+axs[3,0].set_title('GOF-Yoda1 - All')
+axs[3,1].set_title('GOF-Yoda1 - Bright & Dim')
+
+axs[0,1].legend(loc='upper right')
+
+fig.text(0.5, 0.04, 'lag distance (μm)', ha='center')
+fig.text(0.04, 0.5, '# of counts (x1000)', va='center', rotation='vertical')
+
+
+#overlay results
+fig2,axs2 = plt.subplots(1,3, sharex=True, figsize=(10,4))
+fig2.suptitle('Lag Distributions')
+pointSize = 4
+axs2[0].scatter(wt_all_hist['binCenter'],wt_all_hist['mean'], s=pointSize, label='WT', c='b')
+axs2[0].errorbar(wt_all_hist['binCenter'],wt_all_hist['mean'], yerr=wt_all_hist['sd'], fmt="-", c='b')
+
+axs2[1].scatter(wt_bright_hist['binCenter'],wt_bright_hist['mean'], s=pointSize, label='WT', c='b')
+axs2[1].errorbar(wt_bright_hist['binCenter'],wt_bright_hist['mean'], yerr=wt_bright_hist['sd'], fmt="-", c='b')
+
+axs2[2].scatter(wt_dim_hist['binCenter'],wt_dim_hist['mean'], s=pointSize, label='WT', c='b')
+axs2[2].errorbar(wt_dim_hist['binCenter'],wt_dim_hist['mean'], yerr=wt_dim_hist['sd'], fmt="-", c='b')
+
+axs2[0].scatter(gof_all_hist['binCenter'],gof_all_hist['mean'], s=pointSize, label='GOF', c='r')
+axs2[0].errorbar(gof_all_hist['binCenter'],gof_all_hist['mean'], yerr=gof_all_hist['sd'], fmt="-", c='r')
+
+axs2[1].scatter(gof_bright_hist['binCenter'],gof_bright_hist['mean'], s=pointSize, label='GOF', c='r')
+axs2[1].errorbar(gof_bright_hist['binCenter'],gof_bright_hist['mean'], yerr=gof_bright_hist['sd'], fmt="-", c='r')
+
+axs2[2].scatter(gof_dim_hist['binCenter'],gof_dim_hist['mean'], s=pointSize, label='GOF', c='r')
+axs2[2].errorbar(gof_dim_hist['binCenter'],gof_dim_hist['mean'], yerr=gof_dim_hist['sd'], fmt="-", c='r')
+
+axs2[0].scatter(yoda_all_hist['binCenter'],yoda_all_hist['mean'], s=pointSize, label='YODA', c='g')
+axs2[0].errorbar(yoda_all_hist['binCenter'],yoda_all_hist['mean'], yerr=yoda_all_hist['sd'], fmt="-", c='g')
+
+axs2[1].scatter(yoda_bright_hist['binCenter'],yoda_bright_hist['mean'], s=pointSize, label='YODA', c='g')
+axs2[1].errorbar(yoda_bright_hist['binCenter'],yoda_bright_hist['mean'], yerr=yoda_bright_hist['sd'], fmt="-", c='g')
+
+axs2[2].scatter(yoda_dim_hist['binCenter'],yoda_dim_hist['mean'], s=pointSize, label='YODA', c='g')
+axs2[2].errorbar(yoda_dim_hist['binCenter'],yoda_dim_hist['mean'], yerr=yoda_dim_hist['sd'], fmt="-", c='g')
+
+axs2[0].scatter(gofYoda_all_hist['binCenter'],gofYoda_all_hist['mean'], s=pointSize, label='GOF-YODA', c='y')
+axs2[0].errorbar(gofYoda_all_hist['binCenter'],gofYoda_all_hist['mean'], yerr=gofYoda_all_hist['sd'], fmt="-", c='y')
+
+axs2[1].scatter(gofYoda_bright_hist['binCenter'],gofYoda_bright_hist['mean'], s=pointSize, label='GOF-YODA', c='y')
+axs2[1].errorbar(gofYoda_bright_hist['binCenter'],gofYoda_bright_hist['mean'], yerr=gofYoda_bright_hist['sd'], fmt="-", c='y')
+
+axs2[2].scatter(gofYoda_dim_hist['binCenter'],gofYoda_dim_hist['mean'], s=pointSize, label='GOF-YODA', c='y')
+axs2[2].errorbar(gofYoda_dim_hist['binCenter'],gofYoda_dim_hist['mean'], yerr=gofYoda_dim_hist['sd'], fmt="-", c='y')
+
+for ax in axs2:
+    ax.set_xlim([-0.01, 0.15])
+
+axs2[0].set_title('All')
+axs2[1].set_title('Bright')
+axs2[2].set_title('Dim')
+
+
+axs2[2].legend(loc='upper right')
+
+fig2.text(0.5, 0.04, 'lag distance (μm)', ha='center')
+fig2.text(0.04, 0.5, '# of counts (x1000)', va='center', rotation='vertical')
+
+
+
+
+

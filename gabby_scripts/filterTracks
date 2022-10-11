@@ -1,0 +1,63 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Aug 23 14:09:27 2022
+
+@author: george
+"""
+
+import numpy as np
+import pandas as pd
+from matplotlib import pyplot as plt
+import glob, os
+
+%matplotlib qt 
+
+#path
+#path = '/Users/george/Desktop/from_Gabby/thunderstorm/croppedFiltered/'
+#path = '/Users/george/Desktop/from_Gabby/simulatedParticles/filtered/'
+#path = '/Users/george/Desktop/from_Gabby/thunderstorm/croppedFiltered/BAPTA'
+#path = '/Users/george/Documents/GabbyAnalysis/tracks'
+path = '/Users/george/Desktop/from_Gabby/binnedFiles/tracks'
+
+#get track files
+fileList = [f for f in glob.glob(path + "**/*.csv", recursive=True)]
+
+#recording options
+pixelSize = 108
+
+def filterTracks(fileName):
+    #filter track file
+    df = pd.read_csv(file)
+    #set thunderstorm headers
+    df[['x [nm]', 'y [nm]', 'intensity[photon]']] = df[['x','y','intensities']]
+    df = df.drop(['track_number', 'x','y','intensities'], axis=1)
+    
+    #convert to nm
+    df['x [nm]'] = df['x [nm]'] * pixelSize
+    df['y [nm]'] = df['y [nm]'] * pixelSize  
+    
+    #split to bright and dim based on mean
+    meanIntensity = np.mean(df['intensity[photon]'])
+    df_bright = df[df['intensity[photon]'] > meanIntensity]
+    df_dim = df[df['intensity[photon]'] < meanIntensity]
+    
+    #savePath
+    saveName = os.path.splitext(fileName)[0]
+    
+    #save filtered data
+    df_bright.to_csv(saveName + '_bright.csv')
+    df_dim.to_csv(saveName + '_dim.csv')
+
+for file in fileList:
+    filterTracks(file)
+    print(file + ' done')
+    
+
+
+
+
+
+
+
+
